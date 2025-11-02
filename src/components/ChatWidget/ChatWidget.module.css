@@ -1,0 +1,193 @@
+/* Chat Widget Container */
+.chatWidget {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+/* Main Toggle Button */
+.mainButton {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #dc143c 0%, #b8112e 100%);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.mainButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mainButton:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(220, 20, 60, 0.4);
+}
+
+.mainButton:hover::before {
+  opacity: 1;
+}
+
+.mainButton.active {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  transform: rotate(90deg);
+}
+
+.mainIcon {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: #ffffff;
+  transition: transform 0.3s ease;
+}
+
+.mainButton.active .mainIcon {
+  color: #222222;
+}
+
+/* Chat Options Menu */
+.chatMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Individual Chat Option Button */
+.chatOption {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  border-radius: 2rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #ffffff;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+  min-width: 180px;
+}
+
+.chatOption:hover {
+  transform: translateX(-8px) scale(1.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.optionIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+/* WhatsApp Styling */
+.whatsapp {
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+}
+
+.whatsapp:hover {
+  background: linear-gradient(135deg, #2be479 0%, #14a890 100%);
+}
+
+/* Messenger Styling */
+.messenger {
+  background: linear-gradient(135deg, #0084ff 0%, #0066cc 100%);
+}
+
+.messenger:hover {
+  background: linear-gradient(135deg, #1a91ff 0%, #0077ee 100%);
+}
+
+/* Live Chat Styling */
+.liveChat {
+  background: linear-gradient(135deg, #dc143c 0%, #b8112e 100%);
+}
+
+.liveChat:hover {
+  background: linear-gradient(135deg, #ff1744 0%, #d01034 100%);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .chatWidget {
+    bottom: 1.5rem;
+    right: 1.5rem;
+  }
+
+  .mainButton {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .mainIcon {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .chatOption {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    min-width: 160px;
+  }
+
+  .optionIcon {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .mainButton,
+  .chatOption,
+  .mainIcon,
+  .mainButton::before {
+    transition: none;
+  }
+
+  .chatMenu {
+    animation: none;
+  }
+}
+
+/* Focus States for Keyboard Navigation */
+.mainButton:focus-visible,
+.chatOption:focus-visible {
+  outline: 2px solid #ffd700;
+  outline-offset: 2px;
+}
+
+
+

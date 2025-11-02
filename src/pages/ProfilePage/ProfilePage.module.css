@@ -1,0 +1,428 @@
+.root {
+  @apply bg-gray-100 min-h-screen p-4;
+}
+
+@screen sm {
+  .root {
+    @apply p-6;
+  }
+}
+
+@screen lg {
+  .root {
+    @apply p-8;
+  }
+}
+
+.mainContent {
+  @apply max-w-5xl mx-auto bg-white rounded-lg shadow-md;
+  overflow: visible;
+}
+
+.tabs {
+  @apply flex border-b border-gray-200;
+}
+
+.tabButton {
+  @apply px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 focus:outline-none;
+}
+
+.activeTab {
+  @apply border-b-2 border-primary text-primary;
+}
+
+.tabContent {
+  @apply p-6;
+}
+
+.tabTitle {
+  @apply text-xl font-semibold text-gray-800 mb-4;
+}
+
+.orderHistoryHeader {
+  @apply mb-6;
+}
+
+.orderHistoryHeader .tabTitle {
+  @apply mb-4;
+}
+
+.filterControls {
+  @apply flex flex-col gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 sm:flex-row sm:items-center sm:gap-4;
+}
+
+.filterGroup {
+  @apply flex items-center gap-3 flex-1;
+}
+
+.filterLabel {
+  @apply flex items-center gap-2 text-sm font-semibold text-gray-600 whitespace-nowrap;
+}
+
+.filterIcon {
+  @apply w-4 h-4 text-gray-500;
+}
+
+.selectWrapper {
+  @apply relative flex-1;
+}
+
+.filterSelect {
+  @apply w-full px-3 py-2 pr-9 bg-white border border-gray-300 rounded-md text-sm text-gray-800 cursor-pointer transition-all;
+  @apply hover:border-gray-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary;
+  appearance: none;
+  background-image: none;
+}
+
+.filterSelect option {
+  @apply py-2;
+}
+
+.selectIcon {
+  @apply absolute right-2.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform;
+}
+
+.selectWrapper:hover .selectIcon {
+  @apply text-gray-600;
+}
+
+.profileTab {
+  @apply grid grid-cols-1 gap-8;
+}
+
+@screen lg {
+  .profileTab {
+    @apply grid-cols-3;
+  }
+}
+
+.leftColumn {
+  @apply flex flex-col gap-6;
+}
+
+@screen lg {
+  .leftColumn {
+    @apply col-span-1;
+  }
+}
+
+@screen lg {
+  .rightColumn {
+    @apply col-span-2;
+  }
+}
+
+.mainInfo {
+  @apply bg-gray-50 p-6 rounded-lg text-center;
+}
+
+.avatarContainer {
+  @apply relative w-32 h-32 mx-auto;
+}
+
+.avatar {
+  @apply w-full h-full rounded-full object-cover shadow-md;
+}
+
+.avatarUploadButton {
+  @apply absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg text-gray-600 hover:text-primary;
+}
+
+.profileInfo {
+  @apply mt-4;
+}
+
+.profileName {
+  @apply text-2xl font-bold text-gray-800;
+}
+
+.profileMembership {
+  @apply text-sm font-medium text-primary;
+}
+
+.stats {
+  @apply mt-6 space-y-4;
+}
+
+.statItem {
+  @apply flex items-center gap-4 text-left;
+}
+
+.statIcon {
+  @apply w-8 h-8 text-gray-500;
+}
+
+.statValue {
+  @apply text-lg font-semibold text-gray-800;
+}
+
+.statLabel {
+  @apply text-sm text-gray-600;
+}
+
+.details {
+  @apply bg-white p-6 rounded-lg shadow-sm;
+}
+
+.profileDetails {
+  @apply space-y-6;
+}
+
+.detailItem {
+  @apply flex items-start space-x-4;
+}
+
+.detailIcon {
+  @apply w-6 h-6 text-gray-500 mt-1;
+}
+
+.detailLabel {
+  @apply text-sm font-medium text-gray-600;
+}
+
+.detailValue {
+  @apply text-base text-gray-800;
+}
+
+.editHint {
+  @apply mt-6 text-right;
+}
+
+.editButton {
+  @apply flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary;
+}
+
+.editIcon {
+  @apply w-5 h-5;
+}
+
+.editForm {
+  @apply space-y-4;
+  overflow: visible;
+}
+
+.formGrid {
+  @apply grid grid-cols-1 gap-4;
+  overflow: visible;
+}
+
+@screen md {
+  .formGrid {
+    @apply grid-cols-2;
+  }
+}
+
+.formField {
+  @apply flex flex-col space-y-1;
+  position: relative;
+}
+
+.formInput,
+.formTextarea {
+  @apply border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary;
+}
+
+/* Phone Input Wrapper - Fix z-index and overflow issues */
+.phoneInputWrapper {
+  position: relative;
+  z-index: 10;
+}
+
+/* Override react-country-phone-input styles */
+.phoneInputWrapper :global(.react-country-phone-input) {
+  width: 100%;
+}
+
+.phoneInputWrapper :global(.react-country-phone-input .country-list) {
+  position: absolute !important;
+  z-index: 1000 !important;
+  max-height: 300px !important;
+  overflow-y: auto !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+  margin-top: 4px !important;
+}
+
+.phoneInputWrapper :global(.react-country-phone-input input) {
+  border: 1px solid #d1d5db !important;
+  border-radius: 0.375rem !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 14px !important;
+  width: 100% !important;
+}
+
+.phoneInputWrapper :global(.react-country-phone-input input:focus) {
+  outline: none !important;
+  border-color: #000 !important;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.formInputError {
+  @apply border-red-500;
+}
+
+.errorText {
+  @apply text-sm text-red-500;
+}
+
+.formActions {
+  @apply flex items-center gap-4;
+}
+
+.cancelButton {
+  @apply px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300;
+}
+
+.saveButton {
+  @apply px-4 py-2 bg-primary text-white rounded-md hover:bg-primary;
+}
+
+.successMessage {
+  @apply mt-4 text-green-600;
+}
+
+.signOutButton {
+  @apply w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600;
+}
+
+.orderEmpty {
+  @apply border border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-600 bg-gray-50;
+}
+
+.orderList {
+  @apply space-y-6;
+}
+
+.orderCard {
+  @apply border border-gray-200 rounded-xl p-6 bg-white shadow-sm hover:shadow-md transition-shadow space-y-5;
+}
+
+.orderHeader {
+  @apply flex flex-col gap-4 md:flex-row md:items-start md:justify-between pb-4 border-b border-gray-100;
+}
+
+.orderHeaderLeft {
+  @apply flex-1;
+}
+
+.orderNumber {
+  @apply text-xl font-bold text-gray-900 mb-1;
+}
+
+.orderMeta {
+  @apply text-sm text-gray-500;
+}
+
+.orderHeaderRight {
+  @apply flex flex-col items-end gap-3 md:flex-row md:items-center md:gap-4;
+}
+
+.orderStatus {
+  @apply flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all;
+}
+
+.statusIcon {
+  @apply w-4 h-4;
+}
+
+.orderTotal {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.orderItems {
+  @apply space-y-4;
+}
+
+.orderItem {
+  @apply flex items-center gap-4 border border-gray-200 rounded-lg p-4 bg-gray-50;
+}
+
+.orderItemImage {
+  @apply w-20 h-20 rounded-md object-cover;
+}
+
+.orderItemInfo {
+  @apply flex-1;
+}
+
+.orderItemName {
+  @apply font-medium text-gray-800;
+}
+
+.orderItemMeta {
+  @apply text-sm text-gray-600;
+}
+
+.orderItemSummary {
+  @apply text-right;
+}
+
+.orderItemPrice {
+  @apply font-semibold text-gray-800;
+}
+
+.orderItemQuantity {
+  @apply text-sm text-gray-600;
+}
+
+.orderFooter {
+  @apply flex flex-col gap-3 pt-4 border-t border-gray-100 md:flex-row md:items-center md:justify-between;
+}
+
+.orderFooterLeft {
+  @apply flex-1;
+}
+
+.orderFooterRight {
+  @apply flex items-center gap-3;
+}
+
+.orderFooterText {
+  @apply text-sm text-gray-600 font-medium;
+}
+
+.paymentBadge {
+  @apply flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all;
+}
+
+.paymentIcon {
+  @apply w-4 h-4;
+}
+
+.paymentBank {
+  @apply bg-blue-50 text-blue-700 border border-blue-200;
+}
+
+.paymentCod {
+  @apply bg-green-50 text-green-700 border border-green-200;
+}
+
+.paymentOther {
+  @apply bg-gray-50 text-gray-700 border border-gray-200;
+}
+
+.orderNote {
+  @apply mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 font-medium;
+}
+
+.statusPending {
+  @apply bg-gray-100 text-gray-700 border border-gray-300;
+}
+
+.statusProcessing {
+  @apply bg-amber-100 text-amber-800 border border-amber-200;
+}
+
+.statusShipped {
+  @apply bg-blue-100 text-blue-800 border border-blue-200;
+}
+
+.statusDelivered {
+  @apply bg-emerald-100 text-emerald-800 border border-emerald-200;
+}
+
+.statusCancelled {
+  @apply bg-red-100 text-red-800 border border-red-200;
+}

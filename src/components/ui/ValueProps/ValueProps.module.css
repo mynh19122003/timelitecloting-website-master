@@ -1,0 +1,28 @@
+.section {
+  @apply border border-cream/80 bg-cream/40 py-10;
+}
+
+.grid {
+  display: grid;
+  @apply mx-auto max-w-6xl grid-cols-1 gap-8 px-4 md:grid-cols-4;
+}
+
+.item {
+  @apply flex items-start gap-4;
+}
+
+.iconWrapper {
+  @apply flex h-12 w-12 items-center justify-center rounded-full border border-gold/40 bg-white text-primary;
+}
+
+.icon {
+  @apply h-5 w-5;
+}
+
+.title {
+  @apply text-sm font-semibold uppercase tracking-[0.4em] text-dark;
+}
+
+.description {
+  @apply mt-1 text-xs leading-relaxed text-dark/70;
+}

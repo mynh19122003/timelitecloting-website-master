@@ -1,0 +1,23 @@
+.root {
+  @apply flex max-w-3xl flex-col gap-3;
+}
+
+.alignLeft {
+  @apply items-start text-left;
+}
+
+.alignCenter {
+  @apply mx-auto items-center text-center;
+}
+
+.eyebrow {
+  @apply text-xs uppercase tracking-[0.5em] text-gold;
+}
+
+.title {
+  @apply font-serif text-3xl tracking-tight text-dark md:text-4xl;
+}
+
+.description {
+  @apply text-sm leading-relaxed text-dark/70 md:text-base;
+}

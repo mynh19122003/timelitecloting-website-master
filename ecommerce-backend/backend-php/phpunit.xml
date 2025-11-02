@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.0/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         stopOnFailure="false">
+    <testsuites>
+        <testsuite name="E-commerce Backend Tests">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+    <coverage>
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+        <exclude>
+            <directory>src/Config</directory>
+        </exclude>
+    </coverage>
+    <php>
+        <env name="DB_HOST" value="mysql"/>
+        <env name="DB_PORT" value="3306"/>
+        <env name="DB_NAME" value="ecommerce_db"/>
+        <env name="DB_USER" value="root"/>
+        <env name="DB_PASSWORD" value="rootpassword"/>
+        <env name="JWT_SECRET" value="test-jwt-secret"/>
+        <env name="JWT_EXPIRES_IN" value="8h"/>
+    </php>
+</phpunit>

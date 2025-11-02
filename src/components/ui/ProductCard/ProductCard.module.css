@@ -1,0 +1,96 @@
+.card {
+  @apply flex min-h-full flex-col overflow-hidden rounded-3xl border border-cream/80 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg;
+}
+
+.media {
+  @apply relative;
+}
+
+.productImage {
+  @apply h-72 w-full object-cover transition duration-700 group-hover:scale-105;
+}
+
+.badges {
+  @apply absolute left-4 top-4 flex flex-col gap-2;
+}
+
+.badgeNew {
+  @apply rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-primary;
+}
+
+.badgeDiscount {
+  @apply rounded-full bg-primary px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white;
+}
+
+.wishlist {
+  @apply absolute right-4 top-4 rounded-full border border-white/40 bg-white/80 p-2 text-dark/70 opacity-0 transition group-hover:opacity-100;
+}
+
+.wishlistIcon {
+  @apply h-5 w-5;
+}
+
+.content {
+  @apply flex flex-1 flex-col gap-4 px-6 py-6;
+}
+
+.contentGroup {
+  @apply space-y-2;
+}
+
+.category {
+  display: block;
+  @apply text-xs uppercase tracking-[0.4em] text-gold;
+}
+
+.productLink {
+  @apply font-serif text-2xl leading-tight text-dark transition hover:text-primary;
+}
+
+.description {
+  @apply text-sm leading-relaxed text-dark/70;
+}
+
+.footer {
+  @apply flex flex-wrap items-end justify-between gap-4;
+}
+
+.priceGroup {
+  @apply flex items-baseline gap-3;
+}
+
+.price {
+  @apply text-lg font-semibold text-primary;
+}
+
+.originalPrice {
+  @apply text-sm text-dark/50 line-through;
+}
+
+.rating {
+  @apply text-xs uppercase tracking-[0.3em] text-dark/60;
+  white-space: nowrap;
+}
+
+.actions {
+  @apply flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center;
+  min-width: 12rem;
+}
+
+.detailsButton {
+  @apply inline-flex justify-center rounded-full border border-dark/10 px-6 py-2 text-xs uppercase tracking-[0.25em] text-dark/80 transition hover:border-primary hover:text-primary;
+  white-space: nowrap;
+}
+
+.addButton {
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-dark px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white transition hover:bg-primary;
+  white-space: nowrap;
+}
+
+.addButtonText {
+  @apply inline;
+}
+
+.cartIcon {
+  @apply h-4 w-4;
+}

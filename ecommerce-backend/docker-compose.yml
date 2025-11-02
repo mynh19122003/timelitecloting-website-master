@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: ecommerce_mysql
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ecommerce_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - ecommerce_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  backend-php:
+    build:
+      context: ./backend-php
+      dockerfile: Dockerfile
+    container_name: ecommerce-backend-php
+    restart: always
+    expose:
+      - "9000"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ecommerce_db
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      JWT_EXPIRES_IN: 8h
+    depends_on:
+      - mysql
+    networks:
+      - ecommerce_network
+
+  backend-node:
+    build:
+      context: ./backend-node
+      dockerfile: Dockerfile
+    container_name: ecommerce-backend-node
+    restart: always
+    expose:
+      - "3001"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ecommerce_db
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      JWT_EXPIRES_IN: 8h
+      NODE_ENV: development
+      NODE_PORT: 3001
+    depends_on:
+      - mysql
+    networks:
+      - ecommerce_network
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: ecommerce-gateway
+    restart: always
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend-node
+      - backend-php
+    networks:
+      - ecommerce_network
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: ecommerce_phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    depends_on:
+      - mysql
+    networks:
+      - ecommerce_network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  ecommerce_network:
+    driver: bridge

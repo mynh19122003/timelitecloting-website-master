@@ -1,0 +1,123 @@
+.root {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f6f6f6;
+  padding: 4rem 1.5rem;
+}
+
+.form {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: #ffffff;
+  padding: 2.75rem 2.25rem;
+  border-radius: 18px;
+  box-shadow: 0 24px 40px rgba(17, 17, 17, 0.08);
+}
+
+.heading {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #161616;
+  margin: 0;
+}
+
+.subheading {
+  margin: -0.75rem 0 0;
+  font-size: 0.95rem;
+  color: #6b6b6b;
+}
+
+.formError {
+  border-radius: 12px;
+  border: 1px solid #f5c6cb;
+  background: #fdecee;
+  color: #a71d2a;
+  padding: 0.75rem 1rem;
+  font-size: 0.84rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #2a2a2a;
+}
+
+.field input {
+  border: none;
+  border-bottom: 1px solid #cdcdcd;
+  padding: 0.6rem 0;
+  font-size: 0.95rem;
+  color: #1f1f1f;
+  background: transparent;
+  transition: border-color 0.2s ease;
+}
+
+.field input:focus {
+  outline: none;
+  border-bottom-color: #c64b44;
+}
+
+.inputError {
+  border-bottom-color: #d32f2f !important;
+}
+
+.errorText {
+  font-size: 0.78rem;
+  color: #d32f2f;
+  margin-top: -0.25rem;
+}
+
+.primaryButton {
+  border: none;
+  border-radius: 12px;
+  background: #c64b44;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.9rem;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.primaryButton:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.primaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.footerText {
+  font-size: 0.9rem;
+  text-align: center;
+  color: #6b6b6b;
+}
+
+.link {
+  color: #2f2f2f;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 0.1rem;
+  transition: border-color 0.2s ease;
+}
+
+.link:hover {
+  border-color: #2f2f2f;
+}
+
+.demoNote {
+  margin-top: -0.5rem;
+  font-size: 0.8rem;
+  color: #8a8a8a;
+  line-height: 1.5;
+}

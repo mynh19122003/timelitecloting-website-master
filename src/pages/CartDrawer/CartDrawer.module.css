@@ -1,0 +1,115 @@
+.backdrop {
+  @apply fixed inset-0 z-50 flex justify-end bg-dark/40 opacity-0 pointer-events-none transition-opacity duration-200 ease-out;
+}
+
+.backdropVisible {
+  @apply opacity-100 pointer-events-auto;
+}
+
+.drawer {
+  @apply flex h-full w-full max-w-md translate-x-full flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out;
+}
+
+.drawerOpen {
+  @apply translate-x-0;
+}
+
+.header {
+  @apply flex items-center justify-between border-b border-cream/60 px-6 py-5;
+}
+
+.title {
+  @apply text-lg font-semibold uppercase tracking-[0.35em] text-dark;
+}
+
+.closeButton {
+  @apply rounded-full border border-transparent p-2 text-dark/60 transition hover:border-gold hover:text-primary focus:outline-none focus:ring-2 focus:ring-gold/60;
+}
+
+.icon {
+  @apply h-5 w-5;
+}
+
+.body {
+  @apply flex-1 overflow-y-auto px-6 py-5;
+}
+
+.emptyState {
+  @apply flex h-full flex-col items-center justify-center gap-4 text-center text-dark/70;
+}
+
+.emptyText {
+  @apply text-sm uppercase tracking-[0.25em];
+}
+
+.emptyButton {
+  @apply rounded-full border border-dark/20 px-6 py-2 text-xs uppercase tracking-[0.3em] text-dark/70 transition hover:border-gold hover:text-primary;
+}
+
+.itemList {
+  @apply flex flex-col gap-5;
+}
+
+.item {
+  @apply flex gap-4 border-b border-cream/60 pb-5 last:border-b-0;
+}
+
+.itemImage {
+  @apply h-20 w-20 rounded object-cover;
+}
+
+.itemInfo {
+  @apply flex flex-1 flex-col gap-3;
+}
+
+.itemName {
+  @apply text-sm font-medium uppercase tracking-[0.2em] text-dark;
+}
+
+.itemMeta {
+  @apply text-xs uppercase tracking-[0.25em] text-dark/60;
+}
+
+.actionsRow {
+  @apply flex items-center gap-3;
+}
+
+.quantityLabel {
+  @apply text-xs uppercase tracking-[0.2em] text-dark/60;
+}
+
+.quantityInput {
+  @apply h-9 w-16 rounded border border-cream/70 bg-white px-2 text-sm text-dark focus:border-gold focus:outline-none;
+}
+
+.removeButton {
+  @apply ml-auto flex items-center justify-center rounded-full border border-transparent p-2 text-dark/60 transition hover:border-red-200 hover:text-red-500;
+}
+
+.removeIcon {
+  @apply h-4 w-4;
+}
+
+.footer {
+  @apply border-t border-cream/60 px-6 py-5;
+}
+
+.totalRow {
+  @apply mb-5 flex items-center justify-between text-sm uppercase tracking-[0.3em] text-dark;
+}
+
+.ctaGroup {
+  @apply flex flex-col gap-3;
+}
+
+.primaryButton {
+  @apply flex items-center justify-center rounded-full bg-primary px-6 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-primary/90;
+}
+
+.secondaryButton {
+  @apply flex items-center justify-center rounded-full border border-dark/20 px-6 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-dark/80 transition hover:border-gold hover:text-primary;
+}
+
+.secondaryButtonDisabled {
+  @apply cursor-not-allowed border-dark/10 text-dark/40 hover:border-dark/10 hover:text-dark/40;
+}

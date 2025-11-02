@@ -1,0 +1,100 @@
+.page {
+  @apply bg-white pb-24;
+}
+
+.introSection {
+  @apply relative border-b border-cream/80 bg-cream/50;
+}
+
+.introWrapper {
+  @apply mx-auto flex max-w-6xl flex-col gap-10 px-4 py-20 md:flex-row md:items-center md:justify-between;
+}
+
+.introCopy {
+  @apply space-y-6;
+}
+
+.eyebrow {
+  @apply text-xs uppercase tracking-[0.5em] text-gold;
+}
+
+.heading {
+  @apply font-serif text-4xl text-dark md:text-5xl;
+}
+
+.description {
+  @apply max-w-xl text-sm leading-relaxed text-dark/70;
+}
+
+.linkUnderline {
+  @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.4em] text-dark underline underline-offset-8;
+}
+
+.conciergeCard {
+  @apply flex flex-col gap-4 rounded-3xl border border-gold/60 bg-white p-8 shadow-lg shadow-gold/10;
+}
+
+.conciergeTitle {
+  @apply text-sm uppercase tracking-[0.4em] text-dark;
+}
+
+.conciergeText {
+  @apply text-sm leading-relaxed text-dark/70;
+}
+
+.conciergeCta {
+  @apply rounded-full bg-primary px-6 py-3 text-xs font-semibold uppercase tracking-[0.4em] text-white transition hover:bg-dark;
+}
+
+.collectionsSection {
+  @apply mx-auto max-w-6xl px-4 pb-10 pt-16;
+}
+
+.filterBar {
+  @apply flex flex-wrap items-center gap-4 rounded-2xl border border-cream/80 bg-cream/40 p-4;
+}
+
+.categoryTabs {
+  @apply flex flex-wrap gap-3;
+}
+
+.categoryButton {
+  @apply rounded-full border px-6 py-2 text-xs uppercase tracking-[0.35em] transition border-dark/15 text-dark/70 hover:border-primary hover:text-primary;
+}
+
+.categoryButtonActive {
+  @apply border-primary bg-primary text-white;
+}
+
+.filterControls {
+  @apply flex flex-wrap items-center gap-3;
+}
+
+.sortSelect {
+  @apply flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-dark/60;
+}
+
+.select {
+  @apply rounded-full border border-dark/15 px-3 py-2 text-[11px] uppercase tracking-[0.3em] text-dark focus:border-primary focus:outline-none;
+}
+
+.filterGroup {
+  @apply flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-dark/60;
+}
+
+.resetButton {
+  @apply rounded-full border border-dark/15 px-4 py-2 text-[11px] transition hover:border-primary hover:text-primary;
+}
+
+.productsGrid {
+  display: grid;
+  @apply mt-16 gap-8 md:grid-cols-3;
+}
+
+.emptyState {
+  @apply mt-16 rounded-3xl border border-cream/80 bg-cream/40 px-8 py-12 text-center;
+}
+
+.emptyText {
+  @apply text-sm uppercase tracking-[0.4em] text-dark/60;
+}

@@ -1,0 +1,113 @@
+.page {
+  @apply bg-white pb-24;
+}
+
+.hero {
+  @apply relative overflow-hidden border-b border-cream/80 bg-cream/50;
+}
+
+.heroImage {
+  @apply absolute inset-0 h-full w-full object-cover;
+}
+
+
+.heroContent {
+  @apply relative mx-auto flex max-w-5xl flex-col items-center gap-4 px-4 py-24 text-center;
+}
+
+.eyebrow {
+  @apply text-xs uppercase tracking-[0.5em] text-gold;
+}
+
+.heroTitle {
+  @apply font-serif text-4xl text-dark md:text-5xl;
+}
+
+.heroText {
+  @apply max-w-2xl text-sm leading-relaxed text-dark/70;
+}
+
+.content {
+  @apply mx-auto mt-16 max-w-6xl px-4;
+}
+
+.splitGrid {
+  display: grid;
+  @apply grid-cols-1 gap-12 md:grid-cols-[1.1fr,0.9fr];
+}
+
+.philosophyTitle {
+  @apply font-serif text-3xl text-dark;
+}
+
+.philosophyText {
+  @apply text-sm leading-relaxed text-dark/70;
+}
+
+.statsCard {
+  @apply rounded-3xl border border-gold/60 bg-white p-10 shadow-lg shadow-gold/10;
+}
+
+.statsTitle {
+  @apply font-serif text-2xl text-dark;
+}
+
+.statsList {
+  @apply mt-6 space-y-4 text-sm text-dark/70;
+}
+
+.timelineSection {
+  @apply mx-auto mt-16 max-w-6xl px-4;
+}
+
+.timelineTitle {
+  @apply font-serif text-3xl text-dark;
+}
+
+.timelineGrid {
+  @apply mt-10 grid gap-6 md:grid-cols-3;
+}
+
+.timelineCard {
+  @apply rounded-3xl border border-gold/60 bg-white p-8 transition hover:-translate-y-1 hover:shadow-lg;
+}
+
+.timelineYear {
+  @apply text-xs uppercase tracking-[0.4em] text-gold;
+}
+
+.timelineCardTitle {
+  @apply mt-3 font-serif text-xl text-dark;
+}
+
+.timelineDescription {
+  @apply mt-3 text-sm leading-relaxed text-dark/70;
+}
+
+.dualGrid {
+  @apply mx-auto mt-16 max-w-6xl grid grid-cols-1 gap-8 px-4 md:grid-cols-2;
+}
+
+.teamCard {
+  @apply rounded-3xl border border-gold/60 bg-white p-10 shadow-lg shadow-gold/10;
+}
+
+.teamTitle {
+  @apply font-serif text-3xl text-dark;
+}
+
+.teamText {
+  @apply mt-4 text-sm leading-relaxed text-dark/70;
+}
+
+.sustainabilityCard {
+  @apply rounded-3xl border border-gold/60 bg-white p-10;
+}
+
+.valueProps {
+  @apply mt-24;
+}
+
+.philosophyContainer {
+  @apply space-y-6;
+}

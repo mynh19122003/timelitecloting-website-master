@@ -1,0 +1,270 @@
+.page {
+  @apply bg-white pb-24;
+}
+
+.backLink {
+  @apply inline-flex items-center gap-2 text-xs uppercase tracking-[0.4em] text-dark/60 transition hover:text-primary;
+}
+
+.backLinkWrapper {
+  @apply mx-auto max-w-6xl px-4 py-12;
+}
+
+.contentSection {
+  @apply mx-auto max-w-6xl px-4;
+}
+
+.contentGrid {
+  display: grid;
+  @apply grid-cols-1 gap-12 md:grid-cols-[0.9fr,1.1fr];
+}
+
+.galleryMain {
+  @apply space-y-6;
+}
+
+.mainImageWrapper {
+  @apply overflow-hidden rounded-3xl border border-cream/80 bg-white;
+}
+
+.mainImage {
+  @apply h-[560px] w-full object-cover;
+}
+
+.thumbnailGrid {
+  display: grid;
+  @apply grid-cols-3 gap-4;
+}
+
+.thumbnailButton {
+  @apply overflow-hidden rounded-2xl border transition border-transparent hover:border-gold/60;
+}
+
+.thumbnailActive {
+  @apply border-primary;
+}
+
+.thumbnailImage {
+  @apply h-32 w-full object-cover;
+}
+
+.detailsColumn {
+  @apply space-y-8;
+}
+
+.productMeta {
+  @apply space-y-4;
+}
+
+.eyebrow {
+  @apply text-xs uppercase tracking-[0.5em] text-gold;
+}
+
+.title {
+  @apply font-serif text-4xl text-dark;
+}
+
+.subtitle {
+  @apply text-sm leading-relaxed text-dark/70;
+}
+
+.priceRow {
+  @apply flex items-center gap-4;
+}
+
+.price {
+  @apply text-2xl font-semibold text-primary;
+}
+
+.comparePrice {
+  @apply text-sm text-dark/40 line-through;
+}
+
+.rating {
+  @apply text-xs uppercase tracking-[0.4em] text-dark/50;
+}
+
+.options {
+  @apply space-y-6;
+}
+
+.optionGroup {
+  @apply space-y-3;
+}
+
+.optionLabel {
+  @apply text-xs uppercase tracking-[0.35em] text-dark/60;
+}
+
+.optionList {
+  @apply flex flex-wrap gap-3;
+}
+
+.colorButton {
+  @apply rounded-full border px-4 py-2 text-[11px] uppercase tracking-[0.3em] transition border-dark/15 text-dark/60 hover:border-primary hover:text-primary;
+}
+
+.colorButtonActive {
+  @apply border-primary bg-primary text-white;
+}
+
+.sizeButton {
+  @apply h-12 w-12 rounded-full border text-xs font-semibold uppercase tracking-[0.3em] transition border-dark/15 text-dark/70 hover:border-primary hover:text-primary;
+}
+
+.sizeButtonActive {
+  @apply border-primary bg-primary text-white;
+}
+
+.note {
+  @apply text-xs text-dark/50;
+}
+
+.ctaRow {
+  @apply flex flex-wrap items-center gap-4;
+}
+
+.quantityControl {
+  @apply flex items-center gap-3 rounded-full border border-dark/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-dark/60;
+}
+
+.quantityInput {
+  @apply w-16 border-none bg-transparent text-sm text-dark focus:outline-none;
+}
+
+.addToCart {
+  @apply rounded-full bg-primary px-8 py-3 text-xs font-semibold uppercase tracking-[0.4em] text-white transition hover:bg-dark;
+}
+
+.fittingLink {
+  @apply rounded-full border border-dark/15 px-8 py-3 text-xs font-semibold uppercase tracking-[0.4em] text-dark transition hover:border-primary hover:text-primary;
+}
+
+.message {
+  @apply text-xs uppercase tracking-[0.3em];
+}
+
+.messageSuccess {
+  @apply text-primary;
+}
+
+.messageError {
+  @apply text-red-500;
+}
+
+.policies {
+  @apply space-y-4 rounded-3xl border border-cream/80 bg-cream/40 p-6;
+}
+
+.policyItem {
+  @apply flex items-start gap-4 text-sm text-dark/70;
+}
+
+.detailsSection {
+  @apply space-y-4;
+}
+
+.detailsHeading {
+  @apply font-serif text-2xl text-dark;
+}
+
+.detailsText {
+  @apply text-sm leading-relaxed text-dark/70;
+}
+
+.detailsList {
+  @apply mt-4 space-y-2 text-sm text-dark/70;
+}
+
+.iconSmall {
+  @apply h-4 w-4;
+}
+
+.iconInlineGold {
+  @apply mr-1 inline h-4 w-4 text-gold;
+}
+
+.checkIcon {
+  @apply mr-2 inline h-4 w-4 text-primary;
+}
+
+.policyIcon {
+  @apply mt-1 h-5 w-5 text-gold;
+}
+
+.compareSection {
+  @apply mx-auto mt-20 max-w-6xl px-4;
+}
+
+.compareHeading {
+  @apply font-serif text-2xl text-dark;
+}
+
+.tableWrapper {
+  @apply mt-6 overflow-x-auto;
+}
+
+.table {
+  @apply min-w-[720px] table-fixed border border-cream/80 text-left;
+}
+
+.tableHeadRow {
+  @apply bg-cream/70 text-xs uppercase tracking-[0.3em] text-dark/60;
+}
+
+.tableHeadCell {
+  @apply p-4 font-medium;
+}
+
+.tableBody {
+  @apply text-sm text-dark/70;
+}
+
+.tableRow {
+  @apply border-t border-cream/60;
+}
+
+.tableCell {
+  @apply p-4;
+}
+
+.relatedSection {
+  @apply mx-auto mt-16 max-w-6xl px-4;
+}
+
+.relatedHeader {
+  @apply flex items-center justify-between;
+}
+
+.relatedTitle {
+  @apply font-serif text-2xl text-dark;
+}
+
+.relatedLink {
+  @apply text-xs uppercase tracking-[0.35em] text-dark/60 underline underline-offset-8;
+}
+
+.relatedGrid {
+  @apply mt-8 grid grid-cols-1 gap-8 md:grid-cols-3;
+}
+
+.valueProps {
+  @apply mt-24;
+}
+
+.emptyState {
+  @apply mx-auto flex min-h-[60vh] max-w-4xl flex-col items-center justify-center gap-6 px-4 text-center;
+}
+
+.emptyTitle {
+  @apply font-serif text-4xl text-dark;
+}
+
+.emptyText {
+  @apply text-sm text-dark/70;
+}
+
+.emptyButton {
+  @apply rounded-full bg-primary px-8 py-3 text-xs font-semibold uppercase tracking-[0.4em] text-white transition hover:bg-dark;
+}
+

@@ -1,0 +1,35 @@
+.card {
+  @apply relative flex h-full flex-col overflow-hidden rounded-3xl border border-cream/80 bg-white shadow-sm shadow-cream/40 transition hover:-translate-y-1 hover:shadow-lg;
+}
+
+.image {
+  @apply h-64 w-full object-cover transition duration-500 group-hover:scale-105;
+}
+
+.content {
+  @apply flex flex-1 flex-col gap-3 px-6 py-6;
+}
+
+.eyebrow {
+  @apply text-xs uppercase tracking-[0.45em] text-primary;
+}
+
+.eyebrowGold {
+  @apply text-xs uppercase tracking-[0.45em] text-gold;
+}
+
+.title {
+  @apply font-serif text-2xl text-dark;
+}
+
+.description {
+  @apply flex-1 text-sm leading-relaxed text-dark/70;
+}
+
+.link {
+  @apply flex items-center gap-2 text-sm font-medium uppercase tracking-[0.35em] text-dark transition hover:text-primary;
+}
+
+.linkLine {
+  @apply inline-block h-px w-6 bg-dark transition group-hover:w-8 group-hover:bg-primary;
+}

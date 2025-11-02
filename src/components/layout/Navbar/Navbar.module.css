@@ -1,0 +1,167 @@
+.header {
+  @apply sticky top-0 z-40 border-b border-cream/70 bg-white/90 backdrop-blur-md;
+}
+
+.container {
+  @apply mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4;
+}
+
+.brand {
+  @apply cursor-pointer text-base font-semibold uppercase tracking-[0.3em] text-dark sm:text-lg sm:tracking-[0.4em];
+  flex-shrink: 0;
+}
+
+.navDesktop {
+  @apply hidden items-center gap-6 md:flex lg:gap-8;
+  flex-shrink: 0;
+}
+
+.navLink {
+  @apply text-sm uppercase tracking-[0.2em] text-dark/70 transition hover:text-primary whitespace-nowrap;
+}
+
+.navLinkActive {
+  @apply text-primary;
+}
+
+.actionsDesktop {
+  @apply hidden items-center gap-3 text-dark/80 md:flex lg:gap-4;
+  flex-shrink: 0;
+}
+
+.iconButton {
+  @apply rounded-full border border-transparent p-2 transition hover:border-gold hover:text-primary;
+}
+
+.accountWrapper {
+  @apply relative;
+}
+
+.accountButton {
+  @apply flex h-10 w-10 items-center justify-center rounded-full border border-gold/40 bg-white text-dark/70 transition hover:border-gold hover:text-primary;
+}
+
+.accountButtonActive {
+  @apply border-gold text-primary shadow-sm;
+}
+
+.accountDropdown {
+  @apply absolute right-0 z-50 mt-3 w-56 rounded-2xl bg-gradient-to-br from-white via-white to-cream/80 p-4 shadow-2xl ring-1 ring-cream/70 backdrop-blur;
+}
+
+.accountItem {
+  @apply flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-dark/80 transition hover:bg-cream/70 hover:text-primary;
+}
+
+.accountItemIcon {
+  @apply h-4 w-4 text-dark/60;
+}
+
+.accountItem:hover .accountItemIcon {
+  @apply text-primary;
+}
+
+.accountLogout {
+  @apply text-red-500 hover:bg-red-50 hover:text-red-600;
+}
+
+.cartButton {
+  @apply relative rounded-full border border-transparent p-2 transition hover:border-gold hover:text-primary;
+}
+
+.badge {
+  @apply absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white;
+}
+
+.icon {
+  @apply h-5 w-5;
+}
+
+.toggleButton {
+  @apply rounded-full border border-gold/50 p-2 text-dark/80 md:hidden;
+}
+
+.mobileMenu {
+  @apply border-t border-cream/60 bg-white md:hidden;
+}
+
+.mobileNav {
+  @apply flex flex-col px-6 py-4;
+}
+
+.mobileLink {
+  @apply py-3 text-sm uppercase tracking-[0.2em] text-dark/80 transition hover:text-primary;
+}
+
+.mobileLinkActive {
+  @apply text-primary;
+}
+
+.mobileCart {
+  @apply mt-3 flex items-center gap-3 border-t border-cream/60 pt-4 text-sm uppercase tracking-[0.2em] text-dark/80;
+}
+
+.searchOverlay {
+  @apply fixed inset-0 z-[60] flex items-start justify-center bg-dark/40 px-4 py-12 backdrop-blur-sm;
+}
+
+.searchPanel {
+  @apply w-full max-w-2xl space-y-6 rounded-3xl bg-gradient-to-br from-white via-white to-cream/70 p-6 shadow-2xl ring-1 ring-cream/70;
+}
+
+.searchHeader {
+  @apply flex items-center gap-4 rounded-2xl border border-cream/60 bg-white px-4 py-3 shadow-sm;
+}
+
+.searchHeaderIcon {
+  @apply h-5 w-5 text-dark/50;
+}
+
+.searchInput {
+  @apply flex-1 bg-transparent text-base text-dark/80 outline-none placeholder:text-dark/40;
+}
+
+.searchCloseButton {
+  @apply rounded-full p-2 text-dark/50 transition hover:bg-cream/70 hover:text-primary;
+}
+
+.searchCloseIcon {
+  @apply h-5 w-5;
+}
+
+.searchResults {
+  @apply max-h-[22rem] space-y-4 overflow-y-auto pr-1;
+}
+
+.searchHint,
+.searchEmpty {
+  @apply text-sm text-dark/60;
+}
+
+.searchResultList {
+  @apply space-y-2;
+}
+
+.searchResultItem {
+  @apply flex w-full items-center justify-between gap-4 rounded-2xl border border-transparent bg-white px-4 py-3 text-left transition hover:border-gold hover:bg-cream/60;
+}
+
+.searchResultText {
+  @apply flex flex-col;
+}
+
+.searchResultName {
+  @apply text-sm font-semibold text-dark/80;
+}
+
+.searchResultMeta {
+  @apply text-xs uppercase tracking-[0.2em] text-dark/50;
+}
+
+.searchResultCta {
+  @apply text-xs font-medium uppercase tracking-[0.3em] text-primary;
+}
+
+.searchTerm {
+  @apply font-semibold text-dark;
+}

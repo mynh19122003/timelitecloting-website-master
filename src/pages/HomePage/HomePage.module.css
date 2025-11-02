@@ -1,0 +1,170 @@
+.page {
+  @apply space-y-24 pb-24;
+}
+
+.heroSection {
+  @apply relative overflow-hidden;
+}
+
+.heroWrapper {
+  @apply relative flex min-h-[70vh] items-center justify-end bg-cream/50;
+}
+
+.heroImage {
+  @apply absolute inset-0 h-full w-full object-cover;
+  object-position: center right;
+}
+
+
+.heroContent {
+  @apply relative z-10 mx-auto flex max-w-6xl flex-col gap-8 px-4 py-24 md:flex-row md:items-center md:justify-between;
+}
+
+.heroCopy {
+  @apply max-w-xl space-y-6;
+}
+
+.eyebrow {
+  @apply text-xs uppercase tracking-[0.6em] text-gold;
+}
+
+.headingLarge {
+  @apply font-serif text-4xl leading-tight text-dark md:text-5xl;
+}
+
+.headingMedium {
+  @apply font-serif text-3xl text-dark;
+}
+
+.bodyText {
+  @apply text-sm leading-relaxed text-dark/70 md:text-base;
+}
+
+.ctaGroup {
+  @apply flex flex-wrap gap-4;
+}
+
+.primaryCta {
+  @apply rounded-full bg-primary px-8 py-3 text-xs font-semibold uppercase tracking-[0.4em] text-white transition hover:bg-dark;
+}
+
+.secondaryCta {
+  @apply rounded-full border border-gold/60 px-8 py-3 text-xs font-semibold uppercase tracking-[0.4em] text-gold transition hover:border-primary hover:text-primary;
+}
+
+.heroBadge {
+  position: relative;
+  overflow: hidden;
+  @apply hidden h-[520px] w-[380px] rounded-full border border-gold/60 p-8 shadow-2xl shadow-gold/10 md:flex;
+}
+
+.heroBadge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.55));
+}
+
+.heroBadgeImage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.heroBadgeContent {
+  position: relative;
+  z-index: 10;
+  @apply flex flex-col justify-between;
+}
+
+.heroBadgeTitle {
+  @apply font-serif text-3xl text-dark;
+}
+
+.heroBadgeDescription {
+  @apply text-sm leading-relaxed text-dark/70;
+}
+
+.collectionsSection {
+  @apply mx-auto max-w-6xl px-4;
+}
+
+.collectionsGrid {
+  display: grid;
+  @apply mt-10 grid-cols-1 gap-8 md:grid-cols-3;
+}
+
+.featuredSection {
+  @apply mx-auto max-w-6xl px-4;
+}
+
+.featuredGrid {
+  display: grid;
+  gap: 1.5rem;
+  @apply mt-12 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
+}
+
+.experienceSection {
+  @apply mx-auto max-w-5xl px-4;
+}
+
+.experienceCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  @apply overflow-hidden rounded-3xl border border-cream/80 bg-cream/40 p-10 md:flex-row md:items-center;
+}
+
+.experienceCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+
+.experienceContent {
+  @apply flex flex-col gap-6;
+}
+
+.experienceTitle {
+  @apply font-serif text-3xl text-dark;
+}
+
+.experienceList {
+  @apply space-y-4 text-sm text-dark/70;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.experienceList li {
+  @apply flex gap-4;
+  align-items: flex-start;
+}
+
+.listMarker {
+  flex-shrink: 0;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 9999px;
+  background: linear-gradient(145deg, #c39f65, #f1e1c4);
+  margin-top: 0.35rem;
+}
+
+.experienceCta {
+  @apply inline-flex max-w-fit items-center gap-2 rounded-full bg-dark px-8 py-3 text-xs font-semibold uppercase tracking-[0.4em] text-white transition hover:bg-primary;
+}
+
+.experienceImage {
+  @apply rounded-2xl object-cover;
+  width: clamp(12rem, 40vw, 20rem);
+  height: clamp(16rem, 50vh, 24rem);
+  object-position: top;
+}
