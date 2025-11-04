@@ -2,6 +2,9 @@
 
 import dynamic from "next/dynamic";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const AppRoot = dynamic(() => import("../../AppRoot"), {
   ssr: false,
   loading: () => (

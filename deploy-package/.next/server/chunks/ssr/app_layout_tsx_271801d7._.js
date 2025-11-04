@@ -1,0 +1,3 @@
+module.exports=[33290,a=>{"use strict";a.s(["default",()=>d,"metadata",()=>c]);var b=a.i(7997);let c={title:"Timelite Couture | Ao dai cao cap cho thi truong My",description:"E-commerce website for luxury Vietnamese ao dai, tailored for modern customers in the United States."};function d({children:a}){return(0,b.jsx)("html",{lang:"en",children:(0,b.jsx)("body",{className:"bg-white text-[#222] antialiased font-sans",children:a})})}}];
+
+//# sourceMappingURL=app_layout_tsx_271801d7._.js.map

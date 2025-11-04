@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "build:static": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "node ./scripts/postinstall-lightningcss-shim.mjs"
@@ -18,7 +19,8 @@
     "react-country-phone-input": "^1.0.2",
     "react-dom": "19.1.0",
     "react-icons": "^5.5.0",
-    "react-router-dom": "^7.9.4"
+    "react-router-dom": "^7.9.4",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

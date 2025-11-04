@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { FiX, FiSend, FiUser } from 'react-icons/fi';
+import { io, Socket } from 'socket.io-client';
 import styles from './LiveChatModal.module.css';
+import { API_CONFIG } from '../../config/api';
+import { useAuth } from '../../context/AuthContext';
 
 interface Message {
-  id: string;
+  id: string | number;
   text: string;
   sender: 'user' | 'admin';
   timestamp: Date;
@@ -14,16 +17,11 @@ interface LiveChatModalProps {
 }
 
 export const LiveChatModal = ({ onClose }: LiveChatModalProps) => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: 'Hello! Welcome to Timelite Couture. How can we assist you today?',
-      sender: 'admin',
-      timestamp: new Date(),
-    },
-  ]);
+  const { user, isAuthenticated } = useAuth();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isConnected, setIsConnected] = useState(false);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom when new messages arrive
@@ -31,86 +29,134 @@ export const LiveChatModal = ({ onClose }: LiveChatModalProps) => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // 🔌 TODO: Initialize Socket.IO connection
+  // Initialize Socket.IO connection
   useEffect(() => {
-    // Simulate connection (replace with real Socket.IO)
-    const timer = setTimeout(() => {
-      setIsConnected(true);
-    }, 1000);
-
-    /*
-    // 🚀 SOCKET.IO INTEGRATION PLACEHOLDER
-    // Uncomment and configure when ready:
+    // Get auth token from localStorage
+    const authToken = localStorage.getItem('authToken');
     
-    import { io } from 'socket.io-client';
-    
-    const socket = io('http://localhost:3001', {
+    // Connect to Socket.IO server
+    const socketUrl = API_CONFIG.BASE_URL.replace('/api', ''); // Remove /api if present
+    const newSocket = io(socketUrl, {
       auth: {
-        token: localStorage.getItem('authToken')
-      }
+        token: authToken || undefined,
+        email: user?.email || undefined,
+        name: user?.name || undefined
+      },
+      transports: ['websocket', 'polling'], // Fallback to polling if websocket fails
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
     });
 
-    socket.on('connect', () => {
+    setSocket(newSocket);
+
+    // Connection event handlers
+    newSocket.on('connect', () => {
       console.log('✅ Connected to chat server');
       setIsConnected(true);
     });
 
-    socket.on('disconnect', () => {
+    newSocket.on('disconnect', () => {
       console.log('❌ Disconnected from chat server');
       setIsConnected(false);
     });
 
-    socket.on('message', (data) => {
-      const newMessage: Message = {
-        id: data.id || Date.now().toString(),
-        text: data.text,
-        sender: 'admin',
-        timestamp: new Date(data.timestamp)
-      };
-      setMessages(prev => [...prev, newMessage]);
+    newSocket.on('connect_error', (error) => {
+      console.error('❌ Connection error:', error);
+      setIsConnected(false);
     });
 
-    return () => {
-      socket.disconnect();
-    };
-    */
+    // Connected event (sent by server)
+    newSocket.on('connected', (data) => {
+      console.log('📡 Server confirmed connection:', data);
+      setIsConnected(true);
+    });
 
-    return () => clearTimeout(timer);
-  }, []);
+    // Load message history
+    newSocket.on('messageHistory', (history: any[]) => {
+      console.log('📜 Message history received:', history);
+      const formattedMessages: Message[] = history.map((msg: any) => ({
+        id: msg.id,
+        text: msg.message,
+        sender: msg.sender_type === 'admin' ? 'admin' : 'user',
+        timestamp: new Date(msg.created_at)
+      }));
+      
+      setMessages(formattedMessages);
+    });
+
+    // Receive new messages
+    newSocket.on('message', (data: any) => {
+      console.log('📨 New message received:', data);
+      const newMessage: Message = {
+        id: data.id || Date.now(),
+        text: data.text,
+        sender: data.sender === 'admin' ? 'admin' : 'user',
+        timestamp: new Date(data.timestamp || Date.now())
+      };
+      
+      // Replace optimistic temp message with real message from server, or add new message
+      setMessages(prev => {
+        // Check if this message already exists (by ID)
+        const existsById = prev.some(msg => msg.id === newMessage.id);
+        if (existsById) {
+          return prev; // Don't add duplicate
+        }
+        
+        // For user messages, try to replace temp message with real one
+        if (newMessage.sender === 'user') {
+          const tempMessageIndex = prev.findIndex(msg => 
+            msg.id.toString().startsWith('temp-') && 
+            msg.text === newMessage.text && 
+            msg.sender === 'user'
+          );
+          
+          if (tempMessageIndex !== -1) {
+            // Replace temp message with real message
+            const updated = [...prev];
+            updated[tempMessageIndex] = newMessage;
+            return updated;
+          }
+        }
+        
+        // Add new message (for admin messages or if no temp message found)
+        return [...prev, newMessage];
+      });
+    });
+
+    // Handle errors
+    newSocket.on('error', (error: any) => {
+      console.error('❌ Socket error:', error);
+      // Optionally show error to user
+    });
+
+    // Cleanup on unmount
+    return () => {
+      newSocket.disconnect();
+      setSocket(null);
+    };
+  }, [user]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!inputMessage.trim()) return;
+    if (!inputMessage.trim() || !socket || !isConnected) return;
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
+    // Optimistically add message to UI
+    const tempMessage: Message = {
+      id: `temp-${Date.now()}`,
       text: inputMessage,
       sender: 'user',
       timestamp: new Date(),
     };
-
-    setMessages([...messages, newMessage]);
+    setMessages(prev => [...prev, tempMessage]);
+    const messageText = inputMessage.trim();
     setInputMessage('');
 
-    // 🔌 TODO: Send message via Socket.IO
-    /*
+    // Send message via Socket.IO
     socket.emit('message', {
-      text: inputMessage,
-      timestamp: new Date().toISOString()
+      text: messageText
     });
-    */
-
-    // Simulate admin response (remove when using real Socket.IO)
-    setTimeout(() => {
-      const autoReply: Message = {
-        id: (Date.now() + 1).toString(),
-        text: 'Thank you for your message! Our team will respond shortly.',
-        sender: 'admin',
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, autoReply]);
-    }, 1500);
   };
 
   const formatTime = (date: Date) => {
@@ -186,10 +232,6 @@ export const LiveChatModal = ({ onClose }: LiveChatModalProps) => {
           </button>
         </form>
 
-        {/* Socket.IO Integration Notice */}
-        <div className={styles.notice}>
-          💡 Socket.IO integration ready - see LiveChatModal.tsx
-        </div>
       </div>
     </div>
   );

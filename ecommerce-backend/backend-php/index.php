@@ -1,5 +1,37 @@
 <?php
 
+// Remove any CORS headers that might be set by PHP-FPM or other sources
+// CORS is handled centrally at the API gateway (nginx)
+// Must remove headers BEFORE any output or header() calls
+
+// Remove headers immediately and repeatedly
+header_remove('Access-Control-Allow-Origin');
+header_remove('Access-Control-Allow-Methods');
+header_remove('Access-Control-Allow-Headers');
+header_remove('Access-Control-Allow-Credentials');
+header_remove('Access-Control-Max-Age');
+
+// Use output buffering to catch and remove headers at shutdown
+ob_start();
+register_shutdown_function(function() {
+    // Remove all CORS headers at shutdown
+    header_remove('Access-Control-Allow-Origin');
+    header_remove('Access-Control-Allow-Methods');
+    header_remove('Access-Control-Allow-Headers');
+    header_remove('Access-Control-Allow-Credentials');
+    header_remove('Access-Control-Max-Age');
+    
+    // Also check headers_list and remove any CORS headers
+    $headers = headers_list();
+    foreach ($headers as $header) {
+        if (stripos($header, 'Access-Control-') === 0) {
+            // Extract header name from "Header-Name: value" format
+            $headerName = explode(':', $header)[0];
+            header_remove($headerName);
+        }
+    }
+});
+
 // Load environment variables
 if (file_exists(__DIR__ . '/.env')) {
     $lines = file(__DIR__ . '/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -28,6 +60,13 @@ header('Content-Type: application/json');
 
 // Load Composer autoloader
 require __DIR__ . '/vendor/autoload.php';
+
+// Remove CORS headers again after autoloader (in case packages set them)
+header_remove('Access-Control-Allow-Origin');
+header_remove('Access-Control-Allow-Methods');
+header_remove('Access-Control-Allow-Headers');
+header_remove('Access-Control-Allow-Credentials');
+header_remove('Access-Control-Max-Age');
 
 // Simple routing
 $requestUri = $_SERVER['REQUEST_URI'];

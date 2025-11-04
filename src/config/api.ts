@@ -21,8 +21,8 @@ const RAW_ADMIN_BASE = process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:30
 const RESOLVED_ADMIN_BASE = normalizeAdminBaseUrl(RAW_ADMIN_BASE);
 
 export const API_CONFIG = {
-  // Base URL for API calls (Gateway listens at 3001)
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+  // Base URL for API calls (Gateway listens at port 80)
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost',
   // Admin base for media (images served by admin at 3002)
   ADMIN_BASE_URL: RESOLVED_ADMIN_BASE,
   
@@ -33,6 +33,8 @@ export const API_CONFIG = {
     REGISTER: '/api/node/users/register',
     PROFILE: '/api/node/users/profile',
     CHANGE_PASSWORD: '/api/node/users/change-password',
+    FORGOT_PASSWORD: '/api/node/users/forgot-password',
+    RESET_PASSWORD: '/api/node/users/reset-password',
     
     // Product endpoints
     PRODUCTS: '/api/php/products',
@@ -48,6 +50,8 @@ export const API_CONFIG = {
       REGISTER: '/api/php/users/register',
       PROFILE: '/api/php/users/profile',
       CHANGE_PASSWORD: '/api/php/users/change-password',
+      FORGOT_PASSWORD: '/api/php/users/forgot-password',
+      RESET_PASSWORD: '/api/php/users/reset-password',
       PRODUCTS: '/api/php/products',
       PRODUCT_DETAIL: '/api/php/products',
       ORDERS: '/api/php/orders',

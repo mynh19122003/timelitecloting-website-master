@@ -16,7 +16,7 @@ const categoryFilters: Array<{ label: string; value: "all" | ProductCategory }> 
   { label: "All Products", value: "all" },
   { label: "Áo Dài", value: "ao-dai" },
   { label: "Áo Vest", value: "vest" },
-  { label: "Đầm Cưới", value: "bridal" },
+  { label: "Đầm Cưới", value: "wedding" },
   { label: "Đầm Dạ Hội", value: "evening" },
 ];
 

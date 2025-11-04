@@ -3,7 +3,7 @@
 import { PropsWithChildren } from "react";
 import { Navbar } from "../Navbar";
 import { Footer } from "../Footer";
-import CartDrawer from "../../../pages/CartDrawer";
+import CartDrawer from "../../../views/CartDrawer";
 import { ChatWidget } from "../../ChatWidget/ChatWidget";
 import { useCart } from "../../../context/CartContext";
 import styles from "./Layout.module.css";
