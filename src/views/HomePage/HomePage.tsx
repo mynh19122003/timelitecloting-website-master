@@ -2,15 +2,13 @@
 import { Link } from "react-router-dom";
 import { SectionHeading } from "../../components/ui/SectionHeading";
 import { CategoryCard } from "../../components/ui/CategoryCard";
-import { ProductCard } from "../../components/ui/ProductCard";
 import { ValueProps } from "../../components/ui/ValueProps";
-import { products } from "../../data/products";
 import styles from "./HomePage.module.css";
 
 const categories = [
   {
     category: "ao-dai" as const,
-    image: "/images/hero.jpg",
+    image: "/images/image_2.png",
     description:
       "Heritage ao dai redesigned with couture craftsmanship for women living in the United States.",
     accent: "primary" as const,
@@ -31,27 +29,7 @@ const categories = [
   },
 ];
 
-const getFeaturedProducts = () => {
-  const aoDaiProducts = products.filter((product) => product.category === "ao-dai");
-  const prioritized = aoDaiProducts.filter((product) => product.isFeatured);
-  if (prioritized.length >= 4) {
-    return prioritized.slice(0, 4);
-  }
-
-  const fallbacks = aoDaiProducts.filter((product) => !product.isFeatured);
-  const combined = [...prioritized, ...fallbacks];
-
-  if (combined.length >= 4) {
-    return combined.slice(0, 4);
-  }
-
-  const additional = products.filter((product) => product.category !== "ao-dai");
-  return [...combined, ...additional].slice(0, 4);
-};
-
 export const HomePage = () => {
-  const featuredProducts = getFeaturedProducts();
-
   return (
     <div className={styles.page}>
       <section className={styles.heroSection}>
@@ -102,19 +80,6 @@ export const HomePage = () => {
       </section>
 
       <ValueProps />
-
-      <section className={styles.featuredSection}>
-        <SectionHeading
-          eyebrow="Signature Ao Dai"
-          title="Designed for modern clients in the U.S."
-          description="Our best-selling ao dai silhouettes feature couture construction with breathable linings and modular elements for easy travel and alteration."
-        />
-        <div className={styles.featuredGrid}>
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
 
       <section className={styles.experienceSection}>
         <div className={styles.experienceCard}>

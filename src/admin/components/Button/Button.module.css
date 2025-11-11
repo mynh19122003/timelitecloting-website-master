@@ -1,0 +1,41 @@
+:root{
+  --btn-primary: #1e9b7a;
+  --btn-danger: #e05353;
+  --btn-ghost: transparent;
+  --btn-muted: #f3f6fb;
+}
+
+.btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border-radius:8px;
+  border:1px solid transparent;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.btn:disabled{
+  opacity:0.55;
+  cursor:not-allowed;
+  pointer-events:none;
+}
+
+.md{padding:10px 14px;font-size:14px}
+.sm{padding:8px 10px;font-size:13px}
+.xs{padding:6px 8px;font-size:13px}
+
+.primary{background:var(--btn-primary);color:#fff}
+.danger{background:var(--btn-danger);color:#fff}
+.ghost{background:var(--btn-ghost);color:var(--btn-primary);border-color:rgba(16,24,40,0.06)}
+.muted{background:var(--btn-muted);color:#24303f;border-color:rgba(16,24,40,0.03)}
+
+.icon{background:#fff;border:1px solid rgba(16,24,40,0.06);padding:8px;border-radius:10px;color:#111}
+.iconOnly{padding:8px;width:44px;height:44px;justify-content:center;border-radius:10px}
+.smallIcon{width:36px;height:36px;padding:6px}
+
+/* ensure danger + iconOnly becomes a filled red square */
+.danger.iconOnly{background:var(--btn-danger);color:#fff;border-color:transparent}
+.icon.iconOnly{background:#fff;color:#111;border-color:rgba(16,24,40,0.06)}
+
+.btn:hover{filter:brightness(0.98)}

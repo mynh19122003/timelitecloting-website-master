@@ -66,6 +66,44 @@ services:
     networks:
       - ecommerce_network
 
+  ecommerce-admin-backend-node:
+    build:
+      context: ./ecommerce-admin-backend-node
+      dockerfile: Dockerfile
+    container_name: ecommerce-admin-backend-node
+    restart: always
+    expose:
+      - "3001"
+    ports:
+      # Publish admin backend so media is accessible at http://localhost:3001/admin/media/...
+      - "3001:3001"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ecommerce_db
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      JWT_EXPIRES_IN: 8h
+      NODE_ENV: development
+      ADMIN_NODE_PORT: 3001
+      CLIENT_SOCKET_URL: http://backend-node:3001
+      # Disable rate limit during local testing to avoid 429 on login attempts
+      DISABLE_RATE_LIMIT: "1"
+      # Admin security token for POST /admin/* endpoints (REQUIRED)
+      # Set via host .env: ADMIN_API_TOKEN=your-strong-token
+      ADMIN_API_TOKEN: ${ADMIN_API_TOKEN:-changeme-admin-token}
+      # Optional: allow skipping admin token in dev only (DO NOT enable in prod)
+      DISABLE_ADMIN_TOKEN: ${DISABLE_ADMIN_TOKEN:-0}
+      MEDIA_ROOT: /data/admindata/picture
+    volumes:
+      - admin_node_data:/data
+    depends_on:
+      - mysql
+      - backend-node
+    networks:
+      - ecommerce_network
+
   gateway:
     build:
       context: ./gateway
@@ -77,6 +115,7 @@ services:
     depends_on:
       - backend-node
       - backend-php
+      - ecommerce-admin-backend-node
     networks:
       - ecommerce_network
 
@@ -97,6 +136,9 @@ services:
 volumes:
   mysql_data:
     driver: local
+  admin_node_data:
+    external: true
+    name: admin-web-main_admin_node_data
 
 networks:
   ecommerce_network:

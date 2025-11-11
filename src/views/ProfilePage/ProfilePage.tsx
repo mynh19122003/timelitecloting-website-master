@@ -18,6 +18,12 @@ import {
   FiDollarSign,
   FiFilter,
   FiChevronDown,
+  FiUser,
+  FiCalendar,
+  FiLock,
+  FiBell,
+  FiHome,
+  FiShoppingBag,
 } from "react-icons/fi";
 import { mockOrderHistory, orderStatusLabels, OrderStatus } from "../../data/orders";
 import { useAuth } from "../../context/AuthContext";
@@ -30,12 +36,31 @@ type Profile = {
   name: string;
   email: string;
   phone: string;
-  address: string;
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  dateOfBirth: string;
+  gender: "male" | "female" | "other" | "";
   membership: "Platinum" | "Gold" | "Silver";
   avatar: string;
+  notificationPreferences: {
+    email: boolean;
+    sms: boolean;
+    push: boolean;
+    marketing: boolean;
+  };
+};
+
+type PasswordForm = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 };
 
 type ProfileErrors = Partial<Record<keyof Profile, string>>;
+type PasswordErrors = Partial<Record<keyof PasswordForm, string>>;
 
 type ProfileTabKey = "profile" | "orders";
 
@@ -59,24 +84,46 @@ const statusClassMap: Record<OrderStatus, string> = {
 
 const validateProfile = (profile: Profile): ProfileErrors => {
   const nextErrors: ProfileErrors = {};
-  // Name is optional now
   if (!profile.email.trim()) {
     nextErrors.email = "Please enter an email.";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email)) {
+    nextErrors.email = "Please enter a valid email address.";
   }
-  // Phone and address are optional
+  return nextErrors;
+};
+
+const validatePassword = (passwordForm: PasswordForm): PasswordErrors => {
+  const nextErrors: PasswordErrors = {};
+  if (!passwordForm.currentPassword.trim()) {
+    nextErrors.currentPassword = "Current password is required.";
+  }
+  if (!passwordForm.newPassword.trim()) {
+    nextErrors.newPassword = "New password is required.";
+  } else if (passwordForm.newPassword.length < 6) {
+    nextErrors.newPassword = "Password must be at least 6 characters.";
+  }
+  if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+    nextErrors.confirmPassword = "Passwords do not match.";
+  }
   return nextErrors;
 };
 
 type ProfileTabProps = {
   profile: Profile;
   formState: Profile;
-  handleInputChange: (field: keyof Profile, value: string) => void;
+  handleInputChange: (field: keyof Profile, value: string | Profile["notificationPreferences"]) => void;
   errors: ProfileErrors;
   isEditing: boolean;
   handleEditToggle: () => void;
   handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
   message: string | null;
   onSignOut: () => void;
+  passwordForm: PasswordForm;
+  passwordErrors: PasswordErrors;
+  handlePasswordChange: (field: keyof PasswordForm, value: string) => void;
+  handlePasswordSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  isChangingPassword: boolean;
+  setIsChangingPassword: (value: boolean) => void;
 };
 
 const ProfileTab = ({
@@ -89,20 +136,36 @@ const ProfileTab = ({
   handleSubmit,
   message,
   onSignOut,
+  passwordForm,
+  passwordErrors,
+  handlePasswordChange,
+  handlePasswordSubmit,
+  isChangingPassword,
+  setIsChangingPassword,
 }: ProfileTabProps) => {
+  const handleNotificationToggle = (key: keyof Profile["notificationPreferences"]) => {
+    handleInputChange("notificationPreferences", {
+      ...formState.notificationPreferences,
+      [key]: !formState.notificationPreferences[key],
+    });
+  };
+
   return (
     <div className={styles.profileTab}>
       <div className={styles.leftColumn}>
         <div className={styles.mainInfo}>
           <div className={styles.avatarContainer}>
             <img src={profile.avatar} alt={profile.name || "Guest"} className={styles.avatar} />
-            <button className={styles.avatarUploadButton} type="button">
+            <button className={styles.avatarUploadButton} type="button" title="Change avatar">
               <FiEdit2 />
             </button>
           </div>
           <div className={styles.profileInfo}>
             <h2 className={styles.profileName}>{profile.name || "Guest User"}</h2>
-            <p className={styles.profileMembership}>Membership {profile.membership}</p>
+            <p className={styles.profileMembership}>
+              <FiShoppingBag className={styles.membershipIcon} />
+              Membership {profile.membership}
+            </p>
           </div>
         </div>
         <button type="button" className={styles.signOutButton} onClick={onSignOut}>
@@ -112,8 +175,16 @@ const ProfileTab = ({
       </div>
       <div className={styles.rightColumn}>
         <div className={styles.details}>
+          {message && <div className={styles.successMessage}>{message}</div>}
+          
           {isEditing ? (
             <form className={styles.editForm} onSubmit={handleSubmit} noValidate>
+              {/* Personal Information Section */}
+              <div className={styles.formSection}>
+                <div className={styles.sectionHeader}>
+                  <FiUser className={styles.sectionIcon} />
+                  <h3 className={styles.sectionTitle}>Personal Information</h3>
+                </div>
               <div className={styles.formGrid}>
                 <label className={styles.formField}>
                   <span>Full name</span>
@@ -122,17 +193,58 @@ const ProfileTab = ({
                     value={formState.name}
                     onChange={(event) => handleInputChange("name", event.target.value)}
                     className={`${styles.formInput} ${errors.name ? styles.formInputError : ""}`.trim()}
+                      placeholder="Enter your full name"
                   />
                   {errors.name && <p className={styles.errorText}>{errors.name}</p>}
                 </label>
+                  <label className={styles.formField}>
+                    <span>Date of Birth</span>
+                    <div className={styles.inputWithIcon}>
+                      <FiCalendar className={styles.inputIcon} />
+                      <input
+                        type="date"
+                        value={formState.dateOfBirth}
+                        onChange={(event) => handleInputChange("dateOfBirth", event.target.value)}
+                        className={styles.formInput}
+                        max={new Date().toISOString().split('T')[0]}
+                      />
+                    </div>
+                  </label>
+                  <label className={styles.formField}>
+                    <span>Gender</span>
+                    <select
+                      value={formState.gender}
+                      onChange={(event) => handleInputChange("gender", event.target.value)}
+                      className={styles.formSelect}
+                    >
+                      <option value="">Select gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+
+              {/* Contact Information Section */}
+              <div className={styles.formSection}>
+                <div className={styles.sectionHeader}>
+                  <FiMail className={styles.sectionIcon} />
+                  <h3 className={styles.sectionTitle}>Contact Information</h3>
+                </div>
+                <div className={styles.formGrid}>
                 <label className={styles.formField}>
                   <span>Email</span>
+                    <div className={styles.inputWithIcon}>
+                      <FiMail className={styles.inputIcon} />
                   <input
                     type="email"
                     value={formState.email}
                     onChange={(event) => handleInputChange("email", event.target.value)}
                     className={`${styles.formInput} ${errors.email ? styles.formInputError : ""}`.trim()}
+                        placeholder="your.email@example.com"
                   />
+                    </div>
                   {errors.email && <p className={styles.errorText}>{errors.email}</p>}
                 </label>
                 <label className={styles.formField}>
@@ -149,16 +261,123 @@ const ProfileTab = ({
                   </div>
                   {errors.phone && <p className={styles.errorText}>{errors.phone}</p>}
                 </label>
+                </div>
+              </div>
+
+              {/* Address Information Section */}
+              <div className={styles.formSection}>
+                <div className={styles.sectionHeader}>
+                  <FiHome className={styles.sectionIcon} />
+                  <h3 className={styles.sectionTitle}>Address Information</h3>
+                </div>
+                <div className={styles.formGrid}>
+                  <label className={`${styles.formField} ${styles.formFieldFull}`}>
+                    <span>Street Address</span>
+                    <div className={styles.inputWithIcon}>
+                      <FiMapPin className={styles.inputIcon} />
+                      <input
+                        type="text"
+                        value={formState.street}
+                        onChange={(event) => handleInputChange("street", event.target.value)}
+                        className={styles.formInput}
+                        placeholder="Enter your street address"
+                      />
+                    </div>
+                    {errors.street && <p className={styles.errorText}>{errors.street}</p>}
+                  </label>
                 <label className={styles.formField}>
-                  <span>Shipping address</span>
-                  <textarea
-                    value={formState.address}
-                    onChange={(event) => handleInputChange("address", event.target.value)}
-                    rows={3}
-                    className={styles.formTextarea}
-                  />
+                    <span>City</span>
+                    <input
+                      type="text"
+                      value={formState.city}
+                      onChange={(event) => handleInputChange("city", event.target.value)}
+                      className={styles.formInput}
+                      placeholder="Enter your city"
+                    />
+                    {errors.city && <p className={styles.errorText}>{errors.city}</p>}
+                  </label>
+                  <label className={styles.formField}>
+                    <span>State/Province</span>
+                    <input
+                      type="text"
+                      value={formState.state}
+                      onChange={(event) => handleInputChange("state", event.target.value)}
+                      className={styles.formInput}
+                      placeholder="Enter state or province"
+                    />
+                    {errors.state && <p className={styles.errorText}>{errors.state}</p>}
+                  </label>
+                  <label className={styles.formField}>
+                    <span>Zip/Postal Code</span>
+                    <input
+                      type="text"
+                      value={formState.zipCode}
+                      onChange={(event) => handleInputChange("zipCode", event.target.value)}
+                      className={styles.formInput}
+                      placeholder="Enter zip code"
+                    />
+                    {errors.zipCode && <p className={styles.errorText}>{errors.zipCode}</p>}
+                  </label>
+                  <label className={styles.formField}>
+                    <span>Country</span>
+                    <input
+                      type="text"
+                      value={formState.country}
+                      onChange={(event) => handleInputChange("country", event.target.value)}
+                      className={styles.formInput}
+                      placeholder="Enter your country"
+                    />
+                    {errors.country && <p className={styles.errorText}>{errors.country}</p>}
                 </label>
               </div>
+              </div>
+
+              {/* Notification Preferences Section */}
+              <div className={styles.formSection}>
+                <div className={styles.sectionHeader}>
+                  <FiBell className={styles.sectionIcon} />
+                  <h3 className={styles.sectionTitle}>Notification Preferences</h3>
+                </div>
+                <div className={styles.preferencesGrid}>
+                  <label className={styles.preferenceItem}>
+                    <input
+                      type="checkbox"
+                      checked={formState.notificationPreferences.email}
+                      onChange={() => handleNotificationToggle("email")}
+                      className={styles.checkbox}
+                    />
+                    <span>Email notifications</span>
+                  </label>
+                  <label className={styles.preferenceItem}>
+                    <input
+                      type="checkbox"
+                      checked={formState.notificationPreferences.sms}
+                      onChange={() => handleNotificationToggle("sms")}
+                      className={styles.checkbox}
+                    />
+                    <span>SMS notifications</span>
+                  </label>
+                  <label className={styles.preferenceItem}>
+                    <input
+                      type="checkbox"
+                      checked={formState.notificationPreferences.push}
+                      onChange={() => handleNotificationToggle("push")}
+                      className={styles.checkbox}
+                    />
+                    <span>Push notifications</span>
+                  </label>
+                  <label className={styles.preferenceItem}>
+                    <input
+                      type="checkbox"
+                      checked={formState.notificationPreferences.marketing}
+                      onChange={() => handleNotificationToggle("marketing")}
+                      className={styles.checkbox}
+                    />
+                    <span>Marketing emails</span>
+                  </label>
+                </div>
+              </div>
+
               <div className={styles.formActions}>
                 <button type="button" className={styles.cancelButton} onClick={handleEditToggle}>
                   Cancel
@@ -169,7 +388,57 @@ const ProfileTab = ({
               </div>
             </form>
           ) : (
-            <div className={styles.profileDetails}>
+            <>
+              {/* Personal Information View */}
+              <div className={styles.infoSection}>
+                <div className={styles.sectionHeader}>
+                  <FiUser className={styles.sectionIcon} />
+                  <h3 className={styles.sectionTitle}>Personal Information</h3>
+                </div>
+                <div className={styles.detailGrid}>
+                  <div className={styles.detailItem}>
+                    <FiUser className={styles.detailIcon} />
+                    <div>
+                      <p className={styles.detailLabel}>Full name</p>
+                      <p className={styles.detailValue}>{profile.name || "Not set"}</p>
+                    </div>
+                  </div>
+                  {profile.dateOfBirth && (
+                    <div className={styles.detailItem}>
+                      <FiCalendar className={styles.detailIcon} />
+                      <div>
+                        <p className={styles.detailLabel}>Date of Birth</p>
+                        <p className={styles.detailValue}>
+                          {new Date(profile.dateOfBirth).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {profile.gender && (
+                    <div className={styles.detailItem}>
+                      <FiUser className={styles.detailIcon} />
+                      <div>
+                        <p className={styles.detailLabel}>Gender</p>
+                        <p className={styles.detailValue}>
+                          {profile.gender.charAt(0).toUpperCase() + profile.gender.slice(1)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Contact Information View */}
+              <div className={styles.infoSection}>
+                <div className={styles.sectionHeader}>
+                  <FiMail className={styles.sectionIcon} />
+                  <h3 className={styles.sectionTitle}>Contact Information</h3>
+                </div>
+                <div className={styles.detailGrid}>
               <div className={styles.detailItem}>
                 <FiMail className={styles.detailIcon} />
                 <div>
@@ -177,6 +446,7 @@ const ProfileTab = ({
                   <p className={styles.detailValue}>{profile.email}</p>
                 </div>
               </div>
+                  {profile.phone && (
               <div className={styles.detailItem}>
                 <FiPhone className={styles.detailIcon} />
                 <div>
@@ -184,22 +454,144 @@ const ProfileTab = ({
                   <p className={styles.detailValue}>{profile.phone}</p>
                 </div>
               </div>
-              <div className={styles.detailItem}>
-                <FiMapPin className={styles.detailIcon} />
-                <div>
-                  <p className={styles.detailLabel}>Address</p>
-                  <p className={styles.detailValue}>{profile.address}</p>
+                  )}
                 </div>
               </div>
+
+              {/* Address Information View */}
+              <div className={styles.infoSection}>
+                <div className={styles.sectionHeader}>
+                  <FiHome className={styles.sectionIcon} />
+                  <h3 className={styles.sectionTitle}>Address Information</h3>
+                </div>
+                <div className={styles.detailGrid}>
+                  {(profile.street || profile.city || profile.state || profile.zipCode || profile.country) && (
+                    <div className={`${styles.detailItem} ${styles.formFieldFull}`}>
+                <FiMapPin className={styles.detailIcon} />
+                      <div className={styles.addressDetails}>
+                        {profile.street && <p className={styles.detailValue}>{profile.street}</p>}
+                        <div className={styles.addressLine}>
+                          {profile.city && <span className={styles.detailValue}>{profile.city}</span>}
+                          {profile.city && profile.state && <span className={styles.addressSeparator}>, </span>}
+                          {profile.state && <span className={styles.detailValue}>{profile.state}</span>}
+                          {profile.zipCode && <span className={styles.detailValue}> {profile.zipCode}</span>}
+                </div>
+                        {profile.country && <p className={styles.detailValue}>{profile.country}</p>}
+              </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Notification Preferences View */}
+              {Object.values(profile.notificationPreferences).some(v => v) && (
+                <div className={styles.infoSection}>
+                  <div className={styles.sectionHeader}>
+                    <FiBell className={styles.sectionIcon} />
+                    <h3 className={styles.sectionTitle}>Notification Preferences</h3>
+                  </div>
+                  <div className={styles.preferencesList}>
+                    {profile.notificationPreferences.email && (
+                      <span className={styles.preferenceBadge}>Email</span>
+                    )}
+                    {profile.notificationPreferences.sms && (
+                      <span className={styles.preferenceBadge}>SMS</span>
+                    )}
+                    {profile.notificationPreferences.push && (
+                      <span className={styles.preferenceBadge}>Push</span>
+                    )}
+                    {profile.notificationPreferences.marketing && (
+                      <span className={styles.preferenceBadge}>Marketing</span>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className={styles.editHint}>
                 <button className={styles.editButton} onClick={handleEditToggle} type="button">
                   <FiEdit2 className={styles.editIcon} />
                   Edit profile
                 </button>
               </div>
-            </div>
+            </>
           )}
-          {message && <div className={styles.successMessage}>{message}</div>}
+
+          {/* Password Change Section */}
+          <div className={styles.infoSection}>
+            <div className={styles.sectionHeader}>
+              <FiLock className={styles.sectionIcon} />
+              <h3 className={styles.sectionTitle}>Security</h3>
+            </div>
+            {isChangingPassword ? (
+              <form className={styles.passwordForm} onSubmit={handlePasswordSubmit} noValidate>
+                <div className={styles.formGrid}>
+                  <label className={styles.formField}>
+                    <span>Current password</span>
+                    <input
+                      type="password"
+                      value={passwordForm.currentPassword}
+                      onChange={(event) => handlePasswordChange("currentPassword", event.target.value)}
+                      className={`${styles.formInput} ${passwordErrors.currentPassword ? styles.formInputError : ""}`.trim()}
+                      placeholder="Enter current password"
+                    />
+                    {passwordErrors.currentPassword && (
+                      <p className={styles.errorText}>{passwordErrors.currentPassword}</p>
+                    )}
+                  </label>
+                  <label className={styles.formField}>
+                    <span>New password</span>
+                    <input
+                      type="password"
+                      value={passwordForm.newPassword}
+                      onChange={(event) => handlePasswordChange("newPassword", event.target.value)}
+                      className={`${styles.formInput} ${passwordErrors.newPassword ? styles.formInputError : ""}`.trim()}
+                      placeholder="Enter new password"
+                    />
+                    {passwordErrors.newPassword && (
+                      <p className={styles.errorText}>{passwordErrors.newPassword}</p>
+                    )}
+                  </label>
+                  <label className={styles.formField}>
+                    <span>Confirm new password</span>
+                    <input
+                      type="password"
+                      value={passwordForm.confirmPassword}
+                      onChange={(event) => handlePasswordChange("confirmPassword", event.target.value)}
+                      className={`${styles.formInput} ${passwordErrors.confirmPassword ? styles.formInputError : ""}`.trim()}
+                      placeholder="Confirm new password"
+                    />
+                    {passwordErrors.confirmPassword && (
+                      <p className={styles.errorText}>{passwordErrors.confirmPassword}</p>
+                    )}
+                  </label>
+        </div>
+                <div className={styles.formActions}>
+                  <button
+                    type="button"
+                    className={styles.cancelButton}
+                    onClick={() => setIsChangingPassword(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className={styles.saveButton}>
+                    Change password
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className={styles.passwordAction}>
+                <p className={styles.passwordHint}>Keep your account secure with a strong password</p>
+                <button
+                  type="button"
+                  className={styles.changePasswordButton}
+                  onClick={() => setIsChangingPassword(true)}
+                >
+                  <FiLock className={styles.editIcon} />
+                  Change password
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -458,6 +850,13 @@ export const ProfilePage = () => {
   const [orderHistory, setOrderHistory] = useState<OrderHistoryItem[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [passwordForm, setPasswordForm] = useState<PasswordForm>({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordErrors, setPasswordErrors] = useState<PasswordErrors>({});
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // Load profile from API with token
   useEffect(() => {
@@ -476,13 +875,27 @@ export const ProfilePage = () => {
         const profileData = await ApiService.getProfile();
         console.log('[ProfilePage] Profile loaded:', profileData);
         
+        // Parse address if it exists (for backward compatibility)
+        const addressParts = profileData.address ? profileData.address.split(',').map(s => s.trim()) : [];
         const userProfile: Profile = {
-          name: profileData.name || "", // Leave empty if no name, don't show user_code
+          name: profileData.name || "",
           email: profileData.email,
           phone: profileData.phone || "",
-          address: profileData.address || "",
-          membership: "Platinum", // Default membership
+          street: addressParts[0] || "",
+          city: addressParts[1] || "",
+          state: addressParts[2] || "",
+          zipCode: addressParts[3] || "",
+          country: addressParts[4] || "",
+          dateOfBirth: "",
+          gender: "",
+          membership: "Platinum",
           avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80",
+          notificationPreferences: {
+            email: true,
+            sms: false,
+            push: false,
+            marketing: false,
+          },
         };
         
         setProfile(userProfile);
@@ -563,7 +976,7 @@ export const ProfilePage = () => {
     setMessage(null);
   };
 
-  const handleInputChange = (field: keyof Profile, value: string) => {
+  const handleInputChange = (field: keyof Profile, value: string | Profile["notificationPreferences"]) => {
     if (!formState) return;
     setFormState((prev) => ({
       ...prev!,
@@ -581,6 +994,54 @@ export const ProfilePage = () => {
     }
   };
 
+  const handlePasswordChange = (field: keyof PasswordForm, value: string) => {
+    setPasswordForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+    if (passwordErrors[field]) {
+      setPasswordErrors((prevErrors) => {
+        if (!prevErrors[field]) {
+          return prevErrors;
+        }
+        const next = { ...prevErrors };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
+  const handlePasswordSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const nextErrors = validatePassword(passwordForm);
+    if (Object.keys(nextErrors).length > 0) {
+      setPasswordErrors(nextErrors);
+      return;
+    }
+
+    try {
+      await ApiService.changePassword({
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      });
+      setMessage("Password changed successfully!");
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      setPasswordErrors({});
+      setIsChangingPassword(false);
+    } catch (error) {
+      console.error('Failed to change password:', error);
+      if (error instanceof ApiError) {
+        setPasswordErrors({ currentPassword: "Current password is incorrect." });
+      } else {
+        setMessage("Failed to change password. Please try again.");
+      }
+    }
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!formState) return;
@@ -592,11 +1053,20 @@ export const ProfilePage = () => {
     }
 
     try {
+      // Combine address fields for API (backward compatibility)
+      const addressString = [
+        formState.street,
+        formState.city,
+        formState.state,
+        formState.zipCode,
+        formState.country
+      ].filter(Boolean).join(', ');
+
       // Call API to update profile - token is automatically included
       const updatedUser = await ApiService.updateProfile({
         name: formState.name,
         phone: formState.phone,
-        address: formState.address,
+        address: addressString,
       });
 
       // Update local profile state immediately
@@ -604,9 +1074,16 @@ export const ProfilePage = () => {
         name: updatedUser.name || "",
         email: updatedUser.email,
         phone: updatedUser.phone || "",
-        address: updatedUser.address || "",
+        street: formState.street,
+        city: formState.city,
+        state: formState.state,
+        zipCode: formState.zipCode,
+        country: formState.country,
+        dateOfBirth: formState.dateOfBirth,
+        gender: formState.gender,
         membership: profile?.membership || "Platinum",
         avatar: profile?.avatar || "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80",
+        notificationPreferences: formState.notificationPreferences,
       };
       
       setProfile(updatedProfile);
@@ -686,6 +1163,12 @@ export const ProfilePage = () => {
               handleSubmit={handleSubmit}
               message={message}
               onSignOut={handleSignOut}
+              passwordForm={passwordForm}
+              passwordErrors={passwordErrors}
+              handlePasswordChange={handlePasswordChange}
+              handlePasswordSubmit={handlePasswordSubmit}
+              isChangingPassword={isChangingPassword}
+              setIsChangingPassword={setIsChangingPassword}
             />
           )}
           {activeTab === "orders" && (

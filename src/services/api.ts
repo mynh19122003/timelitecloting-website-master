@@ -111,9 +111,31 @@ class HttpClient {
       });
     }
 
+    // Add timeout to prevent hanging requests
+    const timeout = API_CONFIG.TIMEOUT || 10000;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    
     try {
-      const response = await fetch(url, config);
-      const data = await response.json();
+      const response = await fetch(url, {
+        ...config,
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      
+      // Handle non-JSON responses
+      let data: any;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { message: text || 'An error occurred' };
+        }
+      }
 
       if (!silent) {
         console.log('[HttpClient] RESPONSE:', {
@@ -134,10 +156,13 @@ class HttpClient {
 
       return data;
     } catch (error) {
+      clearTimeout(timeoutId);
+      
       if (!silent) {
         console.error('[HttpClient] ERROR:', {
           url,
-          error: error instanceof Error ? error.message : error
+          error: error instanceof Error ? error.message : error,
+          isAborted: error instanceof Error && error.name === 'AbortError'
         });
       }
       
@@ -145,9 +170,23 @@ class HttpClient {
         throw error;
       }
       
-      // Network or other errors
+      // Handle timeout
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new ApiError(
+          `Request timeout after ${timeout}ms. Backend server có thể không phản hồi.`,
+          0,
+          'TIMEOUT'
+        );
+      }
+      
+      // Network or other errors - provide helpful message
+      const isNetworkError = error instanceof TypeError && error.message.includes('fetch');
+      const errorMessage = isNetworkError 
+        ? 'Không thể kết nối đến backend server. Vui lòng đảm bảo backend đang chạy:\n1. cd ecommerce-backend\n2. docker-compose up -d\nHoặc kiểm tra NEXT_PUBLIC_API_URL trong .env.local'
+        : 'Network error. Please check your connection.';
+      
       throw new ApiError(
-        'Network error. Please check your connection.',
+        errorMessage,
         0
       );
     }
@@ -217,12 +256,27 @@ export class ApiService {
   // User Authentication
   static async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
-      // Try Node.js backend first
+      // Try Node.js backend first (via Gateway port 80)
       const response = await httpClient.post<ApiResponse<LoginResponse>>(API_CONFIG.ENDPOINTS.LOGIN, credentials);
       const loginData = response.data || response as any;
       httpClient.saveToken(loginData.token);
       return loginData;
     } catch (error) {
+      // If Gateway (port 80) fails, try direct Node.js backend (port 3001)
+      const isNetworkError = error instanceof ApiError && error.status === 0;
+      if (isNetworkError && API_CONFIG.BASE_URL === 'http://localhost') {
+        try {
+          console.warn('[ApiService] Gateway (port 80) không khả dụng, thử Node.js backend trực tiếp (port 3001)...');
+          const directBackendClient = new HttpClient('http://localhost:3001');
+          const response = await directBackendClient.post<ApiResponse<LoginResponse>>('/api/node/users/login', credentials);
+          const loginData = response.data || response as any;
+          httpClient.saveToken(loginData.token);
+          return loginData;
+        } catch (directError) {
+          // Fall through to PHP fallback
+        }
+      }
+      
       // Fallback to PHP backend
       try {
         const response = await httpClient.post<ApiResponse<LoginResponse>>(API_CONFIG.ENDPOINTS.PHP.LOGIN, credentials);
@@ -230,7 +284,7 @@ export class ApiService {
         httpClient.saveToken(loginData.token);
         return loginData;
       } catch {
-        // If both fail, throw the original error
+        // If all fail, throw the original error with helpful message
         throw error;
       }
     }
@@ -275,7 +329,6 @@ export class ApiService {
   }
 
   static async getProfile(): Promise<User> {
-    // Prefer Node backend only (avoid PHP fallback to prevent CORS issues on checkout)
     const mapUser = (u: any): User => ({
       id: u.id,
       user_code: u.user_code,
@@ -287,9 +340,35 @@ export class ApiService {
       updated_at: u.updated_at,
     });
 
-    const res = await httpClient.get<ApiResponse<User>>(API_CONFIG.ENDPOINTS.PROFILE, true);
-    const data = (res as any).data ?? res;
-    return mapUser(data);
+    try {
+      // Try Gateway (port 80) first
+      const res = await httpClient.get<ApiResponse<User>>(API_CONFIG.ENDPOINTS.PROFILE, true);
+      const data = (res as any).data ?? res;
+      return mapUser(data);
+    } catch (error) {
+      // If Gateway (port 80) fails, try direct Node.js backend (port 3001)
+      const isNetworkError = error instanceof ApiError && error.status === 0;
+      if (isNetworkError && API_CONFIG.BASE_URL === 'http://localhost') {
+        try {
+          console.warn('[ApiService] Gateway (port 80) không khả dụng, thử Node.js backend trực tiếp (port 3001)...');
+          const directBackendClient = new HttpClient('http://localhost:3001');
+          const res = await directBackendClient.get<ApiResponse<User>>('/api/node/users/profile', true);
+          const data = (res as any).data ?? res;
+          return mapUser(data);
+        } catch (directError) {
+          // Fall through to PHP fallback
+        }
+      }
+      
+      // Fallback to PHP backend
+      try {
+        const res = await httpClient.get<ApiResponse<User>>(API_CONFIG.ENDPOINTS.PHP.PROFILE, true);
+        const data = (res as any).data ?? res;
+        return mapUser(data);
+      } catch (phpError) {
+        throw error; // Throw original error if all fail
+      }
+    }
   }
 
   static async updateProfile(payload: { name?: string; phone?: string; address?: string; }): Promise<User> {
@@ -433,16 +512,32 @@ export class ApiService {
     console.log('[ApiService] createOrder called with data:', JSON.stringify(orderData, null, 2));
     
     try {
-      console.log('[ApiService] Trying Node.js backend:', API_CONFIG.ENDPOINTS.ORDERS);
+      // Try Gateway (port 80) first
+      console.log('[ApiService] Trying Gateway (port 80):', API_CONFIG.ENDPOINTS.ORDERS);
       const response = await httpClient.post(API_CONFIG.ENDPOINTS.ORDERS, orderData);
-      console.log('[ApiService] Node.js backend response:', response);
+      console.log('[ApiService] Gateway response:', response);
       return response;
     } catch (error: any) {
-      console.error('[ApiService] Node.js backend failed:', error.message);
-      console.log('[ApiService] Falling back to PHP backend:', API_CONFIG.ENDPOINTS.PHP.ORDERS);
+      console.error('[ApiService] Gateway failed:', error.message);
+      
+      // If Gateway (port 80) fails, try direct Node.js backend (port 3001)
+      const isNetworkError = error instanceof ApiError && error.status === 0;
+      if (isNetworkError && API_CONFIG.BASE_URL === 'http://localhost') {
+        try {
+          console.warn('[ApiService] Gateway (port 80) không khả dụng, thử Node.js backend trực tiếp (port 3001)...');
+          const directBackendClient = new HttpClient('http://localhost:3001');
+          const response = await directBackendClient.post('/api/node/orders', orderData);
+          console.log('[ApiService] Direct Node.js backend response:', response);
+          return response;
+        } catch (directError: any) {
+          console.error('[ApiService] Direct Node.js backend failed:', directError.message);
+          // Fall through to PHP fallback
+        }
+      }
       
       // Fallback to PHP backend
       try {
+        console.log('[ApiService] Falling back to PHP backend:', API_CONFIG.ENDPOINTS.PHP.ORDERS);
         const phpResponse = await httpClient.post(API_CONFIG.ENDPOINTS.PHP.ORDERS, orderData);
         console.log('[ApiService] PHP backend response:', phpResponse);
         return phpResponse;
@@ -454,11 +549,8 @@ export class ApiService {
   }
 
   static async getOrderHistory(): Promise<any[]> {
-    try {
-      // Use Node.js backend for order history
-      const response = await httpClient.get<ApiResponse<any>>(API_CONFIG.ENDPOINTS.ORDER_HISTORY);
-      console.log('[ApiService] getOrderHistory - Raw response:', response);
-      
+    // Helper function to parse and transform orders
+    const parseOrders = (response: any): any[] => {
       let orders: any[] = [];
       
       // Handle API response format: { success: true, data: { orders: [...], pagination: {...} } }
@@ -480,10 +572,8 @@ export class ApiService {
         }
       }
       
-      console.log('[ApiService] getOrderHistory - Extracted orders:', orders);
-      
       // Transform backend order format to frontend format
-      const transformedOrders = orders.map((order: any) => {
+      return orders.map((order: any) => {
         // Prefer structured items if present
         let itemsArr: any[] = [];
         if (order.products_items) {
@@ -525,22 +615,64 @@ export class ApiService {
           items: itemsArr
         };
       });
-      
-      console.log('[ApiService] getOrderHistory - Transformed orders:', transformedOrders);
-      return transformedOrders;
-      
+    };
+
+    try {
+      // Try Gateway (port 80) first
+      const response = await httpClient.get<ApiResponse<any>>(API_CONFIG.ENDPOINTS.ORDER_HISTORY);
+      console.log('[ApiService] getOrderHistory - Raw response:', response);
+      return parseOrders(response);
     } catch (error) {
-      console.error('[ApiService] getOrderHistory - Error:', error);
-      return [];
+      // If Gateway (port 80) fails, try direct Node.js backend (port 3001)
+      const isNetworkError = error instanceof ApiError && error.status === 0;
+      if (isNetworkError && API_CONFIG.BASE_URL === 'http://localhost') {
+        try {
+          console.warn('[ApiService] Gateway (port 80) không khả dụng, thử Node.js backend trực tiếp (port 3001)...');
+          const directBackendClient = new HttpClient('http://localhost:3001');
+          const response = await directBackendClient.get<ApiResponse<any>>('/api/node/orders/history');
+          console.log('[ApiService] getOrderHistory - Direct backend response:', response);
+          return parseOrders(response);
+        } catch (directError) {
+          console.warn('[ApiService] Direct Node.js backend cũng thất bại, thử PHP backend...');
+          // Fall through to PHP fallback
+        }
+      }
+      
+      // Fallback to PHP backend
+      try {
+        const response = await httpClient.get<ApiResponse<any>>(API_CONFIG.ENDPOINTS.PHP.ORDER_HISTORY);
+        console.log('[ApiService] getOrderHistory - PHP backend response:', response);
+        return parseOrders(response);
+      } catch (phpError) {
+        console.error('[ApiService] getOrderHistory - Tất cả backends đều thất bại:', phpError);
+        return [];
+      }
     }
   }
 
   static async getOrder(id: number): Promise<any> {
     try {
+      // Try Gateway (port 80) first
       return await httpClient.get(`${API_CONFIG.ENDPOINTS.ORDERS}/${id}`);
     } catch (error) {
+      // If Gateway (port 80) fails, try direct Node.js backend (port 3001)
+      const isNetworkError = error instanceof ApiError && error.status === 0;
+      if (isNetworkError && API_CONFIG.BASE_URL === 'http://localhost') {
+        try {
+          console.warn('[ApiService] Gateway (port 80) không khả dụng, thử Node.js backend trực tiếp (port 3001)...');
+          const directBackendClient = new HttpClient('http://localhost:3001');
+          return await directBackendClient.get(`/api/node/orders/${id}`);
+        } catch (directError) {
+          // Fall through to PHP fallback
+        }
+      }
+      
       // Fallback to PHP backend
-      return await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.ORDERS}/${id}`);
+      try {
+        return await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.ORDERS}/${id}`);
+      } catch (phpError) {
+        throw error; // Throw original error if all fail
+      }
     }
   }
 

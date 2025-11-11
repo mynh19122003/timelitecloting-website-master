@@ -18,7 +18,8 @@ import {
   getAuthStatus,
   subscribeToAuthChanges,
 } from "../../../utils/auth";
-import { products } from "../../../data/products";
+import { type Product, normalizeCategory } from "../../../data/products";
+import ApiService from "../../../services/api";
 import styles from "./Navbar.module.css";
 
 const navItems = [
@@ -32,6 +33,7 @@ export const Navbar = () => {
   const [accountOpen, setAccountOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(() => getAuthStatus());
   const { itemCount, openCart } = useCart();
   const navigate = useNavigate();
@@ -82,6 +84,7 @@ export const Navbar = () => {
     if (!searchOpen) {
       document.body.style.removeProperty("overflow");
       setSearchTerm("");
+      setSearchResults([]);
       return;
     }
 
@@ -105,28 +108,59 @@ export const Navbar = () => {
     };
   }, [searchOpen]);
 
+  // Live search against backend (debounced)
+  useEffect(() => {
+    const term = searchTerm.trim();
+    if (term.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    let isActive = true;
+    const timer = window.setTimeout(async () => {
+      try {
+        const res = await ApiService.getProducts({ limit: 6, search: term });
+        const list = Array.isArray(res?.products) ? res.products : [];
+        if (!isActive) return;
+        const mapped: Product[] = list.map((p: any) => {
+          const id: string = (p.slug ?? p.product_id ?? p.products_id ?? p.id ?? "").toString();
+          const category = normalizeCategory((p.category ?? p.category_label ?? "").toString());
+          const price = Number(p.price ?? 0);
+          return {
+            id,
+            name: String(p.name ?? ""),
+            category: category as any,
+            shortDescription: String(p.short_description ?? ""),
+            description: String(p.description ?? ""),
+            price,
+            originalPrice: p.original_price != null ? Number(p.original_price) : undefined,
+            colors: [],
+            sizes: ["S", "M", "L"],
+            image: "",
+            gallery: [],
+            rating: 0,
+            reviews: 0,
+            tags: Array.isArray(p.tags) ? p.tags : [],
+            isFeatured: Boolean(p.is_featured ?? false),
+            isNew: Boolean(p.is_new ?? false),
+            pid: typeof p.products_id === "number" ? `pid${p.products_id}` : undefined,
+          };
+        });
+        setSearchResults(mapped);
+      } catch {
+        if (isActive) setSearchResults([]);
+      }
+    }, 250);
+    return () => {
+      isActive = false;
+      window.clearTimeout(timer);
+    };
+  }, [searchTerm]);
+
   const handleLogout = () => {
     clearAuthStatus();
     setAccountOpen(false);
     navigate("/login");
   };
-
-  const searchResults = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
-    if (!term) {
-      return [];
-    }
-
-    return products
-      .filter((product) => {
-        return (
-          product.name.toLowerCase().includes(term) ||
-          product.category.toLowerCase().includes(term) ||
-          product.tags.some((tag) => tag.toLowerCase().includes(term))
-        );
-      })
-      .slice(0, 6);
-  }, [searchTerm]);
 
   const handleSearchSelect = (productId: string) => {
     setSearchOpen(false);

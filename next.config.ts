@@ -9,11 +9,17 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Use static export for static HTML files (no server needed)
-  output: 'export',
-  // Disable static generation
+  // Build ID for cache busting
   generateBuildId: async () => {
     return 'build-' + Date.now();
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/favicon.ico',
+        destination: '/images/logo_web.png',
+      },
+    ];
   },
   images: {
     unoptimized: true, // Disable image optimization for static export compatibility

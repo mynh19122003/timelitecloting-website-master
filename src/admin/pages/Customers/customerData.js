@@ -1,0 +1,170 @@
+export const initialCustomers = [
+  {
+    id: 'CUS-2034',
+    firstName: 'Randhir',
+    lastName: 'Kumar',
+    email: 'randhir@fastcart.com',
+    phone: '(209) 555-1824',
+    city: 'Fresno',
+    state: 'CA',
+    segment: 'Returning',
+    status: 'Active',
+    orders: 18,
+    lifetimeValue: 1824.8,
+    lastOrder: 'May 23, 2025',
+    tags: ['VIP', 'High value']
+  },
+  {
+    id: 'CUS-2033',
+    firstName: 'Lakhan',
+    lastName: 'Singh',
+    email: 'lakhan.singh@fastcart.com',
+    phone: '(512) 555-0955',
+    city: 'Austin',
+    state: 'TX',
+    segment: 'Returning',
+    status: 'Active',
+    orders: 12,
+    lifetimeValue: 1260.4,
+    lastOrder: 'May 18, 2025',
+    tags: ['Loyalty']
+  },
+  {
+    id: 'CUS-2032',
+    firstName: 'Anoop',
+    lastName: 'Saini',
+    email: 'anoop.saini@fastcart.com',
+    phone: '(415) 555-8239',
+    city: 'San Francisco',
+    state: 'CA',
+    segment: 'VIP',
+    status: 'Active',
+    orders: 23,
+    lifetimeValue: 3245.0,
+    lastOrder: 'Jun 01, 2025',
+    tags: ['VIP', 'Referral']
+  },
+  {
+    id: 'CUS-2031',
+    firstName: 'Divyansh',
+    lastName: 'Jadeja',
+    email: 'divyansh@fastcart.com',
+    phone: '(312) 555-6234',
+    city: 'Chicago',
+    state: 'IL',
+    segment: 'New',
+    status: 'Active',
+    orders: 2,
+    lifetimeValue: 184.2,
+    lastOrder: 'Jun 17, 2025',
+    tags: ['Onboarding']
+  },
+  {
+    id: 'CUS-2030',
+    firstName: 'Kiran',
+    lastName: 'Mishra',
+    email: 'kiran.mishra@fastcart.com',
+    phone: '(404) 555-9811',
+    city: 'Atlanta',
+    state: 'GA',
+    segment: 'Dormant',
+    status: 'Churn Risk',
+    orders: 7,
+    lifetimeValue: 624.5,
+    lastOrder: 'Jan 24, 2025',
+    tags: ['Re-engage']
+  },
+  {
+    id: 'CUS-2029',
+    firstName: 'Soniya',
+    lastName: 'Patel',
+    email: 'soniya.patel@fastcart.com',
+    phone: '(617) 555-4402',
+    city: 'Boston',
+    state: 'MA',
+    segment: 'Returning',
+    status: 'Active',
+    orders: 10,
+    lifetimeValue: 980.0,
+    lastOrder: 'Jun 02, 2025',
+    tags: ['Newsletter']
+  },
+  {
+    id: 'CUS-2028',
+    firstName: 'Doug',
+    lastName: 'Alvarez',
+    email: 'doug.alvarez@fastcart.com',
+    phone: '(702) 555-7300',
+    city: 'Las Vegas',
+    state: 'NV',
+    segment: 'New',
+    status: 'Active',
+    orders: 1,
+    lifetimeValue: 94.5,
+    lastOrder: 'Jun 18, 2025',
+    tags: ['Onboarding']
+  },
+  {
+    id: 'CUS-2027',
+    firstName: 'Rakesh',
+    lastName: 'Singh',
+    email: 'rakesh.singh@fastcart.com',
+    phone: '(206) 555-3401',
+    city: 'Seattle',
+    state: 'WA',
+    segment: 'Returning',
+    status: 'Active',
+    orders: 15,
+    lifetimeValue: 1296.6,
+    lastOrder: 'May 30, 2025',
+    tags: ['Loyalty']
+  },
+  {
+    id: 'CUS-2026',
+    firstName: 'Barry',
+    lastName: 'George',
+    email: 'barry.george@fastcart.com',
+    phone: '(718) 555-0086',
+    city: 'Brooklyn',
+    state: 'NY',
+    segment: 'Dormant',
+    status: 'Inactive',
+    orders: 3,
+    lifetimeValue: 242.1,
+    lastOrder: 'Dec 12, 2024',
+    tags: ['Support']
+  }
+]
+
+export const statusToneMap = {
+  active: 'success',
+  'churn risk': 'warning',
+  inactive: 'muted',
+  vip: 'primary'
+}
+
+export const segmentToneMap = {
+  returning: 'primary',
+  vip: 'warning',
+  new: 'muted',
+  dormant: 'danger'
+}
+
+export const usStates = [
+  'AL',
+  'AZ',
+  'CA',
+  'CO',
+  'FL',
+  'GA',
+  'IL',
+  'MA',
+  'NC',
+  'NJ',
+  'NY',
+  'OH',
+  'PA',
+  'TN',
+  'TX',
+  'WA'
+]

@@ -6,7 +6,8 @@ import {
   useMemo,
   useState,
 } from "react";
-import { products } from "../data/products";
+
+// Removed mock products import
 
 type CartItem = {
   id: string;
@@ -23,9 +24,9 @@ type CartItem = {
 type AddToCartPayload = {
   productId: string;
   pid?: string; // Optional: Product ID from backend (e.g., PID00001)
-  name?: string; // Optional: Product name (if not from local products)
-  image?: string; // Optional: Product image (if not from local products)
-  price?: number; // Optional: Product price (if not from local products)
+  name: string; // Product name from API/UI
+  image: string; // Product image from API/UI
+  price: number; // Product price from API/UI
   color: string;
   size: string;
   quantity?: number;
@@ -57,33 +58,9 @@ export function CartProvider({ children }: PropsWithChildren) {
   const closeCart = useCallback(() => setCartOpen(false), []);
 
   const addToCart = useCallback((payload: AddToCartPayload) => {
-    // Try to find product in local products array first
-    let product = products.find((item) => item.id === payload.productId);
-    
-    // If not found in local array, use provided data or create minimal product
-    if (!product) {
-      // If payload has name, price, image, use those (from API)
-      if (payload.name && payload.price !== undefined && payload.image) {
-        product = {
-          id: payload.productId,
-          pid: payload.pid,
-          name: payload.name,
-          image: payload.image,
-          price: payload.price,
-          category: "other" as any,
-          shortDescription: "",
-          description: "",
-          colors: [],
-          sizes: [],
-          gallery: [],
-          rating: 0,
-          reviews: 0,
-          tags: [],
-        };
-      } else {
-        // Fallback: return error if no product found and no data provided
-        return { status: "error" as const, message: "Product not found." };
-      }
+    // Validate minimal product data (comes from UI/API)
+    if (!payload.name || payload.price === undefined || !payload.image) {
+      return { status: "error" as const, message: "Invalid product data." };
     }
 
     const cartItemId = buildCartItemId(payload);
@@ -103,11 +80,11 @@ export function CartProvider({ children }: PropsWithChildren) {
         ...prev,
         {
           id: cartItemId,
-          productId: product.id,
-          pid: payload.pid || product.pid,
-          name: product.name,
-          image: product.image,
-          price: product.price,
+          productId: payload.productId,
+          pid: payload.pid,
+          name: payload.name,
+          image: payload.image,
+          price: payload.price,
           color: payload.color,
           size: payload.size,
           quantity,
@@ -117,7 +94,7 @@ export function CartProvider({ children }: PropsWithChildren) {
 
     return {
       status: "success" as const,
-      message: `${product.name} added to your cart.`,
+      message: `${payload.name} added to your cart.`,
     };
   }, []);
 

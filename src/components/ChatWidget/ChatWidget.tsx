@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { FiMessageCircle, FiX } from 'react-icons/fi';
-import { FaWhatsapp, FaFacebookMessenger, FaComments } from 'react-icons/fa';
+import { FaWhatsapp, FaFacebookMessenger } from 'react-icons/fa';
 import styles from './ChatWidget.module.css';
-import { LiveChatModal } from './LiveChatModal';
 
 export const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showLiveChat, setShowLiveChat] = useState(false);
 
   const toggleWidget = () => {
     setIsOpen(!isOpen);
@@ -26,10 +24,7 @@ export const ChatWidget = () => {
     window.open(`https://m.me/${pageId}`, '_blank');
   };
 
-  const openLiveChat = () => {
-    setShowLiveChat(true);
-    setIsOpen(false); // Close the menu when opening live chat
-  };
+  // Live Chat has been disabled per requirement; keep WhatsApp and Messenger only.
 
   return (
     <>
@@ -56,14 +51,7 @@ export const ChatWidget = () => {
               <span>Messenger</span>
             </button>
 
-            <button
-              className={`${styles.chatOption} ${styles.liveChat}`}
-              onClick={openLiveChat}
-              aria-label="Live Chat"
-            >
-              <FaComments className={styles.optionIcon} />
-              <span>Live Chat</span>
-            </button>
+            {/* Live Chat option removed */}
           </div>
         )}
 
@@ -81,10 +69,7 @@ export const ChatWidget = () => {
         </button>
       </div>
 
-      {/* Live Chat Modal */}
-      {showLiveChat && (
-        <LiveChatModal onClose={() => setShowLiveChat(false)} />
-      )}
+      {/* Live Chat modal removed */}
     </>
   );
 };

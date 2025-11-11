@@ -1,29 +1,51 @@
 // API Configuration
-// Resolve and normalize Admin base URL to avoid common misconfiguration (3001 vs 3002)
+// Normalize Admin base URL. We standardize to port 3001 for admin media in dev.
 const normalizeAdminBaseUrl = (input: string): string => {
   try {
     const url = new URL(input);
-    // Auto-correct common mistake: using 3001 (API) for admin media
-    if (url.hostname === 'localhost' && url.port === '3001' && process.env.NEXT_PUBLIC_ADMIN_STRICT !== 'true') {
-      const corrected = `http://${url.hostname}:3002`;
-      // Log once for visibility in browser console
-      // eslint-disable-next-line no-console
-      console.warn('[media] ADMIN_BASE_URL appears to point to :3001. Auto-correcting to :3002. Set NEXT_PUBLIC_ADMIN_STRICT=true to disable.', { from: input, to: corrected });
-      return corrected;
+    if (url.hostname === 'localhost') {
+      // Force port 3001 as the single source for admin media
+      url.protocol = 'http:';
+      url.port = '3001';
+      return url.toString().replace(/\/+$/, '');
     }
-    return input;
+    return input.replace(/\/+$/, '');
   } catch {
-    return input || 'http://localhost:3002';
+    return 'http://localhost:3001';
   }
 };
 
-const RAW_ADMIN_BASE = process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3002';
+const RAW_ADMIN_BASE = process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3001';
 const RESOLVED_ADMIN_BASE = normalizeAdminBaseUrl(RAW_ADMIN_BASE);
 
+// Resolve API base URL - supports both Docker (port 80) and local dev
+const resolveApiBaseUrl = (): string => {
+  // Check if explicit URL is provided
+  const fromEnv = process.env.NEXT_PUBLIC_API_URL;
+  if (fromEnv) {
+    return fromEnv.trim();
+  }
+  
+  // In development, check if we're running in Docker context
+  // Docker gateway runs on port 80, but we need to handle both cases
+  const isDev = process.env.NODE_ENV === 'development' || 
+                (typeof window !== 'undefined' && window.location.hostname === 'localhost');
+  
+  if (isDev) {
+    // Try port 80 first (Docker gateway), fallback to relative /api for Next.js rewrite
+    // Since we use output: 'export', we need absolute URL
+    // Default to port 80 for Docker gateway
+    return 'http://localhost';
+  }
+  
+  // Production: use relative path or configured URL
+  return fromEnv || 'http://localhost';
+};
+
 export const API_CONFIG = {
-  // Base URL for API calls (Gateway listens at port 80)
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost',
-  // Admin base for media (images served by admin at 3002)
+  // Base URL for API calls (Gateway listens at port 80 in Docker)
+  BASE_URL: resolveApiBaseUrl(),
+  // Admin base for media (images served by admin at 3001)
   ADMIN_BASE_URL: RESOLVED_ADMIN_BASE,
   
   // API endpoints
@@ -79,7 +101,7 @@ export const getPhpApiUrl = (endpoint: string): string => {
   return `${API_CONFIG.BASE_URL}${endpoint}`;
 };
 
-// Helper to build admin media URL, e.g. http://localhost:3002/admin/media/PID00001/main.webp
+// Helper to build admin media URL, e.g. http://localhost:3001/admin/media/PID00001/main.webp
 export const getAdminMediaUrl = (productsId: string, fileName: string = 'main.webp'): string => {
   const pid = encodeURIComponent(productsId);
   const file = encodeURIComponent(fileName);
@@ -127,7 +149,7 @@ export const getAdminMediaUrlByAny = (idLike: unknown, fileName: string = 'main.
 
 // Normalize any media-like URL so it points to the correct admin host
 // - If it starts with /admin/media, prefix ADMIN_BASE_URL
-// - If it points to localhost:3001/admin/media, rewrite to localhost:3002
+// - If it points to localhost:3002/admin/media, rewrite to localhost:3001
 // - Keep other hosts untouched
 export const normalizePossibleMediaUrl = (input: string | undefined | null): string => {
   const value = String(input ?? '').trim();
@@ -138,8 +160,8 @@ export const normalizePossibleMediaUrl = (input: string | undefined | null): str
     }
     if (/^https?:\/\//i.test(value)) {
       const u = new URL(value);
-      if (u.hostname === 'localhost' && u.port === '3001' && u.pathname.startsWith('/admin/media/')) {
-        u.port = '3002';
+      if (u.hostname === 'localhost' && u.port === '3002' && u.pathname.startsWith('/admin/media/')) {
+        u.port = '3001';
         u.protocol = 'http:'; // ensure http for local admin
         return u.toString();
       }

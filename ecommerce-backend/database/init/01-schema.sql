@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS order_items;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS admin;
 
 -- Users table (mandatory minimal structure)
 CREATE TABLE users (
@@ -27,6 +28,19 @@ CREATE TABLE users (
     INDEX idx_user_code (user_code),
     INDEX idx_reset_token (reset_token),
     INDEX idx_verification_token (verification_token)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Admins table for admin backend
+CREATE TABLE admin (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id VARCHAR(32) UNIQUE,
+    admin_email VARCHAR(255) UNIQUE NOT NULL,
+    admin_name VARCHAR(255) NOT NULL,
+    admin_password VARCHAR(255) NOT NULL, -- may be bcrypt hash or legacy plaintext (auto-upgraded on login)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_admin_email (admin_email),
+    INDEX idx_admin_id (admin_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Products table (expanded to match frontend sample JSON)

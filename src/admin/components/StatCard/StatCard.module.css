@@ -1,0 +1,121 @@
+.card {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 18px;
+  align-items: center;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lifted);
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(150deg, rgba(59, 130, 246, 0.08), rgba(20, 184, 166, 0.05));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 0;
+}
+
+.card:hover::after {
+  opacity: 1;
+}
+
+.iconWrap {
+  position: relative;
+  z-index: 1;
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--color-primary);
+}
+
+.primary .iconWrap {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--color-primary);
+}
+
+.accent .iconWrap {
+  background: rgba(20, 184, 166, 0.1);
+  color: var(--color-accent);
+}
+
+.warning .iconWrap {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.success .iconWrap {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+}
+
+.meta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
+
+.value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.delta {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 999px;
+}
+
+.up {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+}
+
+.down {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+}
+
+@media (max-width: 768px) {
+  .card {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    row-gap: 12px;
+  }
+
+  .delta {
+    justify-self: flex-start;
+  }
+}

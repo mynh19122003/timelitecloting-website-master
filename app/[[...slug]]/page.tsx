@@ -2,6 +2,9 @@
 
 import dynamic from "next/dynamic";
 
+// Note: generateStaticParams() is defined in layout.tsx (Server Component)
+// It cannot be exported from Client Components ("use client")
+
 const AppRoot = dynamic(() => import("../../src/AppRoot"), {
   ssr: false,
   loading: () => (

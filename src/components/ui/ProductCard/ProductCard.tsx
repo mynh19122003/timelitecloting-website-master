@@ -36,9 +36,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const currentSrc = e.currentTarget.src;
-    // Try to fix :3001 -> :3002 if still present
-    if (currentSrc.includes(':3001/admin/media/')) {
-      const fixed = currentSrc.replace(':3001/admin/media/', ':3002/admin/media/');
+    // Normalize any lingering :3002 links back to :3001
+    if (currentSrc.includes(':3002/admin/media/')) {
+      const fixed = currentSrc.replace(':3002/admin/media/', ':3001/admin/media/');
       setImageSrc(fixed);
     } else {
       // Fallback to placeholder

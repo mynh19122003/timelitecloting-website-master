@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   title: "Timelite Couture | Áo dài cao cấp cho thị trường Mỹ",
   description:
     "E-commerce website for luxury Vietnamese áo dài, tailored for modern customers in the United States.",
+  icons: {
+    icon: "/images/logo_web.png",
+  },
 };
 
 export default function RootLayout({

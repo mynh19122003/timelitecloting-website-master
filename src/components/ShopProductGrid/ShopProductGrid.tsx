@@ -108,9 +108,6 @@ export default function ShopProductGrid() {
       if (u && !variants.includes(u)) variants.push(u);
     };
     add(initial);
-    // Port swap between 3001 and 3002
-    if (initial.includes(":3001/")) add(initial.replace(":3001/", ":3002/"));
-    if (initial.includes(":3002/")) add(initial.replace(":3002/", ":3001/"));
     // Extension fallbacks
     if (initial.endsWith(".webp")) {
       add(initial.replace(/\.webp$/i, ".jpg"));

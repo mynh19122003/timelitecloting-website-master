@@ -1,6 +1,6 @@
 "use client";
 
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, Outlet } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
@@ -21,8 +21,16 @@ import { ResetPasswordPage } from "./views/ResetPasswordPage";
 import { VerifyEmailPage } from "./views/VerifyEmailPage";
 import { ScrollToTop } from "./components/layout/ScrollToTop";
 import "./utils/demo"; // Import demo utilities for testing
+import AdminApp from "./admin/AdminApp";
 
 export default function AppRoot() {
+  // Site shell that renders public pages with storefront header/footer
+  const SiteLayout = () => (
+    <Layout>
+      <Outlet />
+    </Layout>
+  );
+
   return (
     <AuthProvider>
       <ToastProvider>
@@ -30,8 +38,9 @@ export default function AppRoot() {
           <BrowserRouter>
             <ScrollToTop />
             <ToastContainer />
-            <Layout>
-              <Routes>
+            <Routes>
+              {/* Public storefront wrapped by site layout */}
+              <Route element={<SiteLayout />}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/shop" element={<ShopPage />} />
                 <Route path="/product/:id" element={<ProductDetailPage />} />
@@ -45,9 +54,14 @@ export default function AppRoot() {
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/verify-email" element={<VerifyEmailPage />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Layout>
+              </Route>
+
+              {/* Admin dashboard - NO storefront layout */}
+              <Route path="/admin/*" element={<AdminApp />} />
+
+              {/* Fallback */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
           </BrowserRouter>
         </CartProvider>
       </ToastProvider>
