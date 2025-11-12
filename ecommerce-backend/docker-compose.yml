@@ -59,12 +59,42 @@ services:
       JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
       JWT_EXPIRES_IN: 8h
       NODE_ENV: development
-      NODE_PORT: 3001
-      ENABLE_NODE_CORS: "false"
+      ADMIN_NODE_PORT: 3001
     depends_on:
       - mysql
     networks:
       - ecommerce_network
+    volumes:
+      - admin_media:/data/admindata/picture
+
+  admin-backend-node:
+    build:
+      context: ./admin-backend-node
+      dockerfile: Dockerfile
+    container_name: ecommerce-admin-backend-node
+    restart: always
+    expose:
+      - "3002"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ecommerce_db
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      JWT_EXPIRES_IN: 8h
+      NODE_ENV: development
+      ADMIN_NODE_PORT: 3002
+      ADMIN_API_TOKEN: admin-api-token-secret-change-in-production
+      MEDIA_ROOT: /data/admindata/picture
+      CLIENT_SOCKET_URL: http://backend-node:3001
+    depends_on:
+      - mysql
+      - backend-node
+    networks:
+      - ecommerce_network
+    volumes:
+      - admin_media:/data/admindata/picture
 
   gateway:
     build:
@@ -73,10 +103,11 @@ services:
     container_name: ecommerce-gateway
     restart: always
     ports:
-      - "80:80"
+      - "3001:80"
     depends_on:
       - backend-node
       - backend-php
+      - admin-backend-node
     networks:
       - ecommerce_network
 
@@ -96,6 +127,8 @@ services:
 
 volumes:
   mysql_data:
+    driver: local
+  admin_media:
     driver: local
 
 networks:

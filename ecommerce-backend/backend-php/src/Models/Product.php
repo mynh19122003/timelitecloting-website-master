@@ -28,7 +28,8 @@ class Product
                 $conditions[] = 'name LIKE ?';
                 $searchParams[] = "%{$search}%";
             }
-            if ($category) {
+
+            if ($category && strtolower($category) !== 'all') {
                 $conditions[] = 'category = ?';
                 $searchParams[] = $category;
             }
@@ -53,7 +54,7 @@ class Product
             $countStmt->execute($searchParams);
             $total = $countStmt->fetch()['total'];
 
-            // Get products with all fields
+            // Get products with valid columns from schema
             $productsQuery = "
                 SELECT 
                     id,
@@ -83,23 +84,22 @@ class Product
             ";
             
             $stmt = $this->db->prepare($productsQuery);
-            $stmt->execute([...$searchParams, $limit, $offset]);
-            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            // Bind search params first (as strings)
+            $paramIndex = 1;
+            foreach ($searchParams as $param) {
+                $stmt->bindValue($paramIndex++, $param, PDO::PARAM_STR);
+            }
+            // Bind limit/offset as integers to avoid MySQL errors when emulation is off
+            $stmt->bindValue($paramIndex++, (int) $limit, PDO::PARAM_INT);
+            $stmt->bindValue($paramIndex++, (int) $offset, PDO::PARAM_INT);
+            $stmt->execute();
+            $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Decode JSON fields and normalize types
-            $products = array_map(function (array $row) {
-                $row['price'] = isset($row['price']) ? (float)$row['price'] : null;
-                $row['original_price'] = isset($row['original_price']) ? (float)$row['original_price'] : null;
-                $row['colors'] = isset($row['colors']) ? self::decodeJsonArray($row['colors']) : [];
-                $row['sizes'] = isset($row['sizes']) ? self::decodeJsonArray($row['sizes']) : [];
-                $row['gallery'] = isset($row['gallery']) ? self::decodeJsonArray($row['gallery']) : [];
-                $row['tags'] = isset($row['tags']) ? self::decodeJsonArray($row['tags']) : [];
-                $row['rating'] = isset($row['rating']) ? (float)$row['rating'] : null;
-                $row['reviews'] = isset($row['reviews']) ? (int)$row['reviews'] : null;
-                $row['is_featured'] = isset($row['is_featured']) ? (bool)$row['is_featured'] : false;
-                $row['is_new'] = isset($row['is_new']) ? (bool)$row['is_new'] : false;
-                return $row;
-            }, $rows);
+            // Normalize image urls so storefronts can fetch directly
+            foreach ($products as &$p) {
+                $p['image_url'] = $this->resolveImageUrl($p['image_url'] ?? null, $p['products_id'] ?? null);
+            }
+            unset($p);
 
             return [
                 'products' => $products,
@@ -150,86 +150,12 @@ class Product
             if (!$product) {
                 throw new \Exception('ERR_PRODUCT_NOT_FOUND');
             }
-            $product['price'] = isset($product['price']) ? (float)$product['price'] : null;
-            $product['original_price'] = isset($product['original_price']) ? (float)$product['original_price'] : null;
-            $product['colors'] = isset($product['colors']) ? self::decodeJsonArray($product['colors']) : [];
-            $product['sizes'] = isset($product['sizes']) ? self::decodeJsonArray($product['sizes']) : [];
-            $product['gallery'] = isset($product['gallery']) ? self::decodeJsonArray($product['gallery']) : [];
-            $product['tags'] = isset($product['tags']) ? self::decodeJsonArray($product['tags']) : [];
-            $product['rating'] = isset($product['rating']) ? (float)$product['rating'] : null;
-            $product['reviews'] = isset($product['reviews']) ? (int)$product['reviews'] : null;
-            $product['is_featured'] = isset($product['is_featured']) ? (bool)$product['is_featured'] : false;
-            $product['is_new'] = isset($product['is_new']) ? (bool)$product['is_new'] : false;
-
+            
+            $product['image_url'] = $this->resolveImageUrl($product['image_url'] ?? null, $product['products_id'] ?? null);
             return $product;
         } catch (PDOException $e) {
             error_log('Get product by ID error: ' . $e->getMessage());
             throw new \Exception('ERR_GET_PRODUCT_FAILED');
-        }
-    }
-
-    public function findByProductId(string $slug): array
-    {
-        try {
-            $stmt = $this->db->prepare('
-                SELECT 
-                    id,
-                    products_id,
-                    slug,
-                    name,
-                    category,
-                    short_description,
-                    description,
-                    price,
-                    original_price,
-                    stock,
-                    colors,
-                    sizes,
-                    image_url,
-                    gallery,
-                    rating,
-                    reviews,
-                    tags,
-                    is_featured,
-                    is_new,
-                    created_at
-                FROM products 
-                WHERE slug = ?
-            ');
-            $stmt->execute([$slug]);
-
-            $product = $stmt->fetch(PDO::FETCH_ASSOC);
-            if (!$product) {
-                throw new \Exception('ERR_PRODUCT_NOT_FOUND');
-            }
-
-            $product['price'] = isset($product['price']) ? (float)$product['price'] : null;
-            $product['original_price'] = isset($product['original_price']) ? (float)$product['original_price'] : null;
-            $product['colors'] = isset($product['colors']) ? self::decodeJsonArray($product['colors']) : [];
-            $product['sizes'] = isset($product['sizes']) ? self::decodeJsonArray($product['sizes']) : [];
-            $product['gallery'] = isset($product['gallery']) ? self::decodeJsonArray($product['gallery']) : [];
-            $product['tags'] = isset($product['tags']) ? self::decodeJsonArray($product['tags']) : [];
-            $product['rating'] = isset($product['rating']) ? (float)$product['rating'] : null;
-            $product['reviews'] = isset($product['reviews']) ? (int)$product['reviews'] : null;
-            $product['is_featured'] = isset($product['is_featured']) ? (bool)$product['is_featured'] : false;
-            $product['is_new'] = isset($product['is_new']) ? (bool)$product['is_new'] : false;
-
-            return $product;
-        } catch (PDOException $e) {
-            error_log('Get product by slug error: ' . $e->getMessage());
-            throw new \Exception('ERR_GET_PRODUCT_FAILED');
-        }
-    }
-
-    private static function decodeJsonArray($value): array
-    {
-        if (is_array($value)) return $value;
-        if ($value === null || $value === '') return [];
-        try {
-            $decoded = json_decode($value, true);
-            return is_array($decoded) ? $decoded : [];
-        } catch (\Throwable $e) {
-            return [];
         }
     }
 
@@ -267,4 +193,49 @@ class Product
     }
 
     // JSON parsing no longer required with minimal schema
+    private function resolveImageUrl(?string $raw, ?string $productsId = null): ?string
+    {
+        if (!$raw) return $raw;
+        $url = trim($raw);
+        if ($url === '') return $url;
+        if (preg_match('/^(https?:)?\/\//i', $url) || str_starts_with($url, 'data:')) {
+            return $url;
+        }
+        if (str_starts_with($url, '/admin/admindata/picture/')) {
+            // Build absolute URL using forwarded proto/host if available
+            $proto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http');
+            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+            return sprintf('%s://%s%s', $proto, $host, $url);
+        }
+        // Support old format for backward compatibility
+        if (str_starts_with($url, '/admin/media/')) {
+            // Convert old format to new format
+            $newUrl = str_replace('/admin/media/admin/data/picture/', '/admin/admindata/picture/', $url);
+            $proto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http');
+            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+            return sprintf('%s://%s%s', $proto, $host, $newUrl);
+        }
+        
+        // Extract PID from productsId if available, otherwise try to extract from URL
+        $pid = $productsId;
+        if (!$pid && preg_match('/^(PID\d+)/i', $url, $matches)) {
+            $pid = $matches[1];
+        }
+        
+        // If we have a PID, use the new format: /admin/admindata/picture/<PID>/main.webp
+        if ($pid) {
+            $fileName = strpos($url, '/') !== false ? basename($url) : 'main.webp';
+            $basePath = '/admin/admindata/picture/' . $pid . '/' . $fileName;
+            $proto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http');
+            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+            return sprintf('%s://%s%s', $proto, $host, $basePath);
+        }
+        
+        // Fallback: use old format for backward compatibility
+        $clean = preg_replace('#^/?(admin/media/)?#', '', $url);
+        $basePath = '/admin/media/' . $clean;
+        $proto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http');
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        return sprintf('%s://%s%s%s', $proto, $host, str_starts_with($basePath, '/') ? '' : '/', $basePath);
+    }
 }

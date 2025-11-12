@@ -36,14 +36,16 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const currentSrc = e.currentTarget.src;
-    // Try to fix :3001 -> :3002 if still present
-    if (currentSrc.includes(':3001/admin/media/')) {
-      const fixed = currentSrc.replace(':3001/admin/media/', ':3002/admin/media/');
-      setImageSrc(fixed);
-    } else {
-      // Fallback to placeholder
-      setImageSrc('/images/image_1.png');
+    // Try to fix old format to new format if still present
+    if (currentSrc.includes('/admin/media/')) {
+      const fixed = currentSrc.replace('/admin/media/admin/data/picture/', '/admin/admindata/picture/');
+      if (fixed !== currentSrc) {
+        setImageSrc(fixed);
+        return;
+      }
     }
+    // Fallback to placeholder
+    setImageSrc('/images/image_1.png');
   };
 
   return (

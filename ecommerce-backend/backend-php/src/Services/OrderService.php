@@ -109,7 +109,6 @@ class OrderService
             $userAddress = $orderDetails['address'] ?? null;
             $userPhone = $orderDetails['phonenumber'] ?? null;
             $paymentMethod = $orderDetails['payment_method'] ?? 'cod';
-            $paymentStatus = $paymentMethod === 'bank_transfer' ? 'paid' : 'unpaid';
             $totalPrice = $finalTotal; // có thể thêm phí vận chuyển sau
             $productsName = implode(', ', $nameParts);
             $productsItems = json_encode($processedItems, JSON_UNESCAPED_UNICODE);
@@ -123,7 +122,6 @@ class OrderService
                 $finalTotal,
                 $totalPrice,
                 $paymentMethod,
-                $paymentStatus,
                 'pending'
             );
 

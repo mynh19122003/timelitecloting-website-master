@@ -60,6 +60,56 @@ class UserController {
     }
   }
 
+  // Request password reset: POST /api/node/users/password/reset/request { email }
+  async requestPasswordReset(req, res) {
+    try {
+      const { email } = req.body;
+      if (!email) return res.status(400).json({ error: 'ERR_VALIDATION_FAILED', message: 'Email is required' });
+      const result = await userService.requestPasswordReset(email);
+      // For testing, return token directly (in production, email this token)
+      return res.json({ success: true, message: 'Reset token issued', data: result });
+    } catch (error) {
+      return res.status(500).json({ error: 'ERR_REQUEST_PASSWORD_RESET_FAILED', message: 'Failed to issue reset token' });
+    }
+  }
+
+  // Reset password: POST /api/node/users/password/reset { token, newPassword }
+  async resetPassword(req, res) {
+    try {
+      const { token, newPassword } = req.body;
+      if (!token || !newPassword) return res.status(400).json({ error: 'ERR_VALIDATION_FAILED', message: 'Token and newPassword are required' });
+      if (newPassword.length < 6) return res.status(400).json({ error: 'ERR_VALIDATION_FAILED', message: 'New password must be at least 6 characters' });
+      await userService.resetPassword(token, newPassword);
+      return res.json({ success: true, message: 'Password reset successfully' });
+    } catch (error) {
+      return res.status(400).json({ error: 'ERR_RESET_PASSWORD_FAILED', message: error.message || 'Failed to reset password' });
+    }
+  }
+
+  // Request email verification: POST /api/node/users/email/verify/request { email }
+  async requestEmailVerification(req, res) {
+    try {
+      const { email } = req.body;
+      if (!email) return res.status(400).json({ error: 'ERR_VALIDATION_FAILED', message: 'Email is required' });
+      const result = await userService.requestEmailVerification(email);
+      return res.json({ success: true, message: 'Verification token issued', data: result });
+    } catch (error) {
+      return res.status(500).json({ error: 'ERR_REQUEST_EMAIL_VERIFY_FAILED', message: 'Failed to issue verification token' });
+    }
+  }
+
+  // Confirm email verification: POST /api/node/users/email/verify { token }
+  async verifyEmail(req, res) {
+    try {
+      const { token } = req.body;
+      if (!token) return res.status(400).json({ error: 'ERR_VALIDATION_FAILED', message: 'Token is required' });
+      await userService.verifyEmail(token);
+      return res.json({ success: true, message: 'Email verified successfully' });
+    } catch (error) {
+      return res.status(400).json({ error: 'ERR_VERIFY_EMAIL_FAILED', message: error.message || 'Failed to verify email' });
+    }
+  }
+
   /**
    * Get current user profile
    * GET /api/node/users/profile
