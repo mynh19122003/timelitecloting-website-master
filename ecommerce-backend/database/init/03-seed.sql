@@ -2,9 +2,9 @@
 USE ecommerce_db;
 
 -- Products
-INSERT INTO products (name, description, price, stock, image_url) VALUES
-('Áo thun nam', 'Áo thun cotton 100% chất lượng cao', 150000, 100, '/images/ao-thun-nam.jpg'),
-('Quần jean nữ', 'Quần jean slim fit thời trang', 350000, 50, '/images/quan-jean-nu.jpg'),
-('Giày sneaker', 'Giày thể thao đa năng', 500000, 30, '/images/giay-sneaker.jpg');
+INSERT INTO products (products_id, name, description, price, stock, image_url) VALUES
+('PID0001', 'Áo thun nam', 'Áo thun cotton 100% chất lượng cao', 150000, 100, '/images/ao-thun-nam.jpg'),
+('PID0002', 'Quần jean nữ', 'Quần jean slim fit thời trang', 350000, 50, '/images/quan-jean-nu.jpg'),
+('PID0003', 'Giày sneaker', 'Giày thể thao đa năng', 500000, 30, '/images/giay-sneaker.jpg');
 
 

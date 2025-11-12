@@ -1,5 +1,42 @@
 const { pool } = require('../config/database');
 
+// Normalize image_url so storefronts always get a fetchable URL
+// - Absolute (http/https/data) → return as-is
+// - Already prefixed with /admin/admindata/picture → return as-is
+// - Relative like "PID00001/main.webp" → prefix with /admin/admindata/picture/
+// - Leading slashes are trimmed when joining
+function resolveImageUrl(raw, productsId = null) {
+  if (!raw || typeof raw !== 'string') return raw;
+  const url = raw.trim();
+  if (!url) return url;
+  const isAbsolute = /^(https?:)?\/\//i.test(url) || url.startsWith('data:');
+  if (isAbsolute) return url;
+  if (url.startsWith('/admin/admindata/picture/')) return url;
+  // Support old format for backward compatibility
+  if (url.startsWith('/admin/media/')) {
+    // Convert old format to new format
+    return url.replace('/admin/media/admin/data/picture/', '/admin/admindata/picture/');
+  }
+
+  // Extract PID from productsId if available, otherwise try to extract from URL
+  let pid = productsId;
+  if (!pid && url.match(/^PID\d+/i)) {
+    pid = url.match(/^(PID\d+)/i)[1];
+  }
+  
+  // If we have a PID, use the new format: /admin/admindata/picture/<PID>/main.webp
+  if (pid) {
+    const fileName = url.includes('/') ? url.split('/').pop() : 'main.webp';
+    return `/admin/admindata/picture/${pid}/${fileName}`;
+  }
+
+  // Fallback: use old format for backward compatibility
+  const adminBase = process.env.ADMIN_BASE && process.env.ADMIN_BASE.trim() ? process.env.ADMIN_BASE.trim() : '/admin';
+  const base = adminBase.endsWith('/') ? adminBase.slice(0, -1) : adminBase;
+  const cleaned = url.replace(/^\/?(admin\/media\/)?/, '');
+  return `${base}/media/${cleaned}`;
+}
+
 class ProductService {
   async getProducts(page = 1, limit = 10, search = '', sortBy = 'created_at', sortOrder = 'DESC') {
     try {
@@ -42,8 +79,13 @@ class ProductService {
       
       const [products] = await pool.execute(productsQuery, [...searchParams, limit, offset]);
 
+      const normalized = products.map((p) => ({
+        ...p,
+        image_url: resolveImageUrl(p.image_url, p.products_id)
+      }));
+
       return {
-        products,
+        products: normalized,
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),
@@ -67,7 +109,11 @@ class ProductService {
         throw new Error('ERR_PRODUCT_NOT_FOUND');
       }
 
-      return products[0];
+      const product = products[0];
+      return {
+        ...product,
+        image_url: resolveImageUrl(product.image_url, product.products_id)
+      };
     } catch (error) {
       if (error.message === 'ERR_PRODUCT_NOT_FOUND') {
         throw error;
