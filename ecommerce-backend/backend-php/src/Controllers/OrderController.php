@@ -50,8 +50,7 @@ class OrderController
                 'customer_info' => $input['customer_info'] ?? null,
                 'shipping_address' => $input['shipping_address'] ?? null,
                 'notes' => $input['notes'] ?? null,
-                'total_amount' => $input['total_amount'] ?? null,
-                'payment_method' => $input['payment_method'] ?? null
+                'total_amount' => $input['total_amount'] ?? null
             ];
 
             $order = $this->orderService->createOrder($user['userId'], $input['items'], $orderDetails);

@@ -1,0 +1,18 @@
+START TRANSACTION;
+
+CREATE TABLE IF NOT EXISTS admin_users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  name VARCHAR(255) NULL,
+  role ENUM('super_admin','manager','staff') NOT NULL DEFAULT 'staff',
+  status ENUM('active','inactive') NOT NULL DEFAULT 'active',
+  reset_token VARCHAR(128) NULL,
+  reset_token_expiry TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+COMMIT;
+
+
