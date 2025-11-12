@@ -81,14 +81,13 @@ class OrderService {
       const userAddress = orderDetails.address || null;
       const userPhone = orderDetails.phonenumber || null;
       const paymentMethod = orderDetails.payment_method || 'cod';
-      const paymentStatus = paymentMethod === 'bank_transfer' ? 'paid' : 'unpaid';
       const productsName = nameParts.join(', ');
       const productsItems = JSON.stringify(normalizedItems);
 
       // Create order (new structure)
       const [orderResult] = await connection.execute(
-        'INSERT INTO orders (user_id, user_name, user_address, user_phone, products_name, products_items, products_price, total_price, payment_method, payment_status, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [userId, userName, userAddress, userPhone, productsName, productsItems, productsPrice, totalPrice, paymentMethod, paymentStatus, 'pending']
+        'INSERT INTO orders (user_id, user_name, user_address, user_phone, products_name, products_items, products_price, total_price, payment_method, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [userId, userName, userAddress, userPhone, productsName, productsItems, productsPrice, totalPrice, paymentMethod, 'pending']
       );
       const orderId = orderResult.insertId;
 
@@ -131,7 +130,7 @@ class OrderService {
       const total = countResult[0].total;
 
       const [orders] = await pool.query(
-        `SELECT id, order_id, user_id, user_name, user_address, user_phone, products_name, products_items, products_price, total_price, payment_method, payment_status, status, create_date, update_date
+        `SELECT id, order_id, user_id, user_name, user_address, user_phone, products_name, products_items, products_price, total_price, payment_method, status, create_date, update_date
          FROM orders 
          WHERE user_id = ? 
          ORDER BY create_date DESC 
@@ -159,7 +158,7 @@ class OrderService {
   async getOrderById(orderId, userId) {
     try {
       const [orders] = await pool.execute(
-        'SELECT id, order_id, user_id, user_name, user_address, user_phone, products_name, products_items, products_price, total_price, payment_method, payment_status, status, create_date, update_date FROM orders WHERE id = ? AND user_id = ?',
+        'SELECT id, order_id, user_id, user_name, user_address, user_phone, products_name, products_items, products_price, total_price, payment_method, status, create_date, update_date FROM orders WHERE id = ? AND user_id = ?',
         [orderId, userId]
       );
       if (orders.length === 0) {

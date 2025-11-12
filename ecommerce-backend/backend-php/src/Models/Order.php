@@ -23,7 +23,6 @@ class Order
         float $productsPrice,
         float $totalPrice,
         string $paymentMethod,
-        string $paymentStatus,
         string $status = 'pending'
     ): int
     {
@@ -37,11 +36,10 @@ class Order
                     products_price,
                     total_price,
                     payment_method,
-                    payment_status,
                     status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
             );
-            $stmt->execute([$userId, $userName, $userAddress, $userPhone, $productsPrice, $totalPrice, $paymentMethod, $paymentStatus, $status]);
+            $stmt->execute([$userId, $userName, $userAddress, $userPhone, $productsPrice, $totalPrice, $paymentMethod, $status]);
             
             $orderId = (int) $this->db->lastInsertId();
 
@@ -70,7 +68,7 @@ class Order
 
             // Get orders
             $stmt = $this->db->prepare(
-                'SELECT id, order_id, user_id, user_name, user_address, user_phone, products_name, products_items, products_price, total_price, payment_method, payment_status, status, create_date, update_date 
+                'SELECT id, order_id, user_id, user_name, user_address, user_phone, products_name, products_items, products_price, total_price, payment_method, status, create_date, update_date 
                  FROM orders 
                  WHERE user_id = ? 
                  ORDER BY create_date DESC 
@@ -99,7 +97,7 @@ class Order
     {
         try {
             $stmt = $this->db->prepare(
-                'SELECT id, order_id, user_id, user_name, user_address, user_phone, products_name, products_items, products_price, total_price, payment_method, payment_status, status, create_date, update_date FROM orders WHERE id = ? AND user_id = ?'
+                'SELECT id, order_id, user_id, user_name, user_address, user_phone, products_name, products_items, products_price, total_price, payment_method, status, create_date, update_date FROM orders WHERE id = ? AND user_id = ?'
             );
             $stmt->execute([$orderId, $userId]);
             

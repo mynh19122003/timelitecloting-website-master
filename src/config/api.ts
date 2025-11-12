@@ -1,5 +1,6 @@
 // API Configuration
 // Resolve and normalize Admin base URL to avoid common misconfiguration (3001 vs 3002)
+// Also normalize Public API base URL to ensure localhost uses :3001 by default
 const normalizeAdminBaseUrl = (input: string): string => {
   try {
     const url = new URL(input);
@@ -20,42 +21,61 @@ const normalizeAdminBaseUrl = (input: string): string => {
 const RAW_ADMIN_BASE = process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3002';
 const RESOLVED_ADMIN_BASE = normalizeAdminBaseUrl(RAW_ADMIN_BASE);
 
+// Ensure API base URL points to gateway on :3001 when using localhost without a port
+const normalizeApiBaseUrl = (input: string): string => {
+  try {
+    const url = new URL(input);
+    if (url.hostname === 'localhost' && (!url.port || url.port === '80')) {
+      const corrected = `http://${url.hostname}:3001`;
+      // eslint-disable-next-line no-console
+      console.warn('[api] NEXT_PUBLIC_API_URL has no port. Auto-correcting to :3001. Set explicitly to silence this.', { from: input, to: corrected });
+      return corrected;
+    }
+    return input;
+  } catch {
+    return input || 'http://localhost:3001';
+  }
+};
+
+const RAW_API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const RESOLVED_API_BASE = normalizeApiBaseUrl(RAW_API_BASE);
+
 export const API_CONFIG = {
-  // Base URL for API calls (Gateway listens at port 80)
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost',
+  // Base URL for API calls (via gateway)
+  BASE_URL: RESOLVED_API_BASE,
   // Admin base for media (images served by admin at 3002)
   ADMIN_BASE_URL: RESOLVED_ADMIN_BASE,
   
   // API endpoints
   ENDPOINTS: {
-    // User endpoints
-    LOGIN: '/api/node/users/login',
-    REGISTER: '/api/node/users/register',
-    PROFILE: '/api/node/users/profile',
-    CHANGE_PASSWORD: '/api/node/users/change-password',
-    FORGOT_PASSWORD: '/api/node/users/forgot-password',
-    RESET_PASSWORD: '/api/node/users/reset-password',
+    // User endpoints (prefixed with /user/api)
+    LOGIN: '/user/api/node/users/login',
+    REGISTER: '/user/api/node/users/register',
+    PROFILE: '/user/api/node/users/profile',
+    CHANGE_PASSWORD: '/user/api/node/users/change-password',
+    FORGOT_PASSWORD: '/user/api/node/users/forgot-password',
+    RESET_PASSWORD: '/user/api/node/users/reset-password',
     
-    // Product endpoints
-    PRODUCTS: '/api/php/products',
-    PRODUCT_DETAIL: '/api/php/products',
+    // Product endpoints (PHP)
+    PRODUCTS: '/user/api/php/products',
+    PRODUCT_DETAIL: '/user/api/php/products',
     
     // Order endpoints
-    ORDERS: '/api/node/orders',
-    ORDER_HISTORY: '/api/node/orders/history',
+    ORDERS: '/user/api/node/orders',
+    ORDER_HISTORY: '/user/api/node/orders/history',
     
     // Fallback PHP endpoints
     PHP: {
-      LOGIN: '/api/php/users/login',
-      REGISTER: '/api/php/users/register',
-      PROFILE: '/api/php/users/profile',
-      CHANGE_PASSWORD: '/api/php/users/change-password',
-      FORGOT_PASSWORD: '/api/php/users/forgot-password',
-      RESET_PASSWORD: '/api/php/users/reset-password',
-      PRODUCTS: '/api/php/products',
-      PRODUCT_DETAIL: '/api/php/products',
-      ORDERS: '/api/php/orders',
-      ORDER_HISTORY: '/api/php/orders/history',
+      LOGIN: '/user/api/php/users/login',
+      REGISTER: '/user/api/php/users/register',
+      PROFILE: '/user/api/php/users/profile',
+      CHANGE_PASSWORD: '/user/api/php/users/change-password',
+      FORGOT_PASSWORD: '/user/api/php/users/forgot-password',
+      RESET_PASSWORD: '/user/api/php/users/reset-password',
+      PRODUCTS: '/user/api/php/products',
+      PRODUCT_DETAIL: '/user/api/php/products',
+      ORDERS: '/user/api/php/orders',
+      ORDER_HISTORY: '/user/api/php/orders/history',
     }
   },
   
@@ -79,12 +99,14 @@ export const getPhpApiUrl = (endpoint: string): string => {
   return `${API_CONFIG.BASE_URL}${endpoint}`;
 };
 
-// Helper to build admin media URL, e.g. http://localhost:3002/admin/media/PID00001/main.webp
+// Helper to build admin media URL, e.g. http://localhost:3001/admin/admindata/picture/PID00001/main.webp
 export const getAdminMediaUrl = (productsId: string, fileName: string = 'main.webp'): string => {
   const pid = encodeURIComponent(productsId);
   const file = encodeURIComponent(fileName);
-  const url = `${API_CONFIG.ADMIN_BASE_URL}/admin/media/${pid}/${file}`;
-  console.log('[media] getAdminMediaUrl', { base: API_CONFIG.ADMIN_BASE_URL, productsId, fileName, pid, file, url });
+  // Use port 3001 (gateway) for media requests
+  const baseUrl = API_CONFIG.BASE_URL; // This is already http://localhost:3001
+  const url = `${baseUrl}/admin/admindata/picture/${pid}/${file}`;
+  console.log('[media] getAdminMediaUrl', { base: baseUrl, productsId, fileName, pid, file, url });
   return url;
 };
 
@@ -126,24 +148,43 @@ export const getAdminMediaUrlByAny = (idLike: unknown, fileName: string = 'main.
 };
 
 // Normalize any media-like URL so it points to the correct admin host
-// - If it starts with /admin/media, prefix ADMIN_BASE_URL
-// - If it points to localhost:3001/admin/media, rewrite to localhost:3002
+// - If it starts with /admin/admindata/picture, prefix with BASE_URL (port 3001)
+// - Support new format: /admin/admindata/picture/<PID>/main.webp
 // - Keep other hosts untouched
 export const normalizePossibleMediaUrl = (input: string | undefined | null): string => {
   const value = String(input ?? '').trim();
   if (!value) return '';
   try {
+    if (value.startsWith('/admin/admindata/picture/')) {
+      // Use BASE_URL (port 3001) for media requests
+      return `${API_CONFIG.BASE_URL}${value}`;
+    }
+    // Support old format for backward compatibility
     if (value.startsWith('/admin/media/')) {
-      return `${API_CONFIG.ADMIN_BASE_URL}${value}`;
+      // Convert old format to new format
+      const oldPath = value.replace('/admin/media/admin/data/picture/', '/admin/admindata/picture/');
+      return `${API_CONFIG.BASE_URL}${oldPath}`;
     }
     if (/^https?:\/\//i.test(value)) {
       const u = new URL(value);
-      if (u.hostname === 'localhost' && u.port === '3001' && u.pathname.startsWith('/admin/media/')) {
-        u.port = '3002';
-        u.protocol = 'http:'; // ensure http for local admin
+      // If it's localhost with /admin/admindata/picture/ path, ensure it uses port 3001
+      if (u.hostname === 'localhost' && u.pathname.startsWith('/admin/admindata/picture/')) {
+        u.port = '3001';
+        u.protocol = 'http:';
+        return u.toString();
+      }
+      // Support old format conversion
+      if (u.hostname === 'localhost' && u.pathname.startsWith('/admin/media/')) {
+        u.pathname = u.pathname.replace('/admin/media/admin/data/picture/', '/admin/admindata/picture/');
+        u.port = '3001';
+        u.protocol = 'http:';
         return u.toString();
       }
       return value;
+    }
+    // If it's a relative path like "PID00001/main.webp", convert to full URL
+    if (!value.includes('/') && value.match(/^PID\d+$/i)) {
+      return getAdminMediaUrl(value);
     }
   } catch {
     // fallthrough to return original

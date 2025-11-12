@@ -9,11 +9,36 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Use static export for static HTML files (no server needed)
-  output: 'export',
   // Disable static generation
   generateBuildId: async () => {
     return 'build-' + Date.now();
+  },
+  // Proxy API requests to gateway (with optional direct admin backend bypass)
+  async rewrites() {
+    const useDirectAdmin = process.env.NEXT_PUBLIC_ADMIN_DIRECT === 'true'
+    const adminDestination = useDirectAdmin
+      ? 'http://localhost:3002/admin/:path*'
+      : (process.env.NEXT_PUBLIC_API_URL 
+          ? `${process.env.NEXT_PUBLIC_API_URL}/admin/:path*`
+          : 'http://localhost:3001/admin/:path*')
+    return [
+      {
+        source: '/api/admin/:path*',
+        destination: adminDestination,
+      },
+      {
+        source: '/api/:path*',
+        destination: process.env.NEXT_PUBLIC_API_URL 
+          ? `${process.env.NEXT_PUBLIC_API_URL}/:path*`
+          : 'http://localhost:3001/:path*',
+      },
+      {
+        source: '/admin/:path*',
+        destination: process.env.NEXT_PUBLIC_API_URL 
+          ? `${process.env.NEXT_PUBLIC_API_URL}/admin/:path*`
+          : 'http://localhost:3001/admin/:path*',
+      },
+    ];
   },
   images: {
     unoptimized: true, // Disable image optimization for static export compatibility
