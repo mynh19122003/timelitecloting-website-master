@@ -5,7 +5,7 @@ Write-Host "=== TEST PROFILE API ===" -ForegroundColor Green
 Write-Host "`n1. Logging in..." -ForegroundColor Yellow
 $loginBody = '{"email":"testprofile@example.com","password":"password123"}'
 
-$loginResponse = curl.exe -X POST "http://localhost/api/php/users/login" `
+$loginResponse = curl.exe -X POST "http://localhost:3002/api/php/users/login" `
     -H "Content-Type: application/json" `
     -d $loginBody `
     --silent
@@ -22,7 +22,7 @@ if ($token) {
     
     # Bước 2: Get Profile
     Write-Host "`n2. Getting profile..." -ForegroundColor Yellow
-    $profileResponse = curl.exe -X GET "http://localhost/api/php/users/profile" `
+    $profileResponse = curl.exe -X GET "http://localhost:3002/api/php/users/profile" `
         -H "Authorization: Bearer $token" `
         -H "Content-Type: application/json" `
         --silent
@@ -34,7 +34,7 @@ if ($token) {
     Write-Host "`n3. Updating profile..." -ForegroundColor Yellow
     $updateBody = '{"name":"Test User Updated","phone":"+1234567890","address":"123 Test Street, Test City"}'
     
-    $updateResponse = curl.exe -X PUT "http://localhost/api/php/users/profile" `
+    $updateResponse = curl.exe -X PUT "http://localhost:3002/api/php/users/profile" `
         -H "Authorization: Bearer $token" `
         -H "Content-Type: application/json" `
         -d $updateBody `
@@ -45,7 +45,7 @@ if ($token) {
     
     # Bước 4: Get Profile lại để verify
     Write-Host "`n4. Getting updated profile..." -ForegroundColor Yellow
-    $updatedProfileResponse = curl.exe -X GET "http://localhost/api/php/users/profile" `
+    $updatedProfileResponse = curl.exe -X GET "http://localhost:3002/api/php/users/profile" `
         -H "Authorization: Bearer $token" `
         -H "Content-Type: application/json" `
         --silent

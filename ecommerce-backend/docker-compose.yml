@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   mysql:
@@ -111,7 +111,7 @@ services:
     container_name: ecommerce-gateway
     restart: always
     ports:
-      - "80:80"
+      - "3002:80"
     depends_on:
       - backend-node
       - backend-php
@@ -124,7 +124,7 @@ services:
     container_name: ecommerce_phpmyadmin
     restart: always
     ports:
-      - "8080:80"
+      - "3003:80"
     environment:
       PMA_HOST: mysql
       PMA_PORT: 3306

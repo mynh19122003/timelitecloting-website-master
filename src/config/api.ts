@@ -18,7 +18,7 @@ const normalizeAdminBaseUrl = (input: string): string => {
 const RAW_ADMIN_BASE = process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3001';
 const RESOLVED_ADMIN_BASE = normalizeAdminBaseUrl(RAW_ADMIN_BASE);
 
-// Resolve API base URL - supports both Docker (port 80) and local dev
+// Resolve API base URL - supports both Docker (port 3002) and local dev
 const resolveApiBaseUrl = (): string => {
   // Check if explicit URL is provided
   const fromEnv = process.env.NEXT_PUBLIC_API_URL;
@@ -27,23 +27,23 @@ const resolveApiBaseUrl = (): string => {
   }
   
   // In development, check if we're running in Docker context
-  // Docker gateway runs on port 80, but we need to handle both cases
+  // Docker gateway runs on port 3002, but we need to handle both cases
   const isDev = process.env.NODE_ENV === 'development' || 
                 (typeof window !== 'undefined' && window.location.hostname === 'localhost');
   
   if (isDev) {
-    // Try port 80 first (Docker gateway), fallback to relative /api for Next.js rewrite
+    // Use port 3002 for Docker gateway
     // Since we use output: 'export', we need absolute URL
-    // Default to port 80 for Docker gateway
-    return 'http://localhost';
+    // Default to port 3002 for Docker gateway
+    return 'http://localhost:3002';
   }
   
   // Production: use relative path or configured URL
-  return fromEnv || 'http://localhost';
+  return fromEnv || 'http://localhost:3002';
 };
 
 export const API_CONFIG = {
-  // Base URL for API calls (Gateway listens at port 80 in Docker)
+  // Base URL for API calls (Gateway listens at port 3002 in Docker)
   BASE_URL: resolveApiBaseUrl(),
   // Admin base for media (images served by admin at 3001)
   ADMIN_BASE_URL: RESOLVED_ADMIN_BASE,

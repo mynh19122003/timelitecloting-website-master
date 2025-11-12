@@ -3,7 +3,7 @@ Write-Host "=== TEST PROFILE API ===" -ForegroundColor Green
 
 # Step 1: Login
 Write-Host "`n1. Logging in..." -ForegroundColor Yellow
-$loginResponse = curl.exe -X POST "http://localhost/api/php/users/login" `
+$loginResponse = curl.exe -X POST "http://localhost:3002/api/php/users/login" `
     -H "Content-Type: application/json" `
     --data-binary "@login-data.json" `
     --silent
@@ -21,7 +21,7 @@ try {
         
         # Step 2: Get Profile
         Write-Host "`n2. Getting profile..." -ForegroundColor Yellow
-        $profileResponse = curl.exe -X GET "http://localhost/api/php/users/profile" `
+        $profileResponse = curl.exe -X GET "http://localhost:3002/api/php/users/profile" `
             -H "Authorization: Bearer $token" `
             -H "Content-Type: application/json" `
             --silent
@@ -39,7 +39,7 @@ try {
             address = "123 Main Street, Hanoi, Vietnam"
         } | ConvertTo-Json | Out-File -FilePath "update-data.json" -Encoding UTF8 -NoNewline
         
-        $updateResponse = curl.exe -X PUT "http://localhost/api/php/users/profile" `
+        $updateResponse = curl.exe -X PUT "http://localhost:3002/api/php/users/profile" `
             -H "Authorization: Bearer $token" `
             -H "Content-Type: application/json" `
             --data-binary "@update-data.json" `
@@ -50,7 +50,7 @@ try {
         
         # Step 4: Get updated profile
         Write-Host "`n4. Getting updated profile..." -ForegroundColor Yellow
-        $updatedProfileResponse = curl.exe -X GET "http://localhost/api/php/users/profile" `
+        $updatedProfileResponse = curl.exe -X GET "http://localhost:3002/api/php/users/profile" `
             -H "Authorization: Bearer $token" `
             -H "Content-Type: application/json" `
             --silent

@@ -33,7 +33,7 @@ Tất cả containers phải có status `Up` và `healthy`.
 
 ```powershell
 # Kiểm tra Gateway
-Invoke-WebRequest -Uri http://localhost/health -UseBasicParsing
+Invoke-WebRequest -Uri http://localhost:3002/health -UseBasicParsing
 
 # Kiểm tra Node.js backend
 Invoke-WebRequest -Uri http://localhost:3001/health -UseBasicParsing
@@ -47,22 +47,22 @@ Invoke-WebRequest -Uri http://localhost:3001/health -UseBasicParsing
 
 - **Gateway**: http://localhost
 - **Node.js API**: http://localhost:3001/api
-- **phpMyAdmin**: http://localhost:8080
+- **phpMyAdmin**: http://localhost:3003
   - Username: `root`
   - Password: `rootpassword`
 
 ### 📝 API Endpoints (qua Gateway):
 
 #### Node.js Backend:
-- `POST http://localhost/api/node/users/register` - Đăng ký
-- `POST http://localhost/api/node/users/login` - Đăng nhập
-- `GET http://localhost/api/node/products` - Danh sách sản phẩm
-- `POST http://localhost/api/node/orders` - Tạo đơn hàng
+- `POST http://localhost:3002/api/node/users/register` - Đăng ký
+- `POST http://localhost:3002/api/node/users/login` - Đăng nhập
+- `GET http://localhost:3002/api/node/products` - Danh sách sản phẩm
+- `POST http://localhost:3002/api/node/orders` - Tạo đơn hàng
 
 #### PHP Backend:
-- `POST http://localhost/api/php/users/register` - Đăng ký
-- `POST http://localhost/api/php/users/login` - Đăng nhập
-- `GET http://localhost/api/php/products` - Danh sách sản phẩm
+- `POST http://localhost:3002/api/php/users/register` - Đăng ký
+- `POST http://localhost:3002/api/php/users/login` - Đăng nhập
+- `GET http://localhost:3002/api/php/products` - Danh sách sản phẩm
 
 ---
 
@@ -90,7 +90,7 @@ $body = @{
     password = "password123"
 } | ConvertTo-Json
 
-Invoke-WebRequest -Uri http://localhost/api/node/users/register `
+Invoke-WebRequest -Uri http://localhost:3002/api/node/users/register `
     -Method POST `
     -Body $body `
     -ContentType "application/json" `
@@ -105,7 +105,7 @@ $body = @{
     password = "password123"
 } | ConvertTo-Json
 
-$response = Invoke-WebRequest -Uri http://localhost/api/node/users/login `
+$response = Invoke-WebRequest -Uri http://localhost:3002/api/node/users/login `
     -Method POST `
     -Body $body `
     -ContentType "application/json" `
@@ -117,7 +117,7 @@ $response.Content | ConvertFrom-Json
 ### Lấy danh sách sản phẩm:
 
 ```powershell
-Invoke-WebRequest -Uri "http://localhost/api/node/products?page=1&limit=10" `
+Invoke-WebRequest -Uri "http://localhost:3002/api/node/products?page=1&limit=10" `
     -UseBasicParsing | Select-Object -ExpandProperty Content | ConvertFrom-Json
 ```
 
@@ -210,7 +210,7 @@ docker-compose restart mysql
 
 ## 💡 Tips
 
-- Sử dụng **phpMyAdmin** (http://localhost:8080) để xem database
+- Sử dụng **phpMyAdmin** (http://localhost:3003) để xem database
 - Check logs thường xuyên: `docker-compose logs -f`
 - Restart individual service: `docker-compose restart <service-name>`
 - View resource usage: `docker stats`

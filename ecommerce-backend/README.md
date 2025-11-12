@@ -7,7 +7,7 @@ Backend đang chạy và sẵn sàng để test với Postman!
 ### Services Đang Chạy:
 - ✅ **PHP Backend**: `http://localhost:3001` (Port 3001 để tránh conflict với frontend port 3000)
 - ✅ **MySQL Database**: `localhost:3306`
-- ✅ **phpMyAdmin**: `http://localhost:8080`
+- ✅ **phpMyAdmin**: `http://localhost:3003`
 
 ---
 
@@ -129,7 +129,7 @@ docker-compose up -d
 ## 🗄️ Database Access
 
 ### phpMyAdmin
-- URL: `http://localhost:8080`
+- URL: `http://localhost:3003`
 - Server: `mysql`
 - Username: `root`
 - Password: `rootpassword`

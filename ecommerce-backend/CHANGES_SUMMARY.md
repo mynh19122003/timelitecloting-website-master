@@ -5,7 +5,7 @@
 ### 1. Backend Setup
 - ✅ PHP Backend đang chạy ở `http://localhost:3001` (Port 3001 để tránh conflict với frontend port 3000)
 - ✅ MySQL Database đang chạy ở `localhost:3306`
-- ✅ phpMyAdmin đang chạy ở `http://localhost:8080`
+- ✅ phpMyAdmin đang chạy ở `http://localhost:3003`
 
 ### 2. Đã Xóa Các File Test
 - ❌ Đã xóa tất cả file `.ps1` test scripts

@@ -38,7 +38,7 @@ docker-compose up -d
 ### 2. Verify Database
 
 **Option A: Using phpMyAdmin**
-- URL: http://localhost:8080
+- URL: http://localhost:3003
 - Username: `ecommerce_user`
 - Password: `ecommerce_pass`
 - Database: `ecommerce_db`
@@ -243,7 +243,7 @@ curl -X POST http://localhost:8000/api/orders \
 - Database: `ecommerce_db`
 
 ### phpMyAdmin Access
-- URL: http://localhost:8080
+- URL: http://localhost:3003
 - Username: `ecommerce_user`
 - Password: `ecommerce_pass`
 
@@ -348,7 +348,7 @@ After running `docker-compose up -d`:
 
 - [ ] Containers running: `docker ps`
 - [ ] Database accessible: `docker exec -it ecommerce_mysql mysql -u root -prootpassword -e "SHOW DATABASES;"`
-- [ ] Products seeded: Visit http://localhost:8080 and check products table
+- [ ] Products seeded: Visit http://localhost:3003 and check products table
 - [ ] 12 products total
 - [ ] Categories: 4 ao-dai, 3 vest, 2 wedding, 3 evening
 - [ ] Backend .env updated

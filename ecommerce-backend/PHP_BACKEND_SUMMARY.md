@@ -3,12 +3,14 @@
 ## ✅ Completed Implementation
 
 ### Architecture
+
 - **Framework**: Pure PHP 8.2 (no framework)
 - **Database**: MySQL with PDO
 - **Authentication**: JWT (Firebase PHP-JWT)
 - **Design Pattern**: MVC (Model-View-Controller)
 
 ### Project Structure
+
 ```
 backend-php/
 ├── src/
@@ -36,22 +38,26 @@ backend-php/
 #### 1. User Management (`/api/php/users`)
 
 **POST /api/php/users/register**
+
 - Register new user
 - Generates unique user_code (UID00001, UID00002, etc.)
 - Returns JWT token
 - Password hashing with bcrypt
 
 **POST /api/php/users/login**
+
 - Authenticate user
 - Returns JWT token
 - Token expires in 8 hours
 
 **GET /api/php/users/profile** (Protected)
+
 - Get current user profile
 - Returns: id, user_code, name, email, phone, address, created_at
 - Requires JWT token in Authorization header
 
 **PUT /api/php/users/profile** (Protected)
+
 - Update user profile
 - Fields: name, phone, address (all optional)
 - Supports partial updates (only changed fields)
@@ -59,6 +65,7 @@ backend-php/
 - Requires JWT token in Authorization header
 
 **PUT /api/php/users/change-password** (Protected)
+
 - Change user password
 - Validates old password
 - Updates to new password
@@ -66,6 +73,7 @@ backend-php/
 #### 2. Product Management (`/api/php/products`)
 
 **GET /api/php/products**
+
 - Get all products with pagination
 - Query parameters:
   - `page`: Page number (default: 1)
@@ -75,12 +83,14 @@ backend-php/
   - `sortOrder`: ASC or DESC (default: DESC)
 
 **GET /api/php/products/:id**
+
 - Get single product by ID
 - Returns 404 if product not found
 
 #### 3. Order Management (`/api/php/orders`)
 
 **POST /api/php/orders** (Protected)
+
 - Create new order
 - Validates product availability and stock
 - Calculates total amount
@@ -89,18 +99,20 @@ backend-php/
   ```json
   {
     "items": [
-      {"product_id": 1, "quantity": 2},
-      {"product_id": 3, "quantity": 1}
+      { "product_id": 1, "quantity": 2 },
+      { "product_id": 3, "quantity": 1 }
     ]
   }
   ```
 
 **GET /api/php/orders/:id** (Protected)
+
 - Get order details by ID
 - Includes order items with product information
 - Users can only access their own orders
 
 **GET /api/php/orders/history** (Protected)
+
 - Get user's order history with pagination
 - Query parameters:
   - `page`: Page number (default: 1)
@@ -109,21 +121,25 @@ backend-php/
 ### Key Features Implemented
 
 1. **JWT Authentication**
+
    - Token generation and validation
    - Middleware for protected routes
    - 8-hour token expiration
 
 2. **Database Management**
+
    - Singleton pattern for DB connection
    - Prepared statements for SQL injection prevention
    - Transaction support for orders
 
 3. **Error Handling**
+
    - Consistent error response format
-   - Specific error codes (ERR_*)
+   - Specific error codes (ERR\_\*)
    - HTTP status codes (200, 201, 400, 401, 404, 500)
 
 4. **Routing**
+
    - Simple regex-based routing in index.php
    - Support for path parameters (/:id)
    - Named actions (/users/profile, /orders/history)
@@ -137,6 +153,7 @@ backend-php/
 ### Testing
 
 All endpoints tested and verified:
+
 - ✅ User registration (with profile fields)
 - ✅ User login
 - ✅ Get user profile (with JWT) - includes name, phone, address
@@ -151,10 +168,12 @@ All endpoints tested and verified:
 ### Nginx Integration
 
 PHP backend accessible via:
-- Direct: `http://localhost/api/php/*`
-- Example: `http://localhost/api/php/products`
+
+- Direct: `http://localhost:3002/api/php/*`
+- Example: `http://localhost:3002/api/php/products`
 
 Nginx configuration:
+
 - FastCGI proxy to PHP-FPM
 - URI rewriting (removes /php prefix)
 - Timeout configuration (30s)
@@ -162,6 +181,7 @@ Nginx configuration:
 ### Environment Variables
 
 Required environment variables:
+
 ```env
 DB_HOST=mysql
 DB_PORT=3306
@@ -192,6 +212,7 @@ JWT_EXPIRES_IN=8h
 ### Response Format
 
 **Success Response:**
+
 ```json
 {
   "success": true,
@@ -201,6 +222,7 @@ JWT_EXPIRES_IN=8h
 ```
 
 **Error Response:**
+
 ```json
 {
   "error": "ERR_CODE",
@@ -231,4 +253,3 @@ JWT_EXPIRES_IN=8h
 - [x] RESTful API design
 - [x] Docker containerization
 - [x] Nginx gateway integration
-

@@ -17,7 +17,7 @@ php -S localhost:8000 index.php
 
 ## ✅ Verify
 
-**phpMyAdmin:** http://localhost:8080
+**phpMyAdmin:** http://localhost:3003
 - User: `ecommerce_user`
 - Pass: `ecommerce_pass`
 - Check: 12 products in `products` table
@@ -45,7 +45,7 @@ curl http://localhost:8000/api/products?product_id=vest-silk-noir
 - DB: `ecommerce_db`
 
 **phpMyAdmin:**
-- URL: http://localhost:8080
+- URL: http://localhost:3003
 - User: `ecommerce_user`
 - Pass: `ecommerce_pass`
 

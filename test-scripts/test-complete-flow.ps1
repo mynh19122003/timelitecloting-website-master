@@ -3,7 +3,7 @@ Write-Host "=== COMPLETE PROFILE API TEST ===" -ForegroundColor Green
 
 # Step 1: Login
 Write-Host "`n[1/4] Login..." -ForegroundColor Yellow
-$loginResponse = curl.exe -X POST "http://localhost/api/php/users/login" `
+$loginResponse = curl.exe -X POST "http://localhost:3002/api/php/users/login" `
     -H "Content-Type: application/json" `
     --data-binary "@login-data.json" `
     --silent
@@ -19,7 +19,7 @@ if ($loginData.success) {
 
 # Step 2: Get initial profile
 Write-Host "`n[2/4] Get initial profile..." -ForegroundColor Yellow
-$profileResponse = curl.exe -X GET "http://localhost/api/php/users/profile" `
+$profileResponse = curl.exe -X GET "http://localhost:3002/api/php/users/profile" `
     -H "Authorization: Bearer $token" `
     -H "Content-Type: application/json" `
     --silent
@@ -38,7 +38,7 @@ if ($profileData.success) {
 
 # Step 3: Update profile
 Write-Host "`n[3/4] Update profile..." -ForegroundColor Yellow
-$updateResponse = curl.exe -X PUT "http://localhost/api/php/users/profile" `
+$updateResponse = curl.exe -X PUT "http://localhost:3002/api/php/users/profile" `
     -H "Authorization: Bearer $token" `
     -H "Content-Type: application/json" `
     --data-binary "@update-profile.json" `
@@ -57,7 +57,7 @@ if ($updateData.success) {
 
 # Step 4: Verify updated profile
 Write-Host "`n[4/4] Verify updated profile..." -ForegroundColor Yellow
-$verifyResponse = curl.exe -X GET "http://localhost/api/php/users/profile" `
+$verifyResponse = curl.exe -X GET "http://localhost:3002/api/php/users/profile" `
     -H "Authorization: Bearer $token" `
     -H "Content-Type: application/json" `
     --silent

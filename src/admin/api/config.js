@@ -15,8 +15,8 @@ export const getApiBaseUrl = () => {
     || (isVite && import.meta?.env?.DEV)
     || (typeof window !== 'undefined' && window.location.hostname === 'localhost')
 
-  // Dev: dùng absolute URL tới gateway (port 80) thay vì trỏ trực tiếp :3001
-  // Browser sẽ resolve relative URL thành window.location.origin (port 3000) nếu chạy dev server, nên dùng http://localhost
+  // Dev: dùng absolute URL tới gateway (port 3002) thay vì trỏ trực tiếp :3001
+  // Browser sẽ resolve relative URL thành window.location.origin (port 3000) nếu chạy dev server, nên dùng http://localhost:3002
   if (isDev) {
     // Nếu đã có absolute URL trong env, dùng nó
     const fromEnvRaw = (isNext && process.env.NEXT_PUBLIC_API_URL)
@@ -27,8 +27,8 @@ export const getApiBaseUrl = () => {
       try {
         // Parse URL để kiểm tra và sửa port nếu thiếu
         const url = new URL(fromEnv)
-        // Chuẩn hoá về gateway (port 80) khi trỏ localhost không có port
-        if (url.hostname === 'localhost' && url.port === '') url.port = '80'
+        // Chuẩn hoá về gateway (port 3002) khi trỏ localhost không có port
+        if (url.hostname === 'localhost' && url.port === '') url.port = '3002'
         let base = url.toString().endsWith('/') ? url.toString().slice(0, -1) : url.toString()
         // Đảm bảo có /admin trong path
         if (!base.includes('/admin')) {
@@ -39,8 +39,8 @@ export const getApiBaseUrl = () => {
         // Nếu parse URL thất bại, fallthrough to default
       }
     }
-    // Default: dùng gateway (port 80) để phù hợp môi trường public VPS
-    return 'http://localhost/admin'
+    // Default: dùng gateway (port 3002) để phù hợp môi trường public VPS
+    return 'http://localhost:3002/admin'
   }
 
   // Prefer explicit absolute backend host and append admin base if missing

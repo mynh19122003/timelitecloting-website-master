@@ -25,11 +25,11 @@ info:
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: http://localhost/api/node
+  - url: http://localhost:3002/api/node
     description: Node.js Backend
-  - url: http://localhost/api/php
+  - url: http://localhost:3002/api/php
     description: PHP Backend
-  - url: http://localhost/api
+  - url: http://localhost:3002/api
     description: Load Balanced Gateway
 
 tags:

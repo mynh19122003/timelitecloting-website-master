@@ -91,9 +91,9 @@ Write-Host "API DETAILS" -ForegroundColor Yellow
 Write-Host "================================================================" -ForegroundColor DarkGray
 Write-Host ""
 Write-Host "  Primary:  " -ForegroundColor Gray -NoNewline
-Write-Host "POST http://localhost/api/node/orders" -ForegroundColor Cyan
+Write-Host "POST http://localhost:3002/api/node/orders" -ForegroundColor Cyan
 Write-Host "  Fallback: " -ForegroundColor Gray -NoNewline
-Write-Host "POST http://localhost/api/php/orders.php" -ForegroundColor Cyan
+Write-Host "POST http://localhost:3002/api/php/orders.php" -ForegroundColor Cyan
 Write-Host ""
 
 Write-Host "🚀 READY TO TEST!" -ForegroundColor Green

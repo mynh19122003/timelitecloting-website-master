@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Enable static export for VPS deployment
+  output: 'export',
   // Disable ESLint during build for production deployment
   eslint: {
     ignoreDuringBuilds: true,
@@ -12,14 +14,6 @@ const nextConfig: NextConfig = {
   // Build ID for cache busting
   generateBuildId: async () => {
     return 'build-' + Date.now();
-  },
-  async rewrites() {
-    return [
-      {
-        source: '/favicon.ico',
-        destination: '/images/logo_web.png',
-      },
-    ];
   },
   images: {
     unoptimized: true, // Disable image optimization for static export compatibility

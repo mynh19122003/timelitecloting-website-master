@@ -241,9 +241,9 @@ make test-php
 ## 🔧 Services URLs
 
 - **Gateway**: http://localhost
-- **phpMyAdmin**: http://localhost:8080
-- **Node.js API**: http://localhost/api/node/
-- **PHP API**: http://localhost/api/php/
+- **phpMyAdmin**: http://localhost:3003
+- **Node.js API**: http://localhost:3002/api/node/
+- **PHP API**: http://localhost:3002/api/php/
 
 ## ⚠️ Lưu ý quan trọng
 

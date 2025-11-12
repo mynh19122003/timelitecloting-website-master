@@ -360,7 +360,7 @@ docker logs ecommerce_mysql
 ```
 
 ### Kiểm tra database:
-- Truy cập phpMyAdmin: `http://localhost:8080`
+- Truy cập phpMyAdmin: `http://localhost:3003`
 - Server: `mysql`
 - Username: `root`
 - Password: `rootpassword`

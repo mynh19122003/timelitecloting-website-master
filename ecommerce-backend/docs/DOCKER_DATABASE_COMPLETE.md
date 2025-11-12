@@ -49,7 +49,7 @@ docker-compose up -d
 
 ### Bước 2: Verify Database
 
-**phpMyAdmin:** http://localhost:8080
+**phpMyAdmin:** http://localhost:3003
 - Username: `ecommerce_user`
 - Password: `ecommerce_pass`
 
@@ -282,7 +282,7 @@ docker exec ecommerce_mysql mysqldump -u ecommerce_user -pecommerce_pass ecommer
 - Root Password: `rootpassword`
 
 **phpMyAdmin:**
-- URL: http://localhost:8080
+- URL: http://localhost:3003
 - User: `ecommerce_user`
 - Password: `ecommerce_pass`
 
@@ -308,7 +308,7 @@ CORS_ORIGIN=http://localhost:3000
 ### After Starting Docker
 
 - [ ] MySQL container running: `docker ps | grep ecommerce_mysql`
-- [ ] phpMyAdmin accessible: http://localhost:8080
+- [ ] phpMyAdmin accessible: http://localhost:3003
 - [ ] Database created: Check phpMyAdmin
 - [ ] Tables created: `users`, `products`, `orders`, `order_items`
 - [ ] Products seeded: 12 rows in `products` table
@@ -502,7 +502,7 @@ docker-compose restart phpmyadmin
    ```
 
 2. **Verify Setup:**
-   - Visit http://localhost:8080
+   - Visit http://localhost:3003
    - Check products table (should have 12 rows)
 
 3. **Start API:**

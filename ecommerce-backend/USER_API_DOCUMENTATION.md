@@ -391,7 +391,7 @@ docker-compose up -d
 ### 2. Check Services
 - **PHP Backend**: http://localhost:8000/health
 - **Node.js Backend**: http://localhost:3000/health
-- **phpMyAdmin**: http://localhost:8080 (root/rootpassword)
+- **phpMyAdmin**: http://localhost:3003 (root/rootpassword)
 
 ### 3. Test Register API
 ```bash

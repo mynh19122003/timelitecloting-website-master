@@ -43,10 +43,10 @@ Write-Host ""
 
 # Test Node.js endpoint
 Write-Host "Testing Node.js endpoint..." -ForegroundColor Cyan
-Write-Host "POST http://localhost/api/node/orders`n" -ForegroundColor White
+Write-Host "POST http://localhost:3002/api/node/orders`n" -ForegroundColor White
 
 try {
-    $response = Invoke-RestMethod -Uri "http://localhost/api/node/orders" `
+    $response = Invoke-RestMethod -Uri "http://localhost:3002/api/node/orders" `
         -Method POST `
         -ContentType "application/json" `
         -Body $orderData `
@@ -65,10 +65,10 @@ try {
     
     # Try PHP fallback
     Write-Host "Trying PHP fallback endpoint..." -ForegroundColor Cyan
-    Write-Host "POST http://localhost/api/php/orders.php`n" -ForegroundColor White
+    Write-Host "POST http://localhost:3002/api/php/orders.php`n" -ForegroundColor White
     
     try {
-        $responsePHP = Invoke-RestMethod -Uri "http://localhost/api/php/orders.php" `
+        $responsePHP = Invoke-RestMethod -Uri "http://localhost:3002/api/php/orders.php" `
             -Method POST `
             -ContentType "application/json" `
             -Body $orderData `
