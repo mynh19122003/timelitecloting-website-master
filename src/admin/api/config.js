@@ -39,8 +39,8 @@ export const getApiBaseUrl = () => {
         // Nếu parse URL thất bại, fallthrough to default
       }
     }
-    // Default: dùng gateway (port 3002) để phù hợp môi trường public VPS
-    return 'http://localhost:3002/admin'
+    // Default: use local admin server for development
+    return 'http://localhost:3001/admin'
   }
 
   // Prefer explicit absolute backend host and append admin base if missing
@@ -58,8 +58,8 @@ export const getApiBaseUrl = () => {
     }
   }
 
-  // Production fallback (qua gateway)
-  return '/admin'
+  // Development fallback
+  return 'http://localhost:3001/admin'
 }
 
 // Resolve Public API base URL (catalog/orders), default to /api in dev
@@ -85,8 +85,8 @@ export const getPublicApiBaseUrl = () => {
   const fromEnv = typeof fromEnvRaw === 'string' ? fromEnvRaw.trim() : ''
   if (fromEnv) return fromEnv.endsWith('/') ? fromEnv.slice(0, -1) : fromEnv
 
-  // Production fallback
-  return 'http://localhost:8000/api'
+  // Development fallback
+  return 'http://localhost:3000/api'
 }
 
 

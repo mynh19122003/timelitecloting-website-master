@@ -1,51 +1,33 @@
-// API Configuration
-// Normalize Admin base URL. We standardize to port 3001 for admin media in dev.
+// API Configuration - Production ready for static export
 const normalizeAdminBaseUrl = (input: string): string => {
   try {
     const url = new URL(input);
-    if (url.hostname === 'localhost') {
-      // Force port 3001 as the single source for admin media
-      url.protocol = 'http:';
-      url.port = '3001';
-      return url.toString().replace(/\/+$/, '');
-    }
-    return input.replace(/\/+$/, '');
+    return url.toString().replace(/\/+$/, '');
   } catch {
-    return 'http://localhost:3001';
+    return 'https://api.timeliteclothing.com';
   }
 };
 
 const RAW_ADMIN_BASE = process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3001';
 const RESOLVED_ADMIN_BASE = normalizeAdminBaseUrl(RAW_ADMIN_BASE);
 
-// Resolve API base URL - supports both Docker (port 3002) and local dev
+// Resolve API base URL - Production ready for static export
 const resolveApiBaseUrl = (): string => {
-  // Check if explicit URL is provided
+  // Always use production API for static export
+  // Override with NEXT_PUBLIC_API_URL if needed for different environments
   const fromEnv = process.env.NEXT_PUBLIC_API_URL;
   if (fromEnv) {
     return fromEnv.trim();
   }
   
-  // In development, check if we're running in Docker context
-  // Docker gateway runs on port 3002, but we need to handle both cases
-  const isDev = process.env.NODE_ENV === 'development' || 
-                (typeof window !== 'undefined' && window.location.hostname === 'localhost');
-  
-  if (isDev) {
-    // Use port 3002 for Docker gateway
-    // Since we use output: 'export', we need absolute URL
-    // Default to port 3002 for Docker gateway
-    return 'http://localhost:3002';
-  }
-  
-  // Production: use relative path or configured URL
-  return fromEnv || 'http://localhost:3002';
+  // Default to local development API
+  return 'http://localhost:3000';
 };
 
 export const API_CONFIG = {
-  // Base URL for API calls (Gateway listens at port 3002 in Docker)
+  // Base URL for API calls
   BASE_URL: resolveApiBaseUrl(),
-  // Admin base for media (images served by admin at 3001)
+  // Admin base for media (images served by admin)
   ADMIN_BASE_URL: RESOLVED_ADMIN_BASE,
   
   // API endpoints
