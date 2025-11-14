@@ -4,7 +4,7 @@ const normalizeAdminBaseUrl = (input: string): string => {
     const url = new URL(input);
     return url.toString().replace(/\/+$/, '');
   } catch {
-    return 'https://api.timeliteclothing.com';
+    return 'http://localhost:3001';
   }
 };
 
@@ -20,8 +20,8 @@ const resolveApiBaseUrl = (): string => {
     return fromEnv.trim();
   }
   
-  // Default to local development API
-  return 'http://localhost:3000';
+  // Default to Docker gateway in local development
+  return 'http://localhost:3002';
 };
 
 export const API_CONFIG = {

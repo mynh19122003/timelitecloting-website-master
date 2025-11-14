@@ -1,153 +1,51 @@
 .footer {
-  border-top: 1px solid rgba(250, 243, 234, 0.7);
-  background-color: rgba(250, 243, 234, 0.5);
+  @apply border-t border-[#f0e6db] bg-[#fdfaf5];
 }
 
-.grid {
-  max-width: 72rem;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 2.5rem;
-  padding: 3.5rem 1rem;
+.columns {
+  @apply mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4;
 }
 
 .column {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.columnCentered {
-  align-items: flex-start;
-  text-align: left;
-  justify-self: center;
-  width: 100%;
+  @apply flex flex-col gap-3 text-sm text-[#4b433a];
 }
 
 .brand {
-  font-size: 1.125rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.35em;
-  color: #222222;
+  @apply text-base font-semibold uppercase tracking-[0.3em] text-[#111];
 }
 
 .bodyText {
-  font-size: 0.875rem;
-  line-height: 1.6;
-  color: rgba(34, 34, 34, 0.7);
+  @apply text-sm leading-relaxed text-[#5a5146];
 }
 
 .socialRow {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  color: rgba(34, 34, 34, 0.7);
-}
-
-.socialButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem;
-  border: 1px solid transparent;
-  border-radius: 9999px;
-  transition: border-color 0.2s ease, color 0.2s ease;
-}
-
-.socialButton:hover {
-  border-color: #ffd700;
-  color: #dc143c;
-}
-
-.icon {
-  width: 1.25rem;
-  height: 1.25rem;
+  @apply mt-4 flex items-center gap-3 text-xl text-[#4b433a];
 }
 
 .sectionTitle {
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.3em;
-  color: #222222;
+  @apply text-xs font-semibold uppercase tracking-[0.3em] text-[#111];
 }
 
-.linkList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+.column a {
+  @apply text-sm text-[#4b433a] transition hover:text-[#c61a1a];
 }
 
-.linkListCentered {
-  align-items: flex-start;
-  width: 100%;
+.contactRow {
+  @apply flex items-center gap-2 text-sm text-[#4b433a];
 }
 
-.link {
-  font-size: 0.875rem;
-  color: rgba(34, 34, 34, 0.7);
-  text-decoration: none;
-  transition: color 0.2s ease, text-decoration-color 0.2s ease;
-}
-
-.link:hover {
-  color: #dc143c;
-  text-decoration: underline;
-  text-decoration-color: currentColor;
-  text-underline-offset: 0.25rem;
-}
-
-.contactList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: rgba(34, 34, 34, 0.7);
-}
-
-.contactItem {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.contactIcon {
-  width: 1rem;
-  height: 1rem;
-  color: #ffd700;
-  flex-shrink: 0;
-  margin-top: 0.125rem;
-}
-
-.taxInfo {
-  font-size: 0.8125rem;
-  color: rgba(34, 34, 34, 0.6);
-  font-style: italic;
-  margin-top: 0.25rem;
+.contactRow svg {
+  @apply h-4 w-4 text-[#c69d5c];
 }
 
 .legal {
-  border-top: 1px solid rgba(250, 243, 234, 0.6);
-  background-color: #ffffff;
-  padding: 1.5rem 0;
+  @apply border-t border-[#f0e6db] bg-white px-4 py-6 text-center text-xs text-[#6b6257];
 }
 
-.legalText {
-  text-align: center;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.25em;
-  color: rgba(34, 34, 34, 0.6);
+.legalLinks {
+  @apply mt-2 flex flex-wrap justify-center gap-4;
 }
 
-@media (min-width: 768px) {
-  .grid {
-    grid-template-columns: repeat(3, minmax(12rem, auto));
-    padding-left: 1rem;
-    padding-right: 1rem;
-    justify-content: space-evenly;
-    justify-items: center;
-  }
+.legalLinks a {
+  @apply text-xs text-[#6b6257] hover:text-[#c61a1a];
 }
