@@ -149,26 +149,35 @@ const Products = () => {
       key: 'actions',
       label: '',
       width: '110px',
-      render: (_, row) => (
-        <div className={styles.rowActions}>
-          <button
-            type="button"
-            className={styles.tableLink}
-            onClick={() => navigate(`/admin/products/${row.id}/edit`)}
-          >
-            <FaEdit /> Edit
-          </button>
-          <button type="button" className={styles.deleteButton} onClick={() => handleDelete(row.id)}>
-            <FaTrash /> Delete
-          </button>
-        </div>
-      )
+      render: (_, row) => {
+        // Ensure id is a string to avoid [object Object] in URL
+        const productId = typeof row.id === 'string' ? row.id : String(row.id || '')
+        return (
+          <div className={styles.rowActions}>
+            <button
+              type="button"
+              className={styles.tableLink}
+              onClick={() => navigate(`/admin/products/${encodeURIComponent(productId)}/edit`)}
+            >
+              <FaEdit /> Edit
+            </button>
+            <button type="button" className={styles.deleteButton} onClick={() => handleDelete(productId)}>
+              <FaTrash /> Delete
+            </button>
+          </div>
+        )
+      }
     }
   ]
 
   function handleDelete(id) {
     if (!window.confirm('Delete this product?')) return
-    setProducts((prev) => prev.filter((p) => p.id !== id))
+    // Ensure id is a string for comparison
+    const productId = typeof id === 'string' ? id : String(id || '')
+    setProducts((prev) => prev.filter((p) => {
+      const pId = typeof p.id === 'string' ? p.id : String(p.id || '')
+      return pId !== productId
+    }))
   }
 
   function handleExport() {

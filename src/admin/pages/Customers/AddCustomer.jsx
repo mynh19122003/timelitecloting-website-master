@@ -25,8 +25,8 @@ const AddCustomer = () => {
   const [formError, setFormError] = useState('')
   const [missingFields, setMissingFields] = useState([])
 
-  const handleCancel = () => navigate('/customers')
-  const handleBack = () => navigate('/customers')
+  const handleCancel = () => navigate('/admin/customers')
+  const handleBack = () => navigate('/admin/customers')
 
   const handleInputChange = (event) => {
     const { name, value } = event.target
@@ -73,7 +73,7 @@ const AddCustomer = () => {
       tags
     }
 
-    navigate('/customers', { replace: true, state: { newCustomer } })
+    navigate('/admin/customers', { replace: true, state: { newCustomer } })
   }
 
   return (

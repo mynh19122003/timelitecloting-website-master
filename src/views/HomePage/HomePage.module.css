@@ -24,16 +24,16 @@
   @apply flex flex-col justify-center gap-6 rounded-2xl border border-[#f1e7d6] bg-[#fdfaf5] p-8;
 }
 
+.heroLogo {
+  @apply w-full max-w-[280px] mx-auto;
+}
+
 .heroTag {
   @apply text-xs font-semibold uppercase tracking-[0.3em] text-[#a37d2d];
 }
 
 .heroTitle {
   @apply font-serif text-4xl text-[#191919] md:text-5xl;
-}
-
-.heroBody {
-  @apply text-base leading-relaxed text-[#444];
 }
 
 .heroActions {

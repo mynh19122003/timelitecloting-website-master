@@ -1,151 +1,82 @@
-# 📚 Documentation Index
+# 📚 Documentation Directory
 
-This folder contains all documentation and test files for the E-Commerce platform.
+Tất cả các file documentation (.md) của project được tổ chức trong thư mục này.
 
----
+## 📁 Cấu trúc thư mục
 
-## 📖 Documentation Files
-
-### For Developers
-
-| File | Description | Best For |
-|------|-------------|----------|
-| **[ORDER_API_DOCUMENTATION.md](ORDER_API_DOCUMENTATION.md)** | Complete API reference with examples | All developers |
-| **[ORDER_API_QUICK_REFERENCE.md](ORDER_API_QUICK_REFERENCE.md)** | Quick lookup card | Frontend developers |
-| **[ORDER_SYSTEM_COMPLETE.md](ORDER_SYSTEM_COMPLETE.md)** | Implementation details & architecture | Backend developers |
-| **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** | Full project overview | Project managers |
-| **[README_ORDER_SYSTEM.md](README_ORDER_SYSTEM.md)** | Quick start guide | New developers |
-| **[SYSTEM_OVERVIEW.txt](SYSTEM_OVERVIEW.txt)** | Visual system diagrams | Everyone |
-
----
-
-## 🧪 Test Files
-
-| File | Description |
-|------|-------------|
-| **[test-order-apis.ps1](test-order-apis.ps1)** | Automated test suite (PowerShell) |
-
-**Run tests:**
-```powershell
-.\docs\test-order-apis.ps1
+```
+docs/
+├── README.md                    # File này
+├── frontend/                    # Frontend documentation
+│   └── ROUTES_GUIDE.md         # Hướng dẫn routes configuration
+├── backend/                     # Backend documentation
+│   ├── README.md               # Backend overview
+│   ├── PHP_BACKEND_SUMMARY.md
+│   ├── SETUP_GUIDE.md
+│   ├── DOCKER_SETUP_README.md
+│   └── ...
+├── deployment/                  # Deployment guides
+│   ├── DEPLOY_GUIDE.md
+│   ├── DEPLOY_GUIDE_VPS.md
+│   └── README-VPS.md
+├── components/                   # Component documentation
+│   ├── ChatWidget_README.md
+│   ├── PhoneInput_QUICK_START.md
+│   └── PhoneInput_VISUAL_GUIDE.md
+├── testing/                     # Testing guides
+│   ├── test-scripts_README.md
+│   └── POSTMAN_TEST_GUIDE.md
+└── [other root docs]           # Các file docs khác ở root level
 ```
 
----
+## 📝 Quy tắc
 
-## 🎯 Quick Access by Role
+**QUAN TRỌNG:** Khi tạo file .md mới, mặc định đặt vào thư mục `docs/` với cấu trúc phù hợp:
 
-### 👨‍💻 Frontend Developer
-Start here:
-1. [ORDER_API_QUICK_REFERENCE.md](ORDER_API_QUICK_REFERENCE.md) - Quick API reference
-2. [ORDER_API_DOCUMENTATION.md](ORDER_API_DOCUMENTATION.md) - Full API docs
+- **Frontend docs** → `docs/frontend/`
+- **Backend docs** → `docs/backend/`
+- **Deployment docs** → `docs/deployment/`
+- **Component docs** → `docs/components/`
+- **Testing docs** → `docs/testing/`
+- **General docs** → `docs/` (root level)
 
-### 👨‍💻 Backend Developer
-Start here:
-1. [ORDER_SYSTEM_COMPLETE.md](ORDER_SYSTEM_COMPLETE.md) - Implementation details
-2. [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) - Full overview
+## 🔍 Tìm kiếm documentation
 
-### 👔 Project Manager
-Start here:
-1. [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) - Project status & roadmap
-2. [SYSTEM_OVERVIEW.txt](SYSTEM_OVERVIEW.txt) - Visual overview
+### Frontend
+- [Routes Configuration Guide](frontend/ROUTES_GUIDE.md)
 
-### 🆕 New Team Member
-Start here:
-1. [README_ORDER_SYSTEM.md](README_ORDER_SYSTEM.md) - Getting started
-2. [ORDER_API_QUICK_REFERENCE.md](ORDER_API_QUICK_REFERENCE.md) - Quick reference
+### Backend
+- [Backend README](backend/README.md)
+- [Setup Guide](backend/SETUP_GUIDE.md)
+- [Docker Setup](backend/DOCKER_SETUP_README.md)
 
----
+### Deployment
+- [Deploy Guide](deployment/DEPLOY_GUIDE.md)
+- [VPS Deploy Guide](deployment/DEPLOY_GUIDE_VPS.md)
 
-## 📊 Documentation Stats
+### Components
+- [Chat Widget](components/ChatWidget_README.md)
+- [Phone Input Quick Start](components/PhoneInput_QUICK_START.md)
+- [Phone Input Visual Guide](components/PhoneInput_VISUAL_GUIDE.md)
 
-- **Total Files**: 7
-- **API Endpoints Documented**: 8
-- **Code Examples**: 50+
-- **Test Cases**: 9
-- **Diagrams**: 5+
+### Testing
+- [Test Scripts](testing/test-scripts_README.md)
+- [Postman Guide](testing/POSTMAN_TEST_GUIDE.md)
 
----
+## 📌 Lưu ý
 
-## 🔍 Quick Find
+- **File `README.md` ở root của project được giữ lại** để làm entry point
+- **Tất cả các file .md khác đã được di chuyển vào `docs/`** với cấu trúc phân loại rõ ràng
+- **Quy tắc mặc định:** Khi tạo file .md mới, luôn đặt vào thư mục `docs/` với subdirectory phù hợp
+- Cấu trúc này giúp dễ dàng tìm kiếm và quản lý documentation
+- Các file trong `node_modules/` không được di chuyển (giữ nguyên)
 
-Looking for something specific?
+## ✅ Đã hoàn thành
 
-- **API Authentication**: See [ORDER_API_DOCUMENTATION.md#authentication](ORDER_API_DOCUMENTATION.md)
-- **Error Codes**: See [ORDER_API_DOCUMENTATION.md#error-handling](ORDER_API_DOCUMENTATION.md)
-- **Database Schema**: See [PROJECT_SUMMARY.md#database-schema](PROJECT_SUMMARY.md)
-- **Security Features**: See [PROJECT_SUMMARY.md#security-features](PROJECT_SUMMARY.md)
-- **Quick Start**: See [README_ORDER_SYSTEM.md#quick-start](README_ORDER_SYSTEM.md)
-- **Testing Guide**: See [test-order-apis.ps1](test-order-apis.ps1)
-
----
-
-## 📝 Document Descriptions
-
-### ORDER_API_DOCUMENTATION.md
-**Length**: ~200 lines  
-**Type**: API Reference  
-**Contents**: Complete documentation for all Order Management APIs including request/response formats, authentication, validation rules, error codes, and usage examples.
-
-### ORDER_API_QUICK_REFERENCE.md
-**Length**: ~150 lines  
-**Type**: Quick Reference Card  
-**Contents**: Condensed API reference with code snippets, common patterns, and quick tips for rapid development.
-
-### ORDER_SYSTEM_COMPLETE.md
-**Length**: ~300 lines  
-**Type**: Technical Documentation  
-**Contents**: Detailed implementation documentation covering architecture, data flow, security measures, and technical decisions.
-
-### PROJECT_SUMMARY.md
-**Length**: ~500 lines  
-**Type**: Project Overview  
-**Contents**: Comprehensive project documentation including status, roadmap, tech stack, database schema, and troubleshooting guide.
-
-### README_ORDER_SYSTEM.md
-**Length**: ~250 lines  
-**Type**: Getting Started Guide  
-**Contents**: Quick start instructions, usage examples, testing guide, and common commands.
-
-### SYSTEM_OVERVIEW.txt
-**Length**: ~300 lines  
-**Type**: Visual Documentation  
-**Contents**: ASCII diagrams showing system architecture, data flow, and component relationships.
-
-### test-order-apis.ps1
-**Length**: ~200 lines  
-**Type**: Test Script  
-**Contents**: Automated PowerShell test suite with 9 comprehensive test cases covering all Order APIs.
-
----
-
-## 🎨 Documentation Standards
-
-All documentation follows these standards:
-- ✅ Clear, concise language
-- ✅ Code examples for all APIs
-- ✅ Error handling documented
-- ✅ Security considerations included
-- ✅ Tested and validated examples
-- ✅ Up-to-date with latest code
-
----
-
-## 🔄 Keeping Documentation Updated
-
-When making code changes, update these docs:
-- API changes → Update `ORDER_API_DOCUMENTATION.md` and `ORDER_API_QUICK_REFERENCE.md`
-- Architecture changes → Update `PROJECT_SUMMARY.md` and `SYSTEM_OVERVIEW.txt`
-- New features → Update all relevant docs
-- Test changes → Update `test-order-apis.ps1`
-
----
-
-## 📞 Documentation Feedback
-
-Found an error or have suggestions? Please update the relevant documentation file.
-
----
-
-**Last Updated**: October 27, 2025  
-**Status**: ✅ All documentation complete and up-to-date
-
+Tất cả các file .md đã được tổ chức lại vào thư mục `docs/` với cấu trúc:
+- ✅ Frontend documentation → `docs/frontend/`
+- ✅ Backend documentation → `docs/backend/`
+- ✅ Deployment guides → `docs/deployment/`
+- ✅ Component docs → `docs/components/`
+- ✅ Testing guides → `docs/testing/`
+- ✅ General docs → `docs/` (root level)

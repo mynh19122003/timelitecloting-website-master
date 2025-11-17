@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useMemo, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   FiCheck,
   FiChevronLeft,
@@ -22,15 +22,17 @@ const formatCurrency = (value: number) =>
 
 export const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
   const { showToast } = useToast();
   const [product, setProduct] = useState<UiProduct | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<UiProduct[]>([]);
   const [selectedImage, setSelectedImage] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
-  const [selectedSize, setSelectedSize] = useState("M");
+  const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState<boolean>(true);
+  const previousProductIdRef = useRef<string | undefined>(undefined);
   const buildFallbacks = (initial: string): string[] => {
     const variants: string[] = [];
     const add = (u: string) => {
@@ -127,7 +129,19 @@ export const ProductDetailPage = () => {
         setProduct(mapped);
         setSelectedImage(mapped.gallery[0] ?? "");
         setSelectedColor(mapped.colors[0] ?? "");
-        setSelectedSize(mapped.sizes[0] ?? "M");
+        // Only reset size when product id actually changes
+        if (previousProductIdRef.current !== id) {
+          setSelectedSize(mapped.sizes[0] ?? "");
+          previousProductIdRef.current = id;
+        } else {
+          // If current selection is not available in new product, reset to first size
+          setSelectedSize((prevSize) => {
+            if (!prevSize || !mapped.sizes.includes(prevSize)) {
+              return mapped.sizes[0] ?? "";
+            }
+            return prevSize;
+          });
+        }
         // Load related
         return ApiService.getProducts({ limit: 10, category: mapped.category });
       })
@@ -140,8 +154,20 @@ export const ProductDetailPage = () => {
           .slice(0, 3);
         setRelatedProducts(related);
       })
-      .catch(() => {
+      .catch((error: any) => {
+        // Log error to console
+        console.error('[ProductDetailPage] Error loading product:', {
+          id,
+          error: error?.message || error,
+          status: error?.status
+        });
+
         if (isMounted) {
+          // If 404 or product not found, redirect to 404 page
+          if (error?.status === 404 || error?.message?.toLowerCase().includes('not found')) {
+            navigate('/404', { replace: true });
+            return;
+          }
           setProduct(null);
           setRelatedProducts([]);
         }
@@ -162,19 +188,16 @@ export const ProductDetailPage = () => {
     return [product, ...relatedProducts].slice(0, 3);
   }, [product, relatedProducts]);
 
+  // Redirect to 404 page if product not found after loading
+  useEffect(() => {
+    if (!loading && !product && id) {
+      console.error('[ProductDetailPage] Product not found, redirecting to 404:', id);
+      navigate('/404', { replace: true });
+    }
+  }, [loading, product, id, navigate]);
+
   if (!loading && !product) {
-    return (
-      <div className={styles.emptyState}>
-        <p className={styles.eyebrow}>Product</p>
-        <h1 className={styles.emptyTitle}>Product not found</h1>
-        <p className={styles.emptyText}>
-          This design may have moved to a new capsule. Please return to the shop to explore the latest Timelite collections.
-        </p>
-        <Link to="/shop" className={styles.emptyButton}>
-          Back to Shop
-        </Link>
-      </div>
-    );
+    return null; // Will redirect via useEffect
   }
 
   if (loading || !product) {
@@ -307,13 +330,17 @@ export const ProductDetailPage = () => {
                 <p className={styles.optionLabel}>Sizes</p>
                 <div className={styles.optionList}>
                   {product.sizes.map((size) => {
+                    const isActive = selectedSize === size;
                     const className = `${styles.sizeButton} ${
-                      selectedSize === size ? styles.sizeButtonActive : ""
+                      isActive ? styles.sizeButtonActive : ""
                     }`.trim();
                     return (
                       <button
                         key={size}
-                        onClick={() => setSelectedSize(size)}
+                        type="button"
+                        onClick={() => {
+                          setSelectedSize(size);
+                        }}
                         className={className}
                       >
                         {size}

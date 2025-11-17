@@ -24,6 +24,7 @@ export const ShopPage = () => {
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const defaultCategory = (params.get("category") as ExtendedCategory | null) ?? "all";
+  const searchQuery = params.get("search") ?? "";
 
   const [selectedCategory, setSelectedCategory] = useState<ExtendedCategory>(defaultCategory);
   const [selectedColor, setSelectedColor] = useState<string>("All");
@@ -124,7 +125,12 @@ export const ShopPage = () => {
         const list = res?.products ?? [];
         if (isMounted) setAllProducts(list.map(mapProduct));
       })
-      .catch(() => {
+      .catch((error: any) => {
+        // Log error to console
+        console.error('[ShopPage] Error loading products:', {
+          error: error?.message || error,
+          status: error?.status
+        });
         if (isMounted) setAllProducts([]);
       })
       .finally(() => {
@@ -142,6 +148,7 @@ export const ShopPage = () => {
     if (process.env.NODE_ENV === 'development') {
       console.log('[ShopPage] Filter state:', {
         selectedCategory,
+        searchQuery,
         totalProducts: allProducts.length,
         productsByCategory: allProducts.reduce((acc, p) => {
           acc[p.category] = (acc[p.category] || 0) + 1;
@@ -152,6 +159,17 @@ export const ShopPage = () => {
     
     return allProducts
       .filter((product) => {
+        // Search filter
+        if (searchQuery.trim()) {
+          const query = searchQuery.toLowerCase().trim();
+          const matchesSearch = 
+            product.name.toLowerCase().includes(query) ||
+            product.shortDescription.toLowerCase().includes(query) ||
+            product.description.toLowerCase().includes(query) ||
+            product.tags.some(tag => tag.toLowerCase().includes(query));
+          if (!matchesSearch) return false;
+        }
+
         if (selectedCategory && selectedCategory !== "all") {
           if (selectedCategory === "other") {
             if (knownCategories.includes(product.category as Category)) return false;
@@ -190,7 +208,7 @@ export const ShopPage = () => {
         if (sortBy === "price-desc") return b.price - a.price;
         return b.rating - a.rating;
       });
-  }, [allProducts, priceRange, selectedCategory, selectedColor, sortBy]);
+  }, [allProducts, priceRange, selectedCategory, selectedColor, sortBy, searchQuery]);
 
   const handleCategoryChange = (category: ExtendedCategory) => {
     setSelectedCategory(category);

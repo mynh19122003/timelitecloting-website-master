@@ -346,13 +346,13 @@
 
 .sizeSelector {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
   margin-top: 4px;
 }
 
 .sizeButton {
-  min-width: 48px;
+  width: 48px;
   height: 48px;
   border-radius: 50%;
   border: 2px solid rgba(148, 163, 184, 0.35);
@@ -365,6 +365,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  position: relative;
 }
 
 .sizeButton:hover {

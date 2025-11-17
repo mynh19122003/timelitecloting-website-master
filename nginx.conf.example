@@ -1,0 +1,54 @@
+# Nginx configuration for Next.js static export with SPA routing
+# Place this file in your nginx sites-available directory
+# Then create a symlink: ln -s /etc/nginx/sites-available/timelite /etc/nginx/sites-enabled/
+
+server {
+    listen 80;
+    server_name your-domain.com www.your-domain.com;
+    
+    root /var/www/timelitecloting/out;
+    index index.html;
+    
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/json application/javascript;
+    
+    # Security headers
+    add_header X-Frame-Options "DENY" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    
+    # Cache static assets
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+    
+    # Handle Next.js static export
+    # Try to serve the file, if not found, fallback to index.html for SPA routing
+    location / {
+        try_files $uri $uri/ $uri.html /index.html;
+    }
+    
+    # Handle admin routes specifically
+    location /admin {
+        try_files $uri $uri/ $uri.html /index.html;
+    }
+    
+    # Handle product routes
+    location /product {
+        try_files $uri $uri/ $uri.html /index.html;
+    }
+    
+    # Don't cache HTML files
+    location ~* \.html$ {
+        expires -1;
+        add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
+    }
+    
+    # Error pages
+    error_page 404 /index.html;
+}
+

@@ -1,20 +1,5 @@
-// Generate static params for all possible routes
-export async function generateStaticParams() {
-  // Return all routes that your app uses
-  return [
-    { slug: [] }, // Home page
-    { slug: ['products'] },
-    { slug: ['about'] },
-    { slug: ['contact'] },
-    { slug: ['cart'] },
-    { slug: ['checkout'] },
-    { slug: ['profile'] },
-    { slug: ['orders'] },
-    { slug: ['auth', 'login'] },
-    { slug: ['auth', 'register'] },
-  ];
-}
-
+// Layout for catch-all route
+// generateStaticParams() is now in page.tsx (required for output: 'export')
 export default function CatchAllLayout({
   children,
 }: {

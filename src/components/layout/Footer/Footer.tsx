@@ -66,6 +66,11 @@ export const Footer = () => {
           <Link to="/about">Privacy Notice</Link>
           <Link to="/about">Terms & Conditions</Link>
           <Link to="/contact">Accessibility</Link>
+          {process.env.NODE_ENV === "development" && (
+            <Link to="/404" style={{ color: "#ff6b6b", fontSize: "0.85rem" }}>
+              [Dev] Preview 404
+            </Link>
+          )}
         </div>
       </div>
     </footer>

@@ -1,14 +1,75 @@
 const express = require('express');
 const http = require('http');
-const { Server } = require('socket.io');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const { testConnection } = require('./config/database');
-const { verifyToken } = require('./config/jwt');
-const chatService = require('./services/chatService');
+
+// Logger utility
+const isDevelopment = process.env.NODE_ENV !== 'production';
+const logger = {
+  formatLog: (level, message, data = {}) => ({
+    level,
+    message,
+    data,
+    timestamp: new Date().toISOString(),
+    pid: process.pid,
+    ...data,
+  }),
+  log: (level, message, data = {}) => {
+    const timestamp = new Date().toISOString();
+    const prefix = `[${timestamp}] [${level}]`;
+    switch (level) {
+      case 'ERROR':
+        console.error(prefix, message, data);
+        if (isDevelopment && data.stack) console.error('Stack trace:', data.stack);
+        break;
+      case 'WARN':
+        console.warn(prefix, message, data);
+        break;
+      case 'INFO':
+        console.log(prefix, message, data);
+        break;
+      case 'DEBUG':
+        if (isDevelopment) console.debug(prefix, message, data);
+        break;
+      default:
+        console.log(prefix, message, data);
+    }
+  },
+  debug: (message, data) => logger.log('DEBUG', message, data),
+  info: (message, data) => logger.log('INFO', message, data),
+  warn: (message, data) => logger.log('WARN', message, data),
+  error: (message, error, data = {}) => {
+    const errorData = {
+      ...data,
+      message: error?.message || message,
+      stack: error?.stack,
+      name: error?.name,
+    };
+    logger.log('ERROR', message, errorData);
+  },
+  logApiError: (req, status, error, additionalData = {}) => {
+    const errorData = {
+      method: req.method,
+      url: req.originalUrl || req.url,
+      status,
+      ip: req.ip || req.connection?.remoteAddress,
+      userAgent: req.get('user-agent'),
+      ...additionalData,
+    };
+    if (error instanceof Error) {
+      errorData.errorMessage = error.message;
+      errorData.errorStack = error.stack;
+      errorData.errorName = error.name;
+    } else {
+      errorData.error = error;
+    }
+    logger.error(`API Error: ${req.method} ${req.originalUrl || req.url}`, error instanceof Error ? error : new Error(String(error)), errorData);
+  },
+};
 
 // Import routes
 const userRoutes = require('./routes/userRoutes');
@@ -19,7 +80,6 @@ const app = express();
 const server = http.createServer(app);
 const PORT = process.env.NODE_PORT || 3001;
 
-// Initialize Socket.IO
 // Default CORS origins for development: allow both frontend (3000) and admin panel (3002)
 const defaultCorsOrigins = process.env.NODE_ENV === 'production' 
   ? ['https://yourdomain.com'] 
@@ -29,15 +89,6 @@ const defaultCorsOrigins = process.env.NODE_ENV === 'production'
 const corsOrigin = process.env.CORS_ORIGIN 
   ? (process.env.CORS_ORIGIN.includes(',') ? process.env.CORS_ORIGIN.split(',').map(o => o.trim()) : process.env.CORS_ORIGIN)
   : defaultCorsOrigins;
-
-const io = new Server(server, {
-  cors: {
-    origin: corsOrigin,
-    methods: ['GET', 'POST'],
-    credentials: true
-  },
-  allowEIO3: true // Support older Socket.IO clients
-});
 
 // Security middleware
 app.use(helmet());
@@ -84,6 +135,11 @@ app.use('/api/orders', orderRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
+  logger.warn('404 Not Found', {
+    method: req.method,
+    url: req.originalUrl || req.url,
+    ip: req.ip || req.connection?.remoteAddress,
+  });
   res.status(404).json({
     error: 'ERR_NOT_FOUND',
     message: 'Endpoint not found'
@@ -92,245 +148,21 @@ app.use('*', (req, res) => {
 
 // Global error handler
 app.use((error, req, res, next) => {
-  console.error('Global error handler:', error);
-  
-  res.status(500).json({
-    error: 'ERR_INTERNAL_SERVER_ERROR',
-    message: 'Internal server error'
-  });
-});
-
-// Socket.IO authentication middleware
-io.use(async (socket, next) => {
-  try {
-    const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization?.replace('Bearer ', '');
-    
-    if (token) {
-      try {
-        const decoded = verifyToken(token);
-        socket.userId = decoded.userId;
-        socket.userEmail = decoded.email;
-        socket.userName = decoded.userName || decoded.name || 'User';
-      } catch (error) {
-        // Token invalid, allow as guest
-        console.log('Socket connection without valid token, connecting as guest');
-      }
-    }
-    
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Socket.IO connection handling
-io.on('connection', async (socket) => {
-  const sessionId = socket.id;
-  const userId = socket.userId || null;
-  const userEmail = socket.userEmail || socket.handshake.auth?.email || null;
-  const userName = socket.userName || socket.handshake.auth?.name || 'Guest';
-
-  console.log(`🔌 Socket.IO client connected: ${sessionId}`, { userId, userEmail, userName });
-
-  // Create or update session
-  await chatService.createOrUpdateSession({
-    sessionId,
-    userId,
-    userEmail,
-    userName
+  // Log error with detailed information
+  logger.logApiError(req, error.status || 500, error, {
+    body: req.body,
+    query: req.query,
+    params: req.params,
   });
 
-  // Send connection success
-  socket.emit('connected', {
-    message: 'Connected to chat server',
-    sessionId,
-    userId,
-    userEmail,
-    userName
-  });
+  // Determine status code
+  const status = error.status || error.statusCode || 500;
 
-  // Load and send message history
-  try {
-    const history = await chatService.getMessageHistory(userId, 50);
-    socket.emit('messageHistory', history);
-  } catch (error) {
-    console.error('Error loading message history:', error);
-  }
-
-  // Auto-join admin room if connecting from admin panel or has admin flag
-  const origin = socket.handshake.headers?.origin || socket.handshake.headers?.referer || '';
-  const isAdminPanel = origin.includes('3002') || 
-                       socket.handshake.auth?.isAdmin === true ||
-                       socket.handshake.auth?.role === 'admin' ||
-                       socket.handshake.query?.isAdmin === 'true';
-  
-  console.log(`🔍 Connection check for ${sessionId}:`, { origin, isAdmin: isAdminPanel, auth: socket.handshake.auth });
-  
-  if (isAdminPanel) {
-    socket.join('admin_room');
-    console.log(`👨‍💼 Admin auto-joined admin room: ${sessionId}`);
-    
-    // Send all active sessions to admin
-    try {
-      const activeSessions = await chatService.getActiveSessions();
-      socket.emit('activeSessions', activeSessions);
-    } catch (error) {
-      console.error('Error fetching active sessions:', error);
-    }
-    
-    // Send all recent messages from all users
-    try {
-      const allMessages = await chatService.getAllMessages(100);
-      socket.emit('allMessages', allMessages);
-    } catch (error) {
-      console.error('Error fetching all messages:', error);
-    }
-  }
-
-  // Handle admin join room (for admin panel) - manual join
-  socket.on('joinAdminRoom', async () => {
-    socket.join('admin_room');
-    console.log(`👨‍💼 Admin joined admin room: ${sessionId}`);
-    
-    // Send all active sessions to admin
-    try {
-      const activeSessions = await chatService.getActiveSessions();
-      socket.emit('activeSessions', activeSessions);
-    } catch (error) {
-      console.error('Error fetching active sessions:', error);
-    }
-    
-    // Send all recent messages from all users
-    try {
-      const allMessages = await chatService.getAllMessages(100);
-      socket.emit('allMessages', allMessages);
-    } catch (error) {
-      console.error('Error fetching all messages:', error);
-    }
-  });
-
-  // Handle admin request for all messages
-  socket.on('getAllMessages', async () => {
-    try {
-      const allMessages = await chatService.getAllMessages(100);
-      socket.emit('allMessages', allMessages);
-    } catch (error) {
-      console.error('Error fetching all messages:', error);
-      socket.emit('error', { message: 'Failed to fetch messages' });
-    }
-  });
-
-  // Handle incoming messages
-  socket.on('message', async (data) => {
-    try {
-      const { text } = data;
-      
-      if (!text || !text.trim()) {
-        socket.emit('error', { message: 'Message cannot be empty' });
-        return;
-      }
-
-      // Save message to database
-      const savedMessage = await chatService.saveMessage({
-        userId,
-        userEmail,
-        userName,
-        message: text.trim(),
-        senderType: 'user'
-      });
-
-      // Echo back to sender
-      socket.emit('message', {
-        id: savedMessage.id,
-        text: savedMessage.message,
-        sender: 'user',
-        userId,
-        userEmail,
-        userName,
-        timestamp: savedMessage.createdAt
-      });
-
-      // Broadcast to admin room (admin panel)
-      io.to('admin_room').emit('message', {
-        id: savedMessage.id,
-        text: savedMessage.message,
-        sender: 'user',
-        userId,
-        userEmail,
-        userName,
-        timestamp: savedMessage.createdAt
-      });
-
-      console.log(`📨 Message received from ${userName}:`, text);
-    } catch (error) {
-      console.error('Error handling message:', error);
-      socket.emit('error', { message: 'Failed to send message' });
-    }
-  });
-
-  // Handle admin messages (for future admin panel)
-  socket.on('adminMessage', async (data) => {
-    try {
-      // Verify admin privileges (you can add admin check here)
-      const { text, targetUserId, targetUserEmail } = data;
-      
-      if (!text || !text.trim()) {
-        socket.emit('error', { message: 'Message cannot be empty' });
-        return;
-      }
-
-      // Save admin message
-      const savedMessage = await chatService.saveMessage({
-        userId: targetUserId,
-        userEmail: targetUserEmail,
-        userName: 'Admin',
-        message: text.trim(),
-        senderType: 'admin'
-      });
-
-      // Send to specific user or broadcast
-      if (targetUserId || targetUserEmail) {
-        // Find socket by user info
-        const targetSocket = Array.from(io.sockets.sockets.values())
-          .find(s => (targetUserId && s.userId === targetUserId) || (targetUserEmail && s.userEmail === targetUserEmail));
-        
-        if (targetSocket) {
-          targetSocket.emit('message', {
-            id: savedMessage.id,
-            text: savedMessage.message,
-            sender: 'admin',
-            timestamp: savedMessage.createdAt
-          });
-        }
-      } else {
-        // Broadcast to all
-        io.emit('message', {
-          id: savedMessage.id,
-          text: savedMessage.message,
-          sender: 'admin',
-          timestamp: savedMessage.createdAt
-        });
-      }
-
-      console.log(`👨‍💼 Admin message sent:`, text);
-    } catch (error) {
-      console.error('Error handling admin message:', error);
-      socket.emit('error', { message: 'Failed to send admin message' });
-    }
-  });
-
-  // Handle typing indicator
-  socket.on('typing', (data) => {
-    socket.broadcast.emit('typing', {
-      userName,
-      isTyping: data.isTyping
-    });
-  });
-
-  // Handle disconnect
-  socket.on('disconnect', async () => {
-    console.log(`🔌 Socket.IO client disconnected: ${sessionId}`);
-    await chatService.deactivateSession(sessionId);
+  // Send error response
+  res.status(status).json({
+    error: error.code || error.error || 'ERR_INTERNAL_SERVER_ERROR',
+    message: error.message || 'Internal server error',
+    ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
   });
 });
 
@@ -344,7 +176,6 @@ const startServer = async () => {
       console.log(`🚀 Node.js backend server running on port ${PORT}`);
       console.log(`📊 Health check: http://localhost:${PORT}/health`);
       console.log(`🔗 API base URL: http://localhost:${PORT}/api`);
-      console.log(`💬 Socket.IO server ready on port ${PORT}`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);
@@ -354,4 +185,4 @@ const startServer = async () => {
 
 startServer();
 
-module.exports = { app, server, io };
+module.exports = { app, server };

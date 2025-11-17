@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { Link } from "react-router-dom";
 import styles from "./HomePage.module.css";
+import { TimeliteLogo } from "../../components/ui/TimeliteLogo/TimeliteLogo";
 
 const heroTiles = [
   {
@@ -61,17 +62,14 @@ export const HomePage = () => {
           <span>Early Access! New deals drop every Friday.</span>
           <Link to="/shop" className={styles.heroAnnouncementLink}>
             Shop our best deals
-          </Link>
-        </div>
+                </Link>
+              </div>
 
         <div className={styles.heroGrid}>
           <article className={styles.heroMain}>
+            <TimeliteLogo className={styles.heroLogo} />
             <p className={styles.heroTag}>New arrivals</p>
             <h1 className={styles.heroTitle}>The latest looks for your wardrobe</h1>
-            <p className={styles.heroBody}>
-              Timelite brings modern silhouettes, luxe fabrics and essential staples you can mix, match
-              and wear every day. Discover curated edits inspired by iconic American department-store styling.
-            </p>
             <div className={styles.heroActions}>
               <Link to="/shop" className={styles.heroButton}>
                 Shop new arrivals
@@ -89,7 +87,7 @@ export const HomePage = () => {
                 <div className={styles.heroTileText}>
                   <p className={styles.heroTileSubtitle}>{tile.subtitle}</p>
                   <p className={styles.heroTileTitle}>{tile.title}</p>
-                </div>
+            </div>
               </article>
             ))}
           </div>

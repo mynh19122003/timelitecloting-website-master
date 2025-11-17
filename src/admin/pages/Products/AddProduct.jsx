@@ -55,7 +55,14 @@ const AddProduct = () => {
     if (isEditMode && id) {
       const loadProduct = async () => {
         try {
-          const productToEdit = await getProduct(id)
+          // Ensure id is a string to avoid issues
+          const productId = typeof id === 'string' ? id : String(id || '')
+          if (!productId) {
+            console.error('Invalid product id:', id)
+            setFormError('Invalid product ID')
+            return
+          }
+          const productToEdit = await getProduct(productId)
           if (productToEdit) {
             setFormData({
               name: productToEdit.name,

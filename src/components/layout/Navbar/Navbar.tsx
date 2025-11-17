@@ -1,8 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { FiMenu, FiSearch, FiShoppingBag, FiUser, FiX } from "react-icons/fi";
+import { FiMenu, FiShoppingBag, FiUser, FiX, FiSearch } from "react-icons/fi";
 import { useCart } from "../../../context/CartContext";
 import {
   clearAuthStatus,
@@ -24,8 +24,8 @@ const categoryLinks = [
 
 export const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(() => getAuthStatus());
+  const [searchQuery, setSearchQuery] = useState("");
   const { itemCount, openCart } = useCart();
   const navigate = useNavigate();
 
@@ -43,16 +43,6 @@ export const Navbar = () => {
     navigate("/login");
   };
 
-  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const term = searchTerm.trim();
-    if (term.length > 0) {
-      navigate(`/shop?search=${encodeURIComponent(term)}`);
-    }
-    setSearchTerm("");
-    setMobileOpen(false);
-  };
-
   const handleAccountClick = () => {
     if (isAuthenticated) {
       navigate("/profile");
@@ -61,8 +51,17 @@ export const Navbar = () => {
     navigate("/login");
   };
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+      setMobileOpen(false);
+    }
+  };
+
   return (
-    <header className={styles.header}>
+      <header className={styles.header}>
       <div className={styles.utilityStrip}>
         <p>Enjoy international shipping & easy returns on every order.</p>
       </div>
@@ -79,23 +78,23 @@ export const Navbar = () => {
 
         <button
           type="button"
-          className={styles.brand}
+            className={styles.brand}
           onClick={() => {
             navigate("/");
             setMobileOpen(false);
           }}
-        >
-          Timelite
+          >
+            Timelite
         </button>
 
         <form className={styles.searchForm} onSubmit={handleSearchSubmit}>
           <FiSearch className={styles.searchIcon} />
           <input
             type="search"
-            placeholder="What are you looking for today?"
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
             className={styles.searchInput}
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </form>
 
@@ -126,15 +125,15 @@ export const Navbar = () => {
 
       <nav className={styles.categoryNav}>
         {categoryLinks.map((link) => (
-          <NavLink
+              <NavLink
             key={link.label}
             to={link.to}
-            className={({ isActive }) =>
+                className={({ isActive }) =>
               `${styles.categoryLink} ${isActive ? styles.categoryLinkActive : ""}`.trim()
-            }
-          >
+                }
+              >
             {link.label}
-          </NavLink>
+              </NavLink>
         ))}
       </nav>
 
@@ -144,9 +143,10 @@ export const Navbar = () => {
             <FiSearch className={styles.searchIcon} />
             <input
               type="search"
-              placeholder="Search products"
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              className={styles.searchInput}
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </form>
           <div className={styles.mobileLinks}>
@@ -192,8 +192,8 @@ export const Navbar = () => {
                 Logout
               </button>
             )}
-            <button
-              type="button"
+                      <button
+                        type="button"
               onClick={() => {
                 openCart();
                 setMobileOpen(false);
@@ -201,7 +201,7 @@ export const Navbar = () => {
               className={styles.mobileLink}
             >
               View cart ({itemCount})
-            </button>
+                      </button>
           </div>
         </div>
       )}

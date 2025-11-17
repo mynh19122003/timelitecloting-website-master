@@ -58,21 +58,28 @@ const Orders = () => {
 
   const normaliseOrders = (list) =>
     list
-      .map((item, index) => ({
-        id: item.id || item.orderid || `#TMP-${index + 1}`,
-        date:
-          item.date ||
-          item.createdat ||
-          new Date().toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-          }),
-        customerName: item.customerName || item.customer || item.name || 'Unknown customer',
-        customerLocation: item.customerLocation || item.location || 'N/A',
-        status: item.status || 'Processing',
-        total: Number(item.total ?? item.amount ?? item.totalAmount ?? 0) || 0
-      }))
+      .map((item, index) => {
+        const rawId = item.id || item.orderid || `TMP-${index + 1}`
+        const displayId = rawId.startsWith('#') ? rawId : `#${rawId}`
+        // Store actual order ID without # for navigation
+        const actualOrderId = rawId.replace(/^#/, '')
+        return {
+          id: displayId,
+          orderId: actualOrderId, // Store actual order ID for navigation
+          date:
+            item.date ||
+            item.createdat ||
+            new Date().toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric'
+            }),
+          customerName: item.customerName || item.customer || item.name || 'Unknown customer',
+          customerLocation: item.customerLocation || item.location || 'N/A',
+          status: item.status || 'Processing',
+          total: Number(item.total ?? item.amount ?? item.totalAmount ?? 0) || 0
+        }
+      })
       .filter((order) => order.id && order.customerName)
 
   const mapApiOrders = (apiOrders) =>
@@ -84,8 +91,11 @@ const Orders = () => {
         year: 'numeric'
       })
       const displayId = order.order_id ? `#${order.order_id}` : `#${order.id}`
+      // Store the actual order ID for navigation (order_id or id from API)
+      const actualOrderId = order.order_id || order.id || ''
       return {
         id: displayId,
+        orderId: actualOrderId, // Store actual order ID for navigation
         date: formattedDate,
         customerName: order.user_name || 'Unknown customer',
         customerLocation: order.user_address || 'N/A',
@@ -415,23 +425,29 @@ const Orders = () => {
       key: 'actions',
       label: '',
       align: 'right',
-      render: (value, row) => (
-        <div className={styles.actionGroup}>
-          <Link
-            to={`/orders/${row.id.replace('#', '')}`}
-            className={styles.tableLink}
-          >
-            <FiEdit /> View
-          </Link>
-          <button
-            type='button'
-            className={styles.deleteButton}
-            onClick={() => handleDelete(row.id)}
-          >
-            <FiTrash /> Delete
-          </button>
-        </div>
-      )
+      render: (value, row) => {
+        // Get the actual order ID for navigation (orderId or fallback to id without #)
+        const orderId = row.orderId || row.id.replace('#', '')
+        // Ensure orderId is a string and properly encoded
+        const orderIdStr = typeof orderId === 'string' ? orderId : String(orderId || '')
+        return (
+          <div className={styles.actionGroup}>
+            <Link
+              to={`/admin/orders/${encodeURIComponent(orderIdStr)}`}
+              className={styles.tableLink}
+            >
+              <FiEdit /> View
+            </Link>
+            <button
+              type='button'
+              className={styles.deleteButton}
+              onClick={() => handleDelete(row.id)}
+            >
+              <FiTrash /> Delete
+            </button>
+          </div>
+        )
+      }
     }
   ];
 

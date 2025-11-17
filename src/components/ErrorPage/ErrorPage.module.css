@@ -1,0 +1,184 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.container {
+  width: 100%;
+  max-width: 600px;
+}
+
+.content {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.errorCode {
+  font-size: 8rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #e2e8f0;
+  margin-bottom: 1rem;
+  font-family: 'Arial', sans-serif;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.5rem;
+}
+
+.heading {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #64748b;
+  margin: 0 0 1rem;
+}
+
+.description {
+  font-size: 1rem;
+  color: #94a3b8;
+  margin: 0 0 2rem;
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.primaryButton {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: #1e293b;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.primaryButton:hover {
+  background: #334155;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2);
+}
+
+.secondaryButton {
+  padding: 0.75rem 1.5rem;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.secondaryButton:hover {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+.errorDetails {
+  margin-top: 2rem;
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.errorSummary {
+  padding: 1rem;
+  background: #f8fafc;
+  cursor: pointer;
+  font-weight: 600;
+  color: #475569;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.errorSummary:hover {
+  background: #f1f5f9;
+}
+
+.errorContent {
+  padding: 1rem;
+  background: #ffffff;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.errorSection {
+  margin-bottom: 1rem;
+}
+
+.errorSection h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #475569;
+  margin: 0 0 0.5rem;
+}
+
+.errorSection pre {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #1e293b;
+  background: #f8fafc;
+  padding: 0.75rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.stackTrace {
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+@media (max-width: 640px) {
+  .content {
+    padding: 2rem 1.5rem;
+  }
+
+  .errorCode {
+    font-size: 6rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .heading {
+    font-size: 1.125rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+  }
+}
+

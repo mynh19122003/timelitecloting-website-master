@@ -87,7 +87,6 @@ services:
       JWT_EXPIRES_IN: 8h
       NODE_ENV: development
       ADMIN_NODE_PORT: 3001
-      CLIENT_SOCKET_URL: http://backend-node:3001
       # Disable rate limit during local testing to avoid 429 on login attempts
       DISABLE_RATE_LIMIT: "1"
       # Admin security token for POST /admin/* endpoints (REQUIRED)

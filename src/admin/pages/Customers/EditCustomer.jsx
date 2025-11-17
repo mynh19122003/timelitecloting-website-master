@@ -92,7 +92,7 @@ const EditCustomer = () => {
           <section className={styles.section}>
             <h1>Customer not found</h1>
             <p>{loadError || 'The customer you are trying to edit could not be located.'}</p>
-            <Button type="button" variant="primary" onClick={() => navigate('/customers')}>
+            <Button type="button" variant="primary" onClick={() => navigate('/admin/customers')}>
               Back to customers
             </Button>
           </section>
@@ -124,7 +124,7 @@ const EditCustomer = () => {
           .map((tag) => tag.trim())
           .filter(Boolean)
       })
-      navigate('/customers')
+      navigate('/admin/customers')
     } catch (err) {
       window.alert(err?.message || 'Không thể lưu thay đổi')
     }
@@ -137,7 +137,7 @@ const EditCustomer = () => {
           &larr; Back
         </button>
         <div className={styles.headerActions}>
-          <Button type="button" variant="ghost" onClick={() => navigate('/customers')}>
+          <Button type="button" variant="ghost" onClick={() => navigate('/admin/customers')}>
             Cancel
           </Button>
           <Button type="submit" form="edit-customer-form" variant="primary">

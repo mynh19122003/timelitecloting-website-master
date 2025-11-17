@@ -117,7 +117,14 @@ const OrderDetail = () => {
       try {
         setIsLoading(true)
         setLoadError('')
-        const { data } = await AdminApi.get(`/orders/${orderId}`)
+        // Ensure orderId is a string to avoid [object Object] in URL
+        const orderIdStr = typeof orderId === 'string' ? orderId : String(orderId || '')
+        if (!orderIdStr) {
+          setLoadError('Invalid order ID')
+          setIsLoading(false)
+          return
+        }
+        const { data } = await AdminApi.get(`/orders/${encodeURIComponent(orderIdStr)}`)
         const api = data?.data
         if (!api) throw new Error('Not found')
         const createdAt = api.create_date ? new Date(api.create_date) : new Date()
@@ -159,8 +166,10 @@ const OrderDetail = () => {
     
     setIsUpdatingStatus(true)
     try {
-      await AdminApi.patch(`/orders/${orderId}/status`, { status: selectedStatus })
-      const { data } = await AdminApi.get(`/orders/${orderId}`)
+      // Ensure orderId is a string
+      const orderIdStr = typeof orderId === 'string' ? orderId : String(orderId || '')
+      await AdminApi.patch(`/orders/${encodeURIComponent(orderIdStr)}/status`, { status: selectedStatus })
+      const { data } = await AdminApi.get(`/orders/${encodeURIComponent(orderIdStr)}`)
       const api = data?.data
       if (api) {
         const createdAt = api.create_date ? new Date(api.create_date) : new Date()
@@ -210,7 +219,7 @@ const OrderDetail = () => {
         <div className={styles.detailPage}>
           <div className={styles.detailError}>
             <p>We couldn&apos;t locate that order. It may have been archived or removed.</p>
-            <Button type="button" onClick={() => navigate('/orders')}>
+            <Button type="button" onClick={() => navigate('/admin/orders')}>
               Return to orders
             </Button>
           </div>
@@ -224,7 +233,7 @@ const OrderDetail = () => {
       <div className={styles.detailPage}>
         <header className={styles.detailHeader}>
           <div>
-            <button type="button" className={styles.backLink} onClick={() => navigate('/orders')}>
+            <button type="button" className={styles.backLink} onClick={() => navigate('/admin/orders')}>
               <FiArrowLeft /> Back to orders
             </button>
             <h1 className={styles.detailTitle}>{order.id}</h1>

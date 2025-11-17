@@ -59,10 +59,14 @@ const normalizeUiProduct = (apiProduct = {}, fallbackImage = '') => {
     return `${prefix}${String(raw).replace(/^\/?(admin\/media\/)?/, '')}`
   })()
 
+  // Ensure id is always a string
+  const rawId = apiProduct.products_id || apiProduct.product_id || apiProduct.id
+  const productId = rawId ? String(rawId) : `PRD-${Date.now().toString().slice(-6)}`
+  
   return {
-    id: apiProduct.products_id || apiProduct.product_id || apiProduct.id || `PRD-${Date.now().toString().slice(-6)}`,
+    id: productId,
     name: apiProduct.name || 'Untitled product',
-    sku: apiProduct.products_id || apiProduct.product_id || apiProduct.id || '',
+    sku: rawId ? String(rawId) : '',
     image: resolvedImage,
     category: apiProduct.category || 'General',
     color: parsedColors[0] || '',

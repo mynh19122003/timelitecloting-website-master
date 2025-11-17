@@ -1,0 +1,104 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-color: #fafafa;
+}
+
+.container {
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+}
+
+.content {
+  background-color: #fff;
+  padding: 3rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 8rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+  color: #000;
+  line-height: 1;
+}
+
+.heading {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+  color: #333;
+}
+
+.description {
+  font-size: 1.125rem;
+  color: #666;
+  margin: 0 0 2rem;
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-block;
+  padding: 0.75rem 2rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.primaryButton {
+  background-color: #000;
+  color: #fff;
+}
+
+.primaryButton:hover {
+  background-color: #333;
+}
+
+.secondaryButton {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.secondaryButton:hover {
+  background-color: #e0e0e0;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 5rem;
+  }
+
+  .heading {
+    font-size: 1.5rem;
+  }
+
+  .description {
+    font-size: 1rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+  }
+}
+

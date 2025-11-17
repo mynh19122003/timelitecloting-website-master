@@ -261,7 +261,7 @@ const Customers = () => {
       align: 'center',
       render: (value, row) => (
         <div className={styles.actionGroup}>
-          <Link to={`/customers/${row.id}/edit`} className={styles.tableLink}>
+          <Link to={`/admin/customers/${row.id}/edit`} className={styles.tableLink}>
             <FiEdit /> Edit
           </Link>
           <button

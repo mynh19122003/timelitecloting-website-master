@@ -1,9 +1,7 @@
-// API Service for E-commerce Backend
-// Tích hợp với Node.js và PHP backend
-
 import { API_CONFIG, getAdminMediaUrl } from '../config/api';
+import logger from '../utils/logger';
+import { apiCache, ApiCache } from '../utils/apiCache';
 
-// API Response types
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
@@ -60,7 +58,6 @@ export class ApiError extends Error {
   }
 }
 
-// HTTP Client class
 class HttpClient {
   private baseURL: string;
 
@@ -73,16 +70,13 @@ class HttpClient {
     options: RequestInit = {},
     silent: boolean = false
   ): Promise<T> {
-    // Allow disabling all API calls from FE for manual Postman testing
     try {
       const apiDisabledByEnv = process.env.NEXT_PUBLIC_API_DISABLED === '1';
       const apiDisabledByStorage = (typeof window !== 'undefined') && (window.localStorage.getItem('timelite:disable-api') === '1');
       if (apiDisabledByEnv || apiDisabledByStorage) {
         throw new ApiError('API is disabled on frontend (enable by removing NEXT_PUBLIC_API_DISABLED or localStorage timelite:disable-api)', 0, 'API_DISABLED');
       }
-    } catch (_) {
-      // ignore storage access errors (SSR)
-    }
+    } catch (_) {}
     const url = `${this.baseURL}${endpoint}`;
     
     const config: RequestInit = {
@@ -93,7 +87,6 @@ class HttpClient {
       ...options,
     };
 
-    // Add JWT token if available
     const token = this.getToken();
     if (token) {
       config.headers = {
@@ -111,7 +104,6 @@ class HttpClient {
       });
     }
 
-    // Add timeout to prevent hanging requests
     const timeout = API_CONFIG.TIMEOUT || 10000;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -123,7 +115,6 @@ class HttpClient {
       });
       clearTimeout(timeoutId);
       
-      // Handle non-JSON responses
       let data: any;
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
@@ -147,6 +138,12 @@ class HttpClient {
       }
 
       if (!response.ok) {
+        // Log error using logger utility
+        logger.logApiError(url, response.status, data, {
+          method: options.method || 'GET',
+          requestBody: options.body ? JSON.parse(options.body as string) : undefined,
+        });
+
         throw new ApiError(
           data.message || data.error || 'An error occurred',
           response.status,
@@ -158,25 +155,20 @@ class HttpClient {
     } catch (error) {
       clearTimeout(timeoutId);
       
-      if (!silent) {
-        console.error('[HttpClient] ERROR:', {
-          url,
-          error: error instanceof Error ? error.message : error,
-          isAborted: error instanceof Error && error.name === 'AbortError'
-        });
-      }
-      
       if (error instanceof ApiError) {
+        // Already logged, just throw
         throw error;
       }
       
       // Handle timeout
       if (error instanceof Error && error.name === 'AbortError') {
-        throw new ApiError(
+        const timeoutError = new ApiError(
           `Request timeout after ${timeout}ms. Backend server có thể không phản hồi.`,
           0,
           'TIMEOUT'
         );
+        logger.logNetworkError(url, timeoutError);
+        throw timeoutError;
       }
       
       // Network or other errors - provide helpful message
@@ -185,10 +177,9 @@ class HttpClient {
         ? 'Không thể kết nối đến backend server. Vui lòng đảm bảo backend đang chạy:\n1. cd ecommerce-backend\n2. docker-compose up -d\nHoặc kiểm tra NEXT_PUBLIC_API_URL trong .env.local'
         : 'Network error. Please check your connection.';
       
-      throw new ApiError(
-        errorMessage,
-        0
-      );
+      const networkError = new ApiError(errorMessage, 0);
+      logger.logNetworkError(url, networkError);
+      throw networkError;
     }
   }
 
@@ -408,7 +399,7 @@ export class ApiService {
     category?: string;
     sortBy?: 'price' | 'created_at';
     sortOrder?: 'asc' | 'desc';
-  }): Promise<{
+  }, useCache: boolean = true): Promise<{
     products: any[];
     total: number;
     page: number;
@@ -424,67 +415,114 @@ export class ApiService {
 
     const queryString = queryParams.toString();
     const endpoint = `${API_CONFIG.ENDPOINTS.PRODUCTS}${queryString ? `?${queryString}` : ''}`;
+    const cacheKey = ApiCache.generateKey(endpoint, params);
+
+    if (useCache && !params?.search) {
+      const cached = apiCache.get<{
+        products: any[];
+        total: number;
+        page: number;
+        limit: number;
+      }>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
 
     try {
       const res = await httpClient.get<ApiResponse<any>>(endpoint, true);
       const data = (res as any).data ?? res;
       const pagination = (data && data.pagination) ? data.pagination : { page: Number(params?.page || 1), limit: Number(params?.limit || 10), total: (data?.total ?? 0) };
-      return {
+      const result = {
         products: data.products ?? [],
         total: Number(pagination.total ?? 0),
         page: Number(pagination.page ?? 1),
         limit: Number(pagination.limit ?? 10),
       } as any;
+
+      if (useCache && !params?.search) {
+        apiCache.set(cacheKey, result, 2 * 60 * 1000);
+      }
+
+      return result;
     } catch (error) {
-      // Fallback to PHP explicitly if not already using it
       try {
         const res = await httpClient.get<ApiResponse<any>>(`${API_CONFIG.ENDPOINTS.PHP.PRODUCTS}${queryString ? `?${queryString}` : ''}`, true);
         const data = (res as any).data ?? res;
         const pagination = (data && data.pagination) ? data.pagination : { page: Number(params?.page || 1), limit: Number(params?.limit || 10), total: (data?.total ?? 0) };
-        return {
+        const result = {
           products: data.products ?? [],
           total: Number(pagination.total ?? 0),
           page: Number(pagination.page ?? 1),
           limit: Number(pagination.limit ?? 10),
         } as any;
+
+        if (useCache && !params?.search) {
+          apiCache.set(cacheKey, result, 2 * 60 * 1000);
+        }
+
+        return result;
       } catch (_) {
         return { products: [], total: 0, page: Number(params?.page || 1), limit: Number(params?.limit || 10) } as any;
       }
     }
   }
 
-  static async getProduct(idOrSlug: number | string): Promise<any> {
+  static async getProduct(idOrSlug: number | string, useCache: boolean = true): Promise<any> {
     const idStr = String(idOrSlug);
+    const cacheKey = `product:${idStr}`;
+
+    if (useCache) {
+      const cached = apiCache.get<any>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
     
-    // Check if it's a PID format (e.g., PID00001)
     const pidMatch = /^pid(\d+)$/i.test(idStr);
     if (pidMatch) {
-      // Extract numeric ID from PID format and remove leading zeros
       const numericIdMatch = idStr.match(/^pid(\d+)$/i)?.[1];
       if (numericIdMatch) {
-        const numericId = parseInt(numericIdMatch, 10); // Convert to integer, removing leading zeros
+        const numericId = parseInt(numericIdMatch, 10);
         try {
-          return await httpClient.get(`${API_CONFIG.ENDPOINTS.PRODUCT_DETAIL}/${numericId}`);
+          const result = await httpClient.get(`${API_CONFIG.ENDPOINTS.PRODUCT_DETAIL}/${numericId}`);
+          if (useCache) {
+            apiCache.set(cacheKey, result, 5 * 60 * 1000);
+          }
+          return result;
         } catch (error) {
-          return await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.PRODUCT_DETAIL}/${numericId}`);
+          const result = await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.PRODUCT_DETAIL}/${numericId}`);
+          if (useCache) {
+            apiCache.set(cacheKey, result, 5 * 60 * 1000);
+          }
+          return result;
         }
       }
     }
     
-    // Check if it's a numeric ID
     const isNumeric = typeof idOrSlug === 'number' || (typeof idOrSlug === 'string' && /^\d+$/.test(idStr));
     if (isNumeric) {
       try {
-        return await httpClient.get(`${API_CONFIG.ENDPOINTS.PRODUCT_DETAIL}/${idOrSlug}`);
+        const result = await httpClient.get(`${API_CONFIG.ENDPOINTS.PRODUCT_DETAIL}/${idOrSlug}`);
+        if (useCache) {
+          apiCache.set(cacheKey, result, 5 * 60 * 1000);
+        }
+        return result;
       } catch (error) {
-        return await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.PRODUCT_DETAIL}/${idOrSlug}`);
+        const result = await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.PRODUCT_DETAIL}/${idOrSlug}`);
+        if (useCache) {
+          apiCache.set(cacheKey, result, 5 * 60 * 1000);
+        }
+        return result;
       }
     }
     
-    // Otherwise, treat as slug
     const slug = idStr;
-    // Query by slug to PHP backend
-    return await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.PRODUCT_DETAIL}?product_id=${encodeURIComponent(slug)}`);
+    const result = await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.PRODUCT_DETAIL}?product_id=${encodeURIComponent(slug)}`);
+    if (useCache) {
+      apiCache.set(cacheKey, result, 5 * 60 * 1000);
+    }
+    return result;
   }
 
   static async getProductBySlug(slug: string): Promise<any> {

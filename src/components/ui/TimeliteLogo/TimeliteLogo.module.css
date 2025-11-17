@@ -1,0 +1,13 @@
+.logoContainer {
+  @apply flex items-center justify-center;
+}
+
+.logoImage {
+  @apply w-full h-auto;
+  max-width: 300px;
+  max-height: 375px;
+  border-radius: 50%;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+

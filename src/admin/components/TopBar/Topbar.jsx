@@ -1,8 +1,11 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
-import { FiSearch, FiBell, FiMessageSquare, FiChevronDown, FiLogOut } from "react-icons/fi"
+import { FiSearch, FiBell, FiMessageSquare, FiChevronDown, FiLogOut, FiX } from "react-icons/fi"
 import styles from "./Topbar.module.css"
 import { useAuth } from "../../context/AuthContext"
+import productsService from "../../services/productsService"
+import ordersService from "../../services/ordersService"
+import customersService from "../../services/customersService"
 
 const Topbar = () => {
   const navigate = useNavigate()
@@ -10,8 +13,17 @@ const Topbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [activePanel, setActivePanel] = useState(null)
   const topbarRef = useRef(null)
+  const searchRef = useRef(null)
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true)
   const [hasUnreadMessages, setHasUnreadMessages] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [searchResults, setSearchResults] = useState({
+    orders: [],
+    customers: [],
+    products: []
+  })
+  const [isSearching, setIsSearching] = useState(false)
+  const [showSearchResults, setShowSearchResults] = useState(false)
 
   const handleToggleMenu = () => setIsMenuOpen((prev) => !prev)
   const handleSignOut = () => {
@@ -27,6 +39,32 @@ const Topbar = () => {
     navigate("settings")
   }
 
+  const handleSearchChange = (e) => {
+    const value = e.target.value
+    setSearchTerm(value)
+    setShowSearchResults(value.trim().length > 0)
+  }
+
+  const handleClearSearch = () => {
+    setSearchTerm("")
+    setSearchResults({ orders: [], customers: [], products: [] })
+    setShowSearchResults(false)
+  }
+
+  const handleResultClick = (type, id) => {
+    setShowSearchResults(false)
+    setSearchTerm("")
+    if (type === "order") {
+      navigate(`/admin/orders`)
+    } else if (type === "customer") {
+      navigate(`/admin/customers`)
+    } else if (type === "product") {
+      navigate(`/admin/products`)
+    }
+  }
+
+  const totalResults = searchResults.orders.length + searchResults.customers.length + searchResults.products.length
+
   const togglePanel = (panel) => {
     setActivePanel((prev) => {
       const next = prev === panel ? null : panel
@@ -37,12 +75,50 @@ const Topbar = () => {
     setIsMenuOpen(false)
   }
 
+  const performSearch = useCallback(async (term) => {
+    if (!term.trim()) {
+      setSearchResults({ orders: [], customers: [], products: [] })
+      setIsSearching(false)
+      return
+    }
+
+    setIsSearching(true)
+    try {
+      const [ordersData, customersData, productsData] = await Promise.allSettled([
+        ordersService.listOrders({ page: 1, limit: 5, order_id: term }),
+        customersService.listCustomers({ page: 1, limit: 5, q: term }),
+        productsService.listProducts({ page: 1, limit: 5, search: term })
+      ])
+
+      setSearchResults({
+        orders: ordersData.status === "fulfilled" ? ordersData.value.items : [],
+        customers: customersData.status === "fulfilled" ? customersData.value.items : [],
+        products: productsData.status === "fulfilled" ? productsData.value.items : []
+      })
+    } catch (error) {
+      console.error("Search error:", error)
+      setSearchResults({ orders: [], customers: [], products: [] })
+    } finally {
+      setIsSearching(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      performSearch(searchTerm)
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm, performSearch])
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!topbarRef.current) return
-      if (!topbarRef.current.contains(event.target)) {
+      if (!topbarRef.current.contains(event.target) && 
+          !searchRef.current?.contains(event.target)) {
         setActivePanel(null)
         setIsMenuOpen(false)
+        setShowSearchResults(false)
       }
     }
 
@@ -50,6 +126,7 @@ const Topbar = () => {
       if (event.key === "Escape") {
         setActivePanel(null)
         setIsMenuOpen(false)
+        setShowSearchResults(false)
       }
     }
 
@@ -84,9 +161,96 @@ const Topbar = () => {
 
   return (
     <header ref={topbarRef} className={styles.topbar}>
-      <div className={styles.search}>
-        <FiSearch />
-        <input type="search" placeholder="Search orders, customers, products..." />
+      <div ref={searchRef} className={styles.searchWrapper}>
+        <div className={styles.search}>
+          <FiSearch />
+          <input
+            type="search"
+            placeholder="Search orders, customers, products..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+            onFocus={() => searchTerm.trim() && setShowSearchResults(true)}
+          />
+          {searchTerm && (
+            <button
+              type="button"
+              className={styles.clearButton}
+              onClick={handleClearSearch}
+              aria-label="Clear search"
+            >
+              <FiX />
+            </button>
+          )}
+        </div>
+        {showSearchResults && (
+          <div className={styles.searchResults}>
+            {isSearching ? (
+              <div className={styles.searchLoading}>Searching...</div>
+            ) : totalResults === 0 ? (
+              <div className={styles.searchEmpty}>No results found</div>
+            ) : (
+              <>
+                {searchResults.orders.length > 0 && (
+                  <div className={styles.searchSection}>
+                    <div className={styles.searchSectionHeader}>Orders</div>
+                    <ul className={styles.searchList}>
+                      {searchResults.orders.map((order) => (
+                        <li
+                          key={order.id}
+                          className={styles.searchItem}
+                          onClick={() => handleResultClick("order", order.id)}
+                        >
+                          <div>
+                            <strong>#{order.order_id || order.id}</strong>
+                            <p>{order.customer_name} • {order.status}</p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {searchResults.customers.length > 0 && (
+                  <div className={styles.searchSection}>
+                    <div className={styles.searchSectionHeader}>Customers</div>
+                    <ul className={styles.searchList}>
+                      {searchResults.customers.map((customer) => (
+                        <li
+                          key={customer.id}
+                          className={styles.searchItem}
+                          onClick={() => handleResultClick("customer", customer.id)}
+                        >
+                          <div>
+                            <strong>{customer.firstName} {customer.lastName}</strong>
+                            <p>{customer.email}</p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {searchResults.products.length > 0 && (
+                  <div className={styles.searchSection}>
+                    <div className={styles.searchSectionHeader}>Products</div>
+                    <ul className={styles.searchList}>
+                      {searchResults.products.map((product) => (
+                        <li
+                          key={product.id}
+                          className={styles.searchItem}
+                          onClick={() => handleResultClick("product", product.id)}
+                        >
+                          <div>
+                            <strong>{product.name}</strong>
+                            <p>{product.sku} • {product.pricing.listPrice}</p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       <div className={styles.right}>

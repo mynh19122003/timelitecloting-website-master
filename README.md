@@ -21,12 +21,14 @@ docker ps
 
 ## 📚 Documentation
 
-All documentation is in the [`docs/`](docs/) folder:
+All documentation is organized in the [`docs/`](docs/) folder. See [docs/README.md](docs/README.md) for the complete documentation structure.
 
+**Quick Links:**
+- **[Frontend Routes Guide](docs/frontend/ROUTES_GUIDE.md)** - Routes configuration
+- **[Backend Setup](docs/backend/SETUP_GUIDE.md)** - Backend setup guide
+- **[Deployment Guide](docs/deployment/DEPLOY_GUIDE.md)** - Deployment instructions
 - **[Order API Documentation](docs/ORDER_API_DOCUMENTATION.md)** - Complete API reference
-- **[Quick Reference](docs/ORDER_API_QUICK_REFERENCE.md)** - Quick lookup card
 - **[Project Summary](docs/PROJECT_SUMMARY.md)** - Full overview
-- **[System Overview](docs/SYSTEM_OVERVIEW.txt)** - Visual diagrams
 
 ## 🧪 Testing
 
@@ -97,10 +99,12 @@ timelitecloting-website-master/
 │   ├── backend-node/           # Node.js API server
 │   ├── database/               # Database schema
 │   └── docker-compose.yml      # Container orchestration
-├── docs/                       # All documentation & tests
-│   ├── ORDER_API_DOCUMENTATION.md
-│   ├── PROJECT_SUMMARY.md
-│   └── test-order-apis.ps1
+├── docs/                       # All documentation (organized by category)
+│   ├── frontend/              # Frontend docs
+│   ├── backend/               # Backend docs
+│   ├── deployment/            # Deployment guides
+│   ├── components/            # Component docs
+│   └── testing/               # Testing guides
 └── README.md                   # This file
 ```
 
