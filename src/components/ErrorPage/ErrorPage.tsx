@@ -1,5 +1,6 @@
 "use client";
 
+import type { ErrorInfo } from "react";
 import { Link } from "react-router-dom";
 import styles from "./ErrorPage.module.css";
 
@@ -13,7 +14,7 @@ interface ErrorPageProps {
   showDetails?: boolean;
   errorDetails?: {
     error?: Error | null;
-    errorInfo?: any;
+    errorInfo?: ErrorInfo;
   };
 }
 

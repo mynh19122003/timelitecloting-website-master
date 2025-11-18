@@ -5,16 +5,14 @@ const { pool } = require('../config/database');
 
 class ProductsService {
   constructor() {
-    // MEDIA_ROOT: thư mục gốc để lưu ảnh, có thể mount vào Docker volume
-    // Mặc định theo yêu cầu mới: /data/admindata/picture
     this.mediaRoot = process.env.MEDIA_ROOT || '/data/admindata/picture';
+    this.productsIdPattern = /^PID\d{3,}$/i;
   }
 
   ensureDirSync(dirPath) {
     fs.mkdirSync(dirPath, { recursive: true });
   }
 
-  // Loại bỏ prefix data URI nếu có; luôn chuyển sang buffer gốc
   decodeBase64Image(base64String) {
     if (!base64String || typeof base64String !== 'string') return null;
     let cleaned = base64String.trim();
@@ -22,8 +20,26 @@ class ProductsService {
     if (dataUriMatch) {
       cleaned = dataUriMatch[2];
     }
-    const buffer = Buffer.from(cleaned, 'base64');
-    return { buffer };
+    return { buffer: Buffer.from(cleaned, 'base64') };
+  }
+
+  normalizeProductsId(value) {
+    if (value === undefined || value === null) return null;
+    const raw = String(value).trim();
+    if (!raw) return null;
+    if (this.productsIdPattern.test(raw)) return raw.toUpperCase();
+    if (/^\d+$/.test(raw)) return `PID${raw.padStart(5, '0')}`;
+    throw new Error('ERR_INVALID_PRODUCTS_ID');
+  }
+
+  async assertProductsIdAvailable(productId) {
+    const [rows] = await pool.execute(
+      'SELECT 1 FROM products WHERE products_id = ? LIMIT 1',
+      [productId]
+    );
+    if (rows.length) {
+      throw new Error('ERR_PRODUCTS_ID_EXISTS');
+    }
   }
 
   async generateNextProductId() {
@@ -36,43 +52,38 @@ class ProductsService {
       const numeric = parseInt(last.replace(/[^0-9]/g, ''), 10);
       if (!Number.isNaN(numeric)) nextNum = numeric + 1;
     }
-    // PID + 5 chữ số, ví dụ PID00001
     return `PID${String(nextNum).padStart(5, '0')}`;
+  }
+
+  async resolveProductId(preferredId) {
+    if (!preferredId) return this.generateNextProductId();
+    const normalized = this.normalizeProductsId(preferredId);
+    await this.assertProductsIdAvailable(normalized);
+    return normalized;
   }
 
   async saveImageForProduct(productId, base64String, filePrefix = 'main') {
     const decoded = this.decodeBase64Image(base64String);
     if (!decoded) return null;
-    const { buffer } = decoded;
     const productDir = path.join(this.mediaRoot, productId);
     this.ensureDirSync(productDir);
     const fileName = `${filePrefix}.webp`;
-    const absPath = path.join(productDir, fileName);
-    // Convert to WEBP for smaller size
-    await sharp(buffer)
-      .webp({ quality: 82 })
-      .toFile(absPath);
-    // Trả về path tương đối tính từ mediaRoot để lưu DB
-    const relPath = `${productId}/${fileName}`.replace(/\\/g, '/');
-    return relPath;
+    await sharp(decoded.buffer).webp({ quality: 82 }).toFile(path.join(productDir, fileName));
+    return `${productId}/${fileName}`.replace(/\\/g, '/');
   }
 
   parseMaybeJson(value) {
     if (value === undefined || value === null) return null;
     if (typeof value === 'string') {
-      // Nếu là base64 ảnh thì không parse
       const trimmed = value.trim();
       if (trimmed.startsWith('data:') || /;base64,/.test(trimmed)) return value;
-      // Nếu là JSON string hợp lệ thì giữ nguyên
       try {
         JSON.parse(trimmed);
-        return trimmed; // đã là JSON string
+        return trimmed;
       } catch (_) {
-        // Không phải JSON string, chuyển thành JSON string từ primitive
         return JSON.stringify(trimmed);
       }
     }
-    // object/array -> stringify
     try {
       return JSON.stringify(value);
     } catch (_) {
@@ -81,15 +92,13 @@ class ProductsService {
   }
 
   async createProduct(payload) {
-    const productId = await this.generateNextProductId();
+    const productId = await this.resolveProductId(payload.products_id);
 
-    // Ảnh chính
     let imagePath = null;
     if (payload.image_url) {
       imagePath = await this.saveImageForProduct(productId, payload.image_url, 'main');
     }
 
-    // Gallery (mảng base64) -> lưu file và lưu danh sách đường dẫn tương đối
     let galleryJson = null;
     if (payload.gallery) {
       try {
@@ -124,23 +133,24 @@ class ProductsService {
     const tags = this.parseMaybeJson(payload.tags);
 
     const sql = `INSERT INTO products
-      (products_id, name, price, stock, description, image_url, slug, category, short_description,
-       original_price, colors, sizes, gallery, rating, reviews, tags, is_featured, is_new)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+      (products_id, slug, name, category, variant, short_description, description, price, original_price,
+       stock, colors, sizes, image_url, gallery, rating, reviews, tags, is_featured, is_new)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
 
     const params = [
       productId,
-      payload.name || null,
-      payload.price ?? null,
-      payload.stock ?? 0,
-      payload.description || null,
-      imagePath,
       slug || null,
+      payload.name || null,
       payload.category || null,
+      payload.variant || null,
       payload.short_description || null,
+      payload.description || null,
+      payload.price ?? null,
       payload.original_price ?? null,
+      payload.stock ?? 0,
       colors,
       sizes,
+      imagePath,
       galleryJson,
       payload.rating ?? null,
       payload.reviews ?? null,
@@ -173,7 +183,6 @@ class ProductsService {
 
     const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
 
-    // MySQL may reject parameter markers for LIMIT/OFFSET in some client configs
     const [rows] = await pool.execute(
       `SELECT * FROM products ${whereSql} ORDER BY id DESC LIMIT ${limit} OFFSET ${offset}`,
       params
@@ -195,7 +204,6 @@ class ProductsService {
   }
 
   async getByIdOrCode(idOrCode) {
-    // Ưu tiên products_id, sau đó id số nguyên
     const idStr = String(idOrCode);
     const tryId = Number.isNaN(parseInt(idStr, 10)) ? null : parseInt(idStr, 10);
 
@@ -229,7 +237,6 @@ class ProductsService {
       }
     };
 
-    // Ảnh
     if (payload.image_url) {
       const rel = await this.saveImageForProduct(productId, payload.image_url, 'main');
       if (rel) {
@@ -237,7 +244,6 @@ class ProductsService {
       }
     }
 
-    // Gallery
     if (payload.gallery) {
       try {
         const arr = Array.isArray(payload.gallery)
@@ -264,6 +270,7 @@ class ProductsService {
     setIfPresent('description', payload.description);
     setIfPresent('slug', payload.slug);
     setIfPresent('category', payload.category);
+    setIfPresent('variant', payload.variant);
     setIfPresent('short_description', payload.short_description);
     setIfPresent('original_price', payload.original_price);
     if (colors !== null && payload.colors !== undefined) setIfPresent('colors', colors);
@@ -275,7 +282,7 @@ class ProductsService {
     if (payload.is_new !== undefined) setIfPresent('is_new', payload.is_new);
 
     if (fields.length === 0) {
-      return current; // không có gì để cập nhật
+      return current;
     }
 
     const sql = `UPDATE products SET ${fields.join(', ')} WHERE products_id = ? OR id = ?`;
@@ -284,8 +291,28 @@ class ProductsService {
 
     return this.getByIdOrCode(productId);
   }
+
+  async deleteProduct(idOrCode) {
+    const current = await this.getByIdOrCode(idOrCode);
+    const productId = current.products_id;
+
+    await pool.execute(
+      'DELETE FROM products WHERE products_id = ? OR id = ? LIMIT 1',
+      [productId, current.id]
+    );
+
+    try {
+      const productDir = path.join(this.mediaRoot, productId);
+      if (fs.existsSync(productDir)) {
+        fs.rmSync(productDir, { recursive: true, force: true });
+      }
+    } catch (_) {
+      // ignore fs errors
+    }
+
+    return { success: true };
+  }
 }
 
 module.exports = new ProductsService();
-
 

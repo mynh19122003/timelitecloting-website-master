@@ -8,10 +8,28 @@ import defaultProductImage from '../../assets/products/product-01.svg'
 import productsService from '../../services/productsService'
 
 const ensureId = (value, fallback) => {
+  // Ensure value is a string
+  let stringValue = ''
   if (value) {
-    return value.startsWith('PRD-') ? value : `PRD-${value}`
+    if (typeof value === 'string') {
+      stringValue = value
+    } else if (typeof value === 'number') {
+      stringValue = String(value)
+    } else if (value && typeof value === 'object') {
+      // If it's an object, try to extract id property
+      stringValue = String(value.id || value.product_id || value.products_id || JSON.stringify(value))
+    } else {
+      stringValue = String(value)
+    }
   }
-  if (fallback) return fallback
+  
+  if (stringValue) {
+    return stringValue.startsWith('PRD-') ? stringValue : `PRD-${stringValue}`
+  }
+  if (fallback) {
+    const fallbackStr = typeof fallback === 'string' ? fallback : String(fallback || '')
+    return fallbackStr.startsWith('PRD-') ? fallbackStr : `PRD-${fallbackStr}`
+  }
   return `PRD-${Date.now().toString().slice(-6)}`
 }
 
@@ -22,6 +40,46 @@ const parseInventoryCount = (payload, fallback) => {
     if (numeric) return Number(numeric)
   }
   return fallback ?? 0
+}
+
+const ID_PRIORITY_KEYS = ['id', 'product_id', 'products_id', 'productId', 'sku', 'code', 'value']
+
+const resolvePrimitiveId = (value, depth = 0) => {
+  if (value == null || depth > 4) return ''
+  if (typeof value === 'string' || typeof value === 'number') return String(value)
+  if (typeof value === 'object') {
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        const maybe = resolvePrimitiveId(entry, depth + 1)
+        if (maybe) return maybe
+      }
+    } else {
+      for (const key of ID_PRIORITY_KEYS) {
+        if (value[key] != null) {
+          const maybe = resolvePrimitiveId(value[key], depth + 1)
+          if (maybe) return maybe
+        }
+      }
+      // fallback: try all values to catch nested objects with unknown keys
+      for (const entry of Object.values(value)) {
+        const maybe = resolvePrimitiveId(entry, depth + 1)
+        if (maybe) return maybe
+      }
+    }
+  }
+  return ''
+}
+
+const extractProductId = (payload) => {
+  if (!payload) return ''
+  const direct = resolvePrimitiveId(payload?.id ?? payload)
+  if (direct) return direct
+  for (const key of ID_PRIORITY_KEYS) {
+    if (key === 'id') continue
+    const maybe = resolvePrimitiveId(payload?.[key])
+    if (maybe) return maybe
+  }
+  return ''
 }
 
 const normalizeProduct = (incoming, existing) => {
@@ -150,8 +208,21 @@ const Products = () => {
       label: '',
       width: '110px',
       render: (_, row) => {
-        // Ensure id is a string to avoid [object Object] in URL
-        const productId = typeof row.id === 'string' ? row.id : String(row.id || '')
+        const productId = extractProductId(row)
+        if (!productId) {
+          console.warn('[Products] Unable to resolve product id from row:', row)
+          return (
+            <div className={styles.rowActions}>
+              <button type="button" className={styles.tableLink} disabled title="Missing product id">
+                <FaEdit /> Edit
+              </button>
+              <button type="button" className={styles.deleteButton} disabled title="Missing product id">
+                <FaTrash /> Delete
+              </button>
+            </div>
+          )
+        }
+        
         return (
           <div className={styles.rowActions}>
             <button
@@ -172,10 +243,9 @@ const Products = () => {
 
   function handleDelete(id) {
     if (!window.confirm('Delete this product?')) return
-    // Ensure id is a string for comparison
-    const productId = typeof id === 'string' ? id : String(id || '')
+    const productId = extractProductId({ id }) || (typeof id === 'string' ? id : String(id || ''))
     setProducts((prev) => prev.filter((p) => {
-      const pId = typeof p.id === 'string' ? p.id : String(p.id || '')
+      const pId = extractProductId(p) || (typeof p.id === 'string' ? p.id : String(p.id || ''))
       return pId !== productId
     }))
   }

@@ -1,0 +1,1920 @@
+{
+  "folder": "anh_ao_dai",
+  "generated_at": "2025-11-18T10:38:12.334Z",
+  "total_assets": 50,
+  "config_snapshot": {
+    "category": "Ao Dai",
+    "variant": "Studio Collection",
+    "namePrefix": "Ao Dai Studio",
+    "slugPrefix": "ao-dai-studio",
+    "productIdStart": 10001,
+    "sequenceStart": 1,
+    "asset_plan": {
+      "output_root": "storage/products",
+      "main_name": "main.webp",
+      "gallery": []
+    }
+  },
+  "products": [
+    {
+      "products_id": "PID10001",
+      "slug": "ao-dai-studio-001",
+      "name": "Ao Dai Studio 001",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10001/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/5de25f72e545691b305460.jpg",
+      "planned_output": "storage/products/PID10001/main.webp"
+    },
+    {
+      "products_id": "PID10002",
+      "slug": "ao-dai-studio-002",
+      "name": "Ao Dai Studio 002",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10002/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/7a042a9490a31cfd45b258.jpg",
+      "planned_output": "storage/products/PID10002/main.webp"
+    },
+    {
+      "products_id": "PID10003",
+      "slug": "ao-dai-studio-003",
+      "name": "Ao Dai Studio 003",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10003/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/7cb61b29a11e2d40740f51.jpg",
+      "planned_output": "storage/products/PID10003/main.webp"
+    },
+    {
+      "products_id": "PID10004",
+      "slug": "ao-dai-studio-004",
+      "name": "Ao Dai Studio 004",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10004/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/7e8c9d19272eab70f23f80.jpg",
+      "planned_output": "storage/products/PID10004/main.webp"
+    },
+    {
+      "products_id": "PID10005",
+      "slug": "ao-dai-studio-005",
+      "name": "Ao Dai Studio 005",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10005/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/9db86427de10524e0b0155.jpg",
+      "planned_output": "storage/products/PID10005/main.webp"
+    },
+    {
+      "products_id": "PID10006",
+      "slug": "ao-dai-studio-006",
+      "name": "Ao Dai Studio 006",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10006/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/22f6726bc85c44021d4d42.jpg",
+      "planned_output": "storage/products/PID10006/main.webp"
+    },
+    {
+      "products_id": "PID10007",
+      "slug": "ao-dai-studio-007",
+      "name": "Ao Dai Studio 007",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10007/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/72d0db416176ed28b46759.jpg",
+      "planned_output": "storage/products/PID10007/main.webp"
+    },
+    {
+      "products_id": "PID10008",
+      "slug": "ao-dai-studio-008",
+      "name": "Ao Dai Studio 008",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10008/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/76efba7000478c19d55648.jpg",
+      "planned_output": "storage/products/PID10008/main.webp"
+    },
+    {
+      "products_id": "PID10009",
+      "slug": "ao-dai-studio-009",
+      "name": "Ao Dai Studio 009",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10009/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/505cbdc907fe8ba0d2ef76.jpg",
+      "planned_output": "storage/products/PID10009/main.webp"
+    },
+    {
+      "products_id": "PID10010",
+      "slug": "ao-dai-studio-010",
+      "name": "Ao Dai Studio 010",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10010/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/618d431df92a75742c3b35.jpg",
+      "planned_output": "storage/products/PID10010/main.webp"
+    },
+    {
+      "products_id": "PID10011",
+      "slug": "ao-dai-studio-011",
+      "name": "Ao Dai Studio 011",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10011/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/689eb309093e8560dc2f57.jpg",
+      "planned_output": "storage/products/PID10011/main.webp"
+    },
+    {
+      "products_id": "PID10012",
+      "slug": "ao-dai-studio-012",
+      "name": "Ao Dai Studio 012",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10012/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/700b829d38aab4f4edbb62.jpg",
+      "planned_output": "storage/products/PID10012/main.webp"
+    },
+    {
+      "products_id": "PID10013",
+      "slug": "ao-dai-studio-013",
+      "name": "Ao Dai Studio 013",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10013/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/999b0905b3323f6c662346.jpg",
+      "planned_output": "storage/products/PID10013/main.webp"
+    },
+    {
+      "products_id": "PID10014",
+      "slug": "ao-dai-studio-014",
+      "name": "Ao Dai Studio 014",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10014/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/8131c0a57a92f6ccaf8382.jpg",
+      "planned_output": "storage/products/PID10014/main.webp"
+    },
+    {
+      "products_id": "PID10015",
+      "slug": "ao-dai-studio-015",
+      "name": "Ao Dai Studio 015",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10015/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/9002f39249a5c5fb9cb454.jpg",
+      "planned_output": "storage/products/PID10015/main.webp"
+    },
+    {
+      "products_id": "PID10016",
+      "slug": "ao-dai-studio-016",
+      "name": "Ao Dai Studio 016",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10016/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/9854e3c259f5d5ab8ce474.jpg",
+      "planned_output": "storage/products/PID10016/main.webp"
+    },
+    {
+      "products_id": "PID10017",
+      "slug": "ao-dai-studio-017",
+      "name": "Ao Dai Studio 017",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10017/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/31366daad79d5bc3028c36.jpg",
+      "planned_output": "storage/products/PID10017/main.webp"
+    },
+    {
+      "products_id": "PID10018",
+      "slug": "ao-dai-studio-018",
+      "name": "Ao Dai Studio 018",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10018/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/135508c7b2f03eae67e164.jpg",
+      "planned_output": "storage/products/PID10018/main.webp"
+    },
+    {
+      "products_id": "PID10019",
+      "slug": "ao-dai-studio-019",
+      "name": "Ao Dai Studio 019",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10019/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/92813210882704795d3669.jpg",
+      "planned_output": "storage/products/PID10019/main.webp"
+    },
+    {
+      "products_id": "PID10020",
+      "slug": "ao-dai-studio-020",
+      "name": "Ao Dai Studio 020",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10020/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/271164304967048495939.jpg",
+      "planned_output": "storage/products/PID10020/main.webp"
+    },
+    {
+      "products_id": "PID10021",
+      "slug": "ao-dai-studio-021",
+      "name": "Ao Dai Studio 021",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10021/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/271164304967048495956.jpg",
+      "planned_output": "storage/products/PID10021/main.webp"
+    },
+    {
+      "products_id": "PID10022",
+      "slug": "ao-dai-studio-022",
+      "name": "Ao Dai Studio 022",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10022/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/271164304967048495966.jpg",
+      "planned_output": "storage/products/PID10022/main.webp"
+    },
+    {
+      "products_id": "PID10023",
+      "slug": "ao-dai-studio-023",
+      "name": "Ao Dai Studio 023",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10023/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/271164304967048495968.jpg",
+      "planned_output": "storage/products/PID10023/main.webp"
+    },
+    {
+      "products_id": "PID10024",
+      "slug": "ao-dai-studio-024",
+      "name": "Ao Dai Studio 024",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10024/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/271164304967048495973.jpg",
+      "planned_output": "storage/products/PID10024/main.webp"
+    },
+    {
+      "products_id": "PID10025",
+      "slug": "ao-dai-studio-025",
+      "name": "Ao Dai Studio 025",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10025/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/271164304967048495975.jpg",
+      "planned_output": "storage/products/PID10025/main.webp"
+    },
+    {
+      "products_id": "PID10026",
+      "slug": "ao-dai-studio-026",
+      "name": "Ao Dai Studio 026",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10026/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/271164304967048495978.jpg",
+      "planned_output": "storage/products/PID10026/main.webp"
+    },
+    {
+      "products_id": "PID10027",
+      "slug": "ao-dai-studio-027",
+      "name": "Ao Dai Studio 027",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10027/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/271164304967048495979.jpg",
+      "planned_output": "storage/products/PID10027/main.webp"
+    },
+    {
+      "products_id": "PID10028",
+      "slug": "ao-dai-studio-028",
+      "name": "Ao Dai Studio 028",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10028/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/271164304967048495981.jpg",
+      "planned_output": "storage/products/PID10028/main.webp"
+    },
+    {
+      "products_id": "PID10029",
+      "slug": "ao-dai-studio-029",
+      "name": "Ao Dai Studio 029",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10029/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/357518003570827482734.jpg",
+      "planned_output": "storage/products/PID10029/main.webp"
+    },
+    {
+      "products_id": "PID10030",
+      "slug": "ao-dai-studio-030",
+      "name": "Ao Dai Studio 030",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10030/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/357518003570827482745.jpg",
+      "planned_output": "storage/products/PID10030/main.webp"
+    },
+    {
+      "products_id": "PID10031",
+      "slug": "ao-dai-studio-031",
+      "name": "Ao Dai Studio 031",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10031/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/357518003570827482753.jpg",
+      "planned_output": "storage/products/PID10031/main.webp"
+    },
+    {
+      "products_id": "PID10032",
+      "slug": "ao-dai-studio-032",
+      "name": "Ao Dai Studio 032",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10032/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/357518003570827482761.jpg",
+      "planned_output": "storage/products/PID10032/main.webp"
+    },
+    {
+      "products_id": "PID10033",
+      "slug": "ao-dai-studio-033",
+      "name": "Ao Dai Studio 033",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10033/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/357518003570827482767.jpg",
+      "planned_output": "storage/products/PID10033/main.webp"
+    },
+    {
+      "products_id": "PID10034",
+      "slug": "ao-dai-studio-034",
+      "name": "Ao Dai Studio 034",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10034/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/357518003570827482771.jpg",
+      "planned_output": "storage/products/PID10034/main.webp"
+    },
+    {
+      "products_id": "PID10035",
+      "slug": "ao-dai-studio-035",
+      "name": "Ao Dai Studio 035",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10035/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/373279593700267930437.jpg",
+      "planned_output": "storage/products/PID10035/main.webp"
+    },
+    {
+      "products_id": "PID10036",
+      "slug": "ao-dai-studio-036",
+      "name": "Ao Dai Studio 036",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10036/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/a691a70e1d399167c82850.jpg",
+      "planned_output": "storage/products/PID10036/main.webp"
+    },
+    {
+      "products_id": "PID10037",
+      "slug": "ao-dai-studio-037",
+      "name": "Ao Dai Studio 037",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10037/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/a5513bcd81fa0da454eb44.jpg",
+      "planned_output": "storage/products/PID10037/main.webp"
+    },
+    {
+      "products_id": "PID10038",
+      "slug": "ao-dai-studio-038",
+      "name": "Ao Dai Studio 038",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10038/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/ao-dai-1.webp",
+      "planned_output": "storage/products/PID10038/main.webp"
+    },
+    {
+      "products_id": "PID10039",
+      "slug": "ao-dai-studio-039",
+      "name": "Ao Dai Studio 039",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10039/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/b21dcf8b75bcf9e2a0ad72.jpg",
+      "planned_output": "storage/products/PID10039/main.webp"
+    },
+    {
+      "products_id": "PID10040",
+      "slug": "ao-dai-studio-040",
+      "name": "Ao Dai Studio 040",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10040/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/ce7212e6a8d1248f7dc077.jpg",
+      "planned_output": "storage/products/PID10040/main.webp"
+    },
+    {
+      "products_id": "PID10041",
+      "slug": "ao-dai-studio-041",
+      "name": "Ao Dai Studio 041",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10041/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/ce9120079a30166e4f2147.jpg",
+      "planned_output": "storage/products/PID10041/main.webp"
+    },
+    {
+      "products_id": "PID10042",
+      "slug": "ao-dai-studio-042",
+      "name": "Ao Dai Studio 042",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10042/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/dc834f16f521797f203070.jpg",
+      "planned_output": "storage/products/PID10042/main.webp"
+    },
+    {
+      "products_id": "PID10043",
+      "slug": "ao-dai-studio-043",
+      "name": "Ao Dai Studio 043",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10043/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/e7c8295593621f3c467343.jpg",
+      "planned_output": "storage/products/PID10043/main.webp"
+    },
+    {
+      "products_id": "PID10044",
+      "slug": "ao-dai-studio-044",
+      "name": "Ao Dai Studio 044",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10044/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/e115e88752b0deee87a165.jpg",
+      "planned_output": "storage/products/PID10044/main.webp"
+    },
+    {
+      "products_id": "PID10045",
+      "slug": "ao-dai-studio-045",
+      "name": "Ao Dai Studio 045",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10045/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/e364d0fa6acde693bfdc41.jpg",
+      "planned_output": "storage/products/PID10045/main.webp"
+    },
+    {
+      "products_id": "PID10046",
+      "slug": "ao-dai-studio-046",
+      "name": "Ao Dai Studio 046",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10046/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/ea4e27d39de411ba48f540.jpg",
+      "planned_output": "storage/products/PID10046/main.webp"
+    },
+    {
+      "products_id": "PID10047",
+      "slug": "ao-dai-studio-047",
+      "name": "Ao Dai Studio 047",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10047/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/eb055a9ae0ad6cf335bc52.jpg",
+      "planned_output": "storage/products/PID10047/main.webp"
+    },
+    {
+      "products_id": "PID10048",
+      "slug": "ao-dai-studio-048",
+      "name": "Ao Dai Studio 048",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10048/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/ecc3f9534364cf3a967533.jpg",
+      "planned_output": "storage/products/PID10048/main.webp"
+    },
+    {
+      "products_id": "PID10049",
+      "slug": "ao-dai-studio-049",
+      "name": "Ao Dai Studio 049",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10049/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/f18ee218582fd4718d3e63.jpg",
+      "planned_output": "storage/products/PID10049/main.webp"
+    },
+    {
+      "products_id": "PID10050",
+      "slug": "ao-dai-studio-050",
+      "name": "Ao Dai Studio 050",
+      "category": "Ao Dai",
+      "variant": "Studio Collection",
+      "short_description": "Limited edition Ao Dai studio shoot with premium silk fabrics.",
+      "description": "Each Ao Dai Studio look is curated for campaign-ready editorials. Premium silk base, structured form, and handcrafted embellishments make every design ready for product detail and lookbook content.",
+      "price": 3200000,
+      "original_price": 3800000,
+      "stock": 25,
+      "colors": [
+        "Ivory",
+        "Crimson",
+        "Emerald",
+        "Onyx"
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "image_url": "PID10050/main.webp",
+      "gallery": [],
+      "rating": 4.8,
+      "reviews": 12,
+      "tags": [
+        "ao-dai",
+        "studio",
+        "limited"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/anh_ao_dai/f57a52e1e8d664883dc738.jpg",
+      "planned_output": "storage/products/PID10050/main.webp"
+    }
+  ]
+}

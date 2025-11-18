@@ -6,7 +6,7 @@ import logger from "../../utils/logger";
 
 interface Error500PageProps {
   error?: Error | null;
-  errorInfo?: any;
+  errorInfo?: unknown;
 }
 
 export const Error500Page = ({ error, errorInfo }: Error500PageProps = {}) => {

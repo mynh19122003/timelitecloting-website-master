@@ -66,6 +66,9 @@ const customerUpdateSchema = Joi.object({
 
 // Products
 const productCreateSchema = Joi.object({
+  products_id: Joi.string()
+    .pattern(/^PID\d{3,}$/i, 'PID format')
+    .optional(),
   name: Joi.string().max(255).required(),
   price: Joi.number().required(),
   stock: Joi.number().integer().min(0).required(),
@@ -73,6 +76,7 @@ const productCreateSchema = Joi.object({
   image_url: Joi.string().allow('', null).optional(), // base64 của ảnh chính
   slug: Joi.string().max(255).allow('', null).optional(),
   category: Joi.string().max(64).allow('', null).optional(),
+  variant: Joi.string().max(128).allow('', null).optional(),
   short_description: Joi.string().allow('', null).optional(),
   original_price: Joi.number().allow(null).optional(),
   colors: Joi.alternatives().try(Joi.string(), Joi.object(), Joi.array()).optional(),
@@ -93,6 +97,7 @@ const productUpdateSchema = Joi.object({
   image_url: Joi.string().allow('', null).optional(),
   slug: Joi.string().max(255).allow('', null).optional(),
   category: Joi.string().max(64).allow('', null).optional(),
+  variant: Joi.string().max(128).allow('', null).optional(),
   short_description: Joi.string().allow('', null).optional(),
   original_price: Joi.number().allow(null).optional(),
   colors: Joi.alternatives().try(Joi.string(), Joi.object(), Joi.array()).optional(),

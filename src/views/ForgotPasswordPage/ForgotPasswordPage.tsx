@@ -43,7 +43,7 @@ export const ForgotPasswordPage = () => {
       // Success
       setSuccess(true);
       setEmail('');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Forgot password error:', err);
       setError('Network error. Please check your connection and try again.');
       setIsSubmitting(false);
@@ -56,7 +56,7 @@ export const ForgotPasswordPage = () => {
         <div className={styles.card}>
           <h1 className={styles.heading}>Reset your password</h1>
           <p className={styles.description}>
-            Enter your email address and we'll send you instructions to reset your password.
+            Enter your email address and we&apos;ll send you instructions to reset your password.
           </p>
 
           {error && (
@@ -69,7 +69,7 @@ export const ForgotPasswordPage = () => {
             <div className={styles.success}>
               <p className={styles.successTitle}>Check your email</p>
               <p className={styles.successText}>
-                We've sent password reset instructions to <strong>{email || 'your email'}</strong>.
+                We&apos;ve sent password reset instructions to <strong>{email || 'your email'}</strong>.
                 Check the console logs for the reset token (since email service is not yet configured).
               </p>
               <Link to="/login" className={styles.button}>

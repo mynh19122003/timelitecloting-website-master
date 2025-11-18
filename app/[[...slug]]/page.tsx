@@ -28,7 +28,12 @@ export async function generateStaticParams(): Promise<Array<{ slug: string[] }>>
   // - Error pages (400, 401, 403, 404, 500, 502, 503)
   // - Admin public routes (login, signup, etc.)
   // - Admin protected routes (dashboard, orders, products, etc.)
-  return ALL_STATIC_ROUTES as Array<{ slug: string[] }>;
+
+  // Clone slug arrays to ensure they are mutable plain arrays
+  // Next.js expects mutable strings arrays for generateStaticParams output.
+  return ALL_STATIC_ROUTES.map((route) => ({
+    slug: route.slug ? [...route.slug] : [],
+  }));
 }
 
 // Server Component wrapper

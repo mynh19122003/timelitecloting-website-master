@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { ValueProps } from "../../components/ui/ValueProps";
 import styles from "./AboutPage.module.css";
 

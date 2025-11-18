@@ -188,10 +188,51 @@ const AddProduct = () => {
       }
 
       // Create via backend API
+      console.log('[AddProduct] Attempting to create product with formData:', {
+        name: formData.name,
+        price: formData.price,
+        stock: formData.inventory,
+        category: formData.type,
+        hasImage: Boolean(formData.imagePreview)
+      })
+      
       const createdUi = await createProduct(formData)
+      console.log('[AddProduct] Product created successfully:', createdUi)
+      
+      // Điều hướng lại trang danh sách sản phẩm cùng dữ liệu mới
       navigate('/admin/products', { replace: true, state: { newProduct: createdUi } })
     } catch (err) {
-      setFormError(err?.message || 'Failed to save product')
+      console.error('[AddProduct] Error creating product:', err)
+      console.error('[AddProduct] Error details:', {
+        message: err?.message,
+        response: err?.response?.data,
+        status: err?.response?.status,
+        statusText: err?.response?.statusText,
+        headers: err?.response?.headers,
+        config: {
+          url: err?.config?.url,
+          method: err?.config?.method,
+          baseURL: err?.config?.baseURL,
+          headers: err?.config?.headers
+        }
+      })
+      
+      // Hiển thị lỗi chi tiết hơn
+      let errorMessage = 'Failed to save product'
+      if (err?.response?.status === 403) {
+        errorMessage = `403 Forbidden: ${err?.response?.data?.message || 'Bạn không có quyền tạo sản phẩm. Vui lòng kiểm tra admin token.'}`
+        if (err?.response?.data?.error) {
+          errorMessage += `\nError code: ${err.response.data.error}`
+        }
+      } else if (err?.response?.status === 401) {
+        errorMessage = `401 Unauthorized: ${err?.response?.data?.message || 'Token không hợp lệ hoặc đã hết hạn.'}`
+      } else if (err?.response?.data?.message) {
+        errorMessage = `${err.response.status || 'Error'}: ${err.response.data.message}`
+      } else if (err?.message) {
+        errorMessage = err.message
+      }
+      
+      setFormError(errorMessage)
     }
   }
 
@@ -217,7 +258,7 @@ const AddProduct = () => {
             <h1>{isEditMode ? 'Edit Product' : 'Add Product'}</h1>
             <p>Define product information, inventory, pricing, and SEO before publishing.</p>
             {formError && (
-              <div className={styles.formError} role='alert'>
+              <div className={styles.formError} role='alert' style={{ whiteSpace: 'pre-line' }}>
                 {formError}
               </div>
             )}

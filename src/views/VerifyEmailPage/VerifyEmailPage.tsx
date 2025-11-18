@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
-import { getApiUrl, API_CONFIG } from "../../config/api";
+import { getApiUrl } from "../../config/api";
 import styles from "./VerifyEmailPage.module.css";
 
 export const VerifyEmailPage = () => {
@@ -46,7 +46,7 @@ export const VerifyEmailPage = () => {
         setTimeout(() => {
           navigate('/login');
         }, 3000);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Verify email error:', err);
         setError('Network error. Please check your connection and try again.');
         setIsVerifying(false);

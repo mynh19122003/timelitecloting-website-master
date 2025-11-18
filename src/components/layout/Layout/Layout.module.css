@@ -1,5 +1,7 @@
 .root {
   @apply flex min-h-screen flex-col bg-white;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 .main {

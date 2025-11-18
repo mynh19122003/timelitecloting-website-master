@@ -8,6 +8,7 @@ require('dotenv').config();
 const { testConnection, shouldSkipDb } = require('./config/database');
 const conversationsService = require('./services/conversationsService');
 const logger = require('./utils/logger');
+const { buildPayloadPreview } = require('./utils/payloadPreview');
 
 // Routes
 const authRoutes = require('./routes/authRoutes');
@@ -101,7 +102,9 @@ if (!isProduction) {
   });
 }
 
-const ADMIN_API_TOKEN = process.env.ADMIN_API_TOKEN;
+// Admin API token middleware: Accept JWT token from login
+// The JWT token is returned from /admin/auth/login and used for POST requests to /admin/* endpoints
+const { verifyToken } = require('./config/jwt');
 const DISABLE_ADMIN_TOKEN = String(process.env.DISABLE_ADMIN_TOKEN || '').toLowerCase() === 'true'
   || process.env.DISABLE_ADMIN_TOKEN === '1';
 app.use((req, res, next) => {
@@ -117,13 +120,6 @@ app.use((req, res, next) => {
     return next();
   }
 
-  if (!ADMIN_API_TOKEN) {
-    try {
-      console.warn('[AUTH] Missing ADMIN_API_TOKEN in env; rejecting auth');
-    } catch (_) {}
-    return res.status(503).json({ error: 'ERR_AUTH_NOT_CONFIGURED', message: 'Admin token not configured' });
-  }
-
   const authHeader = req.headers.authorization || '';
   const headerLower = typeof authHeader === 'string' ? authHeader.toLowerCase() : '';
   let token = '';
@@ -133,30 +129,56 @@ app.use((req, res, next) => {
     token = String(req.headers['x-admin-token']);
   }
 
+  const buildDebugPayload = () => {
+    try {
+      return buildPayloadPreview(req.body, { stringLimit: 256 })
+    } catch (err) {
+      return `payload_preview_failed: ${err.message}`
+    }
+  }
+
+  const headerSnapshot = {
+    hasAuthHeader: Boolean(req.headers.authorization),
+    hasXAdminToken: Boolean(req.headers['x-admin-token']),
+    contentType: req.headers['content-type'],
+    contentLength: req.headers['content-length']
+  }
+
   if (!token) {
     try {
       console.warn(`[AUTH] Missing token for POST ${req.originalUrl}`, {
-        hasAuthHeader: Boolean(req.headers.authorization),
-        hasXAdminToken: Boolean(req.headers['x-admin-token']),
-        contentType: req.headers['content-type']
+        ...headerSnapshot,
+        bodyPreview: buildDebugPayload()
       });
     } catch (_) {}
     return res.status(401).json({ error: 'ERR_UNAUTHORIZED', message: 'Missing admin token' });
   }
-  if (token !== ADMIN_API_TOKEN) {
+  
+  // Verify JWT token instead of comparing with static token
+  try {
+    const decoded = verifyToken(token);
+    // Token is valid JWT, allow request
+    req.admin = decoded; // Store decoded token for potential use in routes
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[AUTH] ✅ Valid JWT token for POST ${req.originalUrl}`, {
+        adminId: decoded.adminId,
+        email: decoded.email
+      });
+    }
+    return next();
+  } catch (err) {
+    // JWT verification failed
     try {
-      console.warn(`[AUTH] Invalid token for POST ${req.originalUrl}`, {
-        providedLength: token ? token.length : 0,
-        expectedLength: ADMIN_API_TOKEN.length,
-        headerType: headerLower.startsWith('bearer ') ? 'Authorization: Bearer' : (req.headers['x-admin-token'] ? 'X-Admin-Token' : 'unknown')
+      console.warn(`[AUTH] Invalid JWT token for POST ${req.originalUrl}`, {
+        error: err.message,
+        tokenLength: token ? token.length : 0,
+        headerType: headerLower.startsWith('bearer ') ? 'Authorization: Bearer' : (req.headers['x-admin-token'] ? 'X-Admin-Token' : 'unknown'),
+        ...headerSnapshot,
+        bodyPreview: buildDebugPayload()
       });
     } catch (_) {}
     return res.status(403).json({ error: 'ERR_FORBIDDEN', message: 'Invalid admin token' });
   }
-  try {
-    console.log(`[AUTH] OK method=${req.method} url=${req.originalUrl}`);
-  } catch (_) {}
-  return next();
 });
 
 app.get('/admin/health', (req, res) => {

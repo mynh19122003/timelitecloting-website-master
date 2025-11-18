@@ -20,6 +20,29 @@ const categoryFilters: Array<{ label: string; value: "all" | ProductCategory }> 
   { label: "Đầm Dạ Hội", value: "evening" },
 ];
 
+type ApiProduct = {
+  id?: number | string;
+  products_id?: number | string;
+  product_id?: number | string;
+  productId?: number | string;
+  slug?: string;
+  name: string;
+  category?: ProductCategory;
+  short_description?: string;
+  description?: string;
+  price?: number | string;
+  original_price?: number | string | null;
+  colors?: string[] | string;
+  sizes?: string[] | string;
+  image_url?: string;
+  gallery?: string[];
+  rating?: number | string;
+  reviews?: number | string;
+  tags?: string[];
+  is_featured?: boolean;
+  is_new?: boolean;
+};
+
 export default function ShopProductGrid() {
   const [activeFilter, setActiveFilter] = useState<(typeof categoryFilters)[number]["value"]>("all");
   const [allProducts, setAllProducts] = useState<UiProduct[]>([]);
@@ -27,42 +50,65 @@ export default function ShopProductGrid() {
 
   useEffect(() => {
     let isMounted = true;
-    const mapProduct = (p: any): UiProduct => {
+
+    const safeParseArray = (value: string): string[] | null => {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : null;
+      } catch {
+        return null;
+      }
+    };
+
+    const mapProduct = (p: ApiProduct): UiProduct => {
       const slug: string | undefined = p.slug ?? undefined;
       const pidLike: string | number | undefined = p.products_id ?? p.product_id ?? p.id ?? p.productId;
-      const fromSlug = (s?: string): any => {
-        if (!s) return "other";
+      const fromSlug = (s?: string): ProductCategory => {
+        if (!s) return "ao-dai";
         if (s.startsWith("ao-dai-")) return "ao-dai";
         if (s.startsWith("vest-")) return "vest";
         if (s.startsWith("wedding-") || s.startsWith("bridal-")) return "wedding";
         if (s.startsWith("evening-")) return "evening";
-        return "other";
+        return "ao-dai";
       };
-      const raw = typeof p.image_url === 'string' ? p.image_url.trim() : '';
+
+      const raw = typeof p.image_url === "string" ? p.image_url.trim() : "";
       const fromPid = getAdminMediaUrlByAny(pidLike);
-      let image = fromPid ?? '';
+      let image = fromPid ?? "";
+
       if (!image) {
-        if (/^https?:\/\//i.test(raw) || raw.startsWith('/')) {
+        if (/^https?:\/\//i.test(raw) || raw.startsWith("/")) {
           image = raw;
         } else if (/^pid\d+\//i.test(raw)) {
-          const [pidPart, filePart] = raw.split('/');
-          const built = getAdminMediaUrlByAny(pidPart, filePart || 'main.webp');
-          image = built || '';
+          const [pidPart, filePart] = raw.split("/");
+          const built = getAdminMediaUrlByAny(pidPart, filePart || "main.webp");
+          image = built || "";
         }
       }
+
       image = normalizePossibleMediaUrl(image) || "/images/image_1.png";
+
       const galleryRaw = Array.isArray(p.gallery) && p.gallery.length ? p.gallery : [image];
-      const gallery = galleryRaw.map((g: string) => normalizePossibleMediaUrl(g) || g);
+      const gallery = galleryRaw.map((g) => normalizePossibleMediaUrl(g) || g);
+
       return {
         id: slug ?? String(p.id),
         name: p.name,
-        category: (p.category as any) ?? fromSlug(slug),
+        category: p.category ?? fromSlug(slug),
         shortDescription: p.short_description ?? "",
         description: p.description ?? "",
         price: Number(p.price ?? 0),
         originalPrice: p.original_price != null ? Number(p.original_price) : undefined,
-        colors: Array.isArray(p.colors) ? p.colors : (typeof p.colors === 'string' ? (safeParseArray(p.colors) || []) : []),
-        sizes: Array.isArray(p.sizes) ? p.sizes : (typeof p.sizes === 'string' ? (safeParseArray(p.sizes) || ["S", "M", "L"]) : ["S", "M", "L"]),
+        colors: Array.isArray(p.colors)
+          ? p.colors
+          : typeof p.colors === "string"
+          ? safeParseArray(p.colors) ?? []
+          : [],
+        sizes: Array.isArray(p.sizes)
+          ? (p.sizes as UiProduct["sizes"])
+          : typeof p.sizes === "string"
+          ? ((safeParseArray(p.sizes) as UiProduct["sizes"]) ?? ["S", "M", "L"])
+          : ["S", "M", "L"],
         image,
         gallery,
         rating: Number(p.rating ?? 0),
@@ -71,14 +117,6 @@ export default function ShopProductGrid() {
         isFeatured: Boolean(p.is_featured ?? false),
         isNew: Boolean(p.is_new ?? false),
       };
-    };
-    const safeParseArray = (value: string): string[] | null => {
-      try {
-        const parsed = JSON.parse(value);
-        return Array.isArray(parsed) ? parsed : null;
-      } catch {
-        return null;
-      }
     };
     setLoading(true);
     ApiService.getProducts({ limit: 100 })

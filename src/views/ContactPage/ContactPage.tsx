@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { FiMail, FiMapPin, FiPhone } from "react-icons/fi";
 import { ValueProps } from "../../components/ui/ValueProps";
 import styles from "./ContactPage.module.css";

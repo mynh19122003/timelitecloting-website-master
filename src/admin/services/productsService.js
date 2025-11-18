@@ -60,7 +60,11 @@ const normalizeUiProduct = (apiProduct = {}, fallbackImage = '') => {
   })()
 
   // Ensure id is always a string
-  const rawId = apiProduct.products_id || apiProduct.product_id || apiProduct.id
+  let rawId = apiProduct.products_id || apiProduct.product_id || apiProduct.id
+  // Handle case where rawId might be an object
+  if (rawId && typeof rawId === 'object' && rawId !== null) {
+    rawId = rawId.id || rawId.product_id || rawId.products_id || null
+  }
   const productId = rawId ? String(rawId) : `PRD-${Date.now().toString().slice(-6)}`
   
   return {
@@ -144,9 +148,43 @@ export const createProduct = async (formData = {}) => {
     }
   }
 
-  const res = await AdminApi.post('/products', payload)
-  const api = res?.data?.data || res?.data || {}
-  return normalizeUiProduct(api, formData.imagePreview)
+  try {
+    const res = await AdminApi.post('/products', payload)
+    const api = res?.data?.data || res?.data || {}
+    return normalizeUiProduct(api, formData.imagePreview)
+  } catch (error) {
+    // Log chi tiết lỗi để debug
+    console.error('[createProduct] API call failed:', {
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
+      error: error?.response?.data?.error,
+      message: error?.response?.data?.message,
+      url: error?.config?.url,
+      method: error?.config?.method,
+      baseURL: error?.config?.baseURL,
+      headers: {
+        authorization: error?.config?.headers?.Authorization ? 'Bearer ***' : 'missing',
+        'x-admin-token': error?.config?.headers?.['X-Admin-Token'] ? '***' : 'missing',
+        'content-type': error?.config?.headers?.['Content-Type']
+      },
+      payload: payload
+    })
+    
+    // Re-throw với message rõ ràng hơn
+    if (error?.response?.status === 403) {
+      const backendMessage = error?.response?.data?.message || 'Forbidden'
+      const backendError = error?.response?.data?.error || 'ERR_FORBIDDEN'
+      throw new Error(`403 Forbidden: ${backendMessage} (${backendError}). Kiểm tra ADMIN_API_TOKEN trong env hoặc localStorage.`)
+    } else if (error?.response?.status === 401) {
+      const backendMessage = error?.response?.data?.message || 'Unauthorized'
+      throw new Error(`401 Unauthorized: ${backendMessage}. Token không hợp lệ hoặc thiếu.`)
+    } else if (error?.response?.data?.message) {
+      throw new Error(`${error.response.status || 'Error'}: ${error.response.data.message}`)
+    }
+    
+    throw error
+  }
 }
 
 export const getProduct = async (idOrCode) => {

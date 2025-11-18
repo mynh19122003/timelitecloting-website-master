@@ -20,10 +20,11 @@ class ProductController
             $limit = (int) ($_GET['limit'] ?? 10);
             $search = $_GET['search'] ?? '';
             $category = $_GET['category'] ?? '';
+            $variant = $_GET['variant'] ?? '';
             $sortBy = $_GET['sortBy'] ?? 'created_at';
             $sortOrder = $_GET['sortOrder'] ?? 'DESC';
             
-            $result = $this->productModel->getAll($page, $limit, $search, $category, $sortBy, $sortOrder);
+            $result = $this->productModel->getAll($page, $limit, $search, $category, $variant, $sortBy, $sortOrder);
             
             $this->sendSuccessResponse(200, 'Products retrieved successfully', $result);
         } catch (\Exception $e) {
@@ -82,3 +83,6 @@ class ProductController
         ]);
     }
 }
+
+
+

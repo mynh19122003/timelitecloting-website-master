@@ -1,33 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
-import { FiMenu, FiShoppingBag, FiUser, FiX, FiSearch } from "react-icons/fi";
+import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { FiSearch } from "react-icons/fi";
+import { PiPackageLight, PiShoppingBagLight, PiUserCircleLight } from "react-icons/pi";
 import { useCart } from "../../../context/CartContext";
 import {
   clearAuthStatus,
   getAuthStatus,
   subscribeToAuthChanges,
 } from "../../../utils/auth";
-import styles from "./Navbar.module.css";
-
-const categoryLinks = [
-  { label: "Women", to: "/shop" },
-  { label: "Men", to: "/shop" },
-  { label: "Kids & Baby", to: "/shop" },
-  { label: "Home", to: "/shop" },
-  { label: "Shoes", to: "/shop" },
-  { label: "Handbags & Accessories", to: "/shop" },
-  { label: "Jewelry", to: "/shop" },
-  { label: "Sale", to: "/shop" },
-];
+import { headerStyles } from "../../Header/header.styles";
+import type { ShopNavItem } from "../../Shop/shop.data";
+import { getNavItemPath, shopNavMenu } from "../../Shop/shop.data";
 
 export const Navbar = () => {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(() => getAuthStatus());
   const [searchQuery, setSearchQuery] = useState("");
   const { itemCount, openCart } = useCart();
   const navigate = useNavigate();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const navRowRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const unsubscribe = subscribeToAuthChanges((nextAuthState) => {
@@ -35,6 +29,9 @@ export const Navbar = () => {
     });
     return () => {
       unsubscribe();
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     };
   }, []);
 
@@ -56,155 +53,247 @@ export const Navbar = () => {
     if (searchQuery.trim()) {
       navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery("");
-      setMobileOpen(false);
     }
   };
 
+  const handleNavItemEnter = (index: number) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    setActiveIndex(index);
+  };
+
+  const handleNavItemLeave = () => {
+    // Delay closing to allow moving to mega menu
+    timeoutRef.current = setTimeout(() => {
+      setActiveIndex(null);
+    }, 150);
+  };
+
+  const handleMegaMenuEnter = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
+
+  const handleMegaMenuLeave = () => {
+    setActiveIndex(null);
+  };
+
+  const navigateToItem = (item: ShopNavItem) => {
+    navigate(getNavItemPath(item));
+    setActiveIndex(null);
+  };
+
   return (
-      <header className={styles.header}>
-      <div className={styles.utilityStrip}>
-        <p>Enjoy international shipping & easy returns on every order.</p>
-      </div>
-
-      <div className={styles.mainRow}>
-        <button
-          type="button"
-          className={styles.menuButton}
-          aria-label="Toggle navigation"
-          onClick={() => setMobileOpen((prev) => !prev)}
-        >
-          {mobileOpen ? <FiX /> : <FiMenu />}
-        </button>
-
-        <button
-          type="button"
-            className={styles.brand}
-          onClick={() => {
-            navigate("/");
-            setMobileOpen(false);
-          }}
-          >
-            Timelite
-        </button>
-
-        <form className={styles.searchForm} onSubmit={handleSearchSubmit}>
-          <FiSearch className={styles.searchIcon} />
-          <input
-            type="search"
-            className={styles.searchInput}
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </form>
-
-        <div className={styles.mainActions}>
-          <button
-            type="button"
-            className={styles.actionButton}
-            onClick={() => navigate("/profile?tab=orders")}
-          >
-            Order tracking
-          </button>
-          <button type="button" className={styles.actionButton} onClick={handleAccountClick}>
-            <FiUser />
-            <span>{isAuthenticated ? "My account" : "Sign in"}</span>
-          </button>
-          {isAuthenticated && (
-            <button type="button" className={styles.actionButton} onClick={handleLogout}>
-              Logout
-            </button>
-          )}
-          <button type="button" className={styles.cartButton} onClick={openCart}>
-            <FiShoppingBag />
-            <span>Cart</span>
-            {itemCount > 0 && <span className={styles.badge}>{itemCount}</span>}
-          </button>
-        </div>
-      </div>
-
-      <nav className={styles.categoryNav}>
-        {categoryLinks.map((link) => (
-              <NavLink
-            key={link.label}
-            to={link.to}
-                className={({ isActive }) =>
-              `${styles.categoryLink} ${isActive ? styles.categoryLinkActive : ""}`.trim()
-                }
-              >
-            {link.label}
-              </NavLink>
-        ))}
-      </nav>
-
-      {mobileOpen && (
-        <div className={styles.mobilePanel}>
-          <form className={styles.mobileSearch} onSubmit={handleSearchSubmit}>
-            <FiSearch className={styles.searchIcon} />
+    <>
+      <style>{headerStyles}</style>
+      <header className="header">
+        <div className="header__top">
+          <div className="header__brand">
+            <span className="header__brand-mark">
+              <img
+                className="header__brand-logo"
+                src="/Image/Logo.png"
+                alt="Timelite logo"
+              />
+            </span>
+            <span className="header__brand-name" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
+              Timelite
+            </span>
+          </div>
+          <form className="header__search" onSubmit={handleSearchSubmit}>
+            <FiSearch size={16} />
             <input
               type="search"
-              className={styles.searchInput}
-              placeholder="Search products..."
+              aria-label="Search products"
+              placeholder="What are you looking for?"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </form>
-          <div className={styles.mobileLinks}>
-            {categoryLinks.map((link) => (
-              <Link
-                key={link.label}
-                to={link.to}
-                onClick={() => setMobileOpen(false)}
-                className={styles.mobileLink}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <button
-              type="button"
-              onClick={() => {
-                navigate("/profile?tab=orders");
-                setMobileOpen(false);
-              }}
-              className={styles.mobileLink}
-            >
-              Order tracking
+          <div className="header__actions">
+            <button className="header__action" aria-label="Order tracking" onClick={() => navigate("/profile?tab=orders")}>
+              <PiPackageLight size={18} />
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                handleAccountClick();
-                setMobileOpen(false);
-              }}
-              className={styles.mobileLink}
-            >
-              {isAuthenticated ? "My account" : "Sign in"}
+            <button className="header__profile" aria-label="Account" onClick={handleAccountClick}>
+              <PiUserCircleLight size={18} />
+            </button>
+            <button className="header__icon" aria-label="Shopping bag" onClick={openCart}>
+              <PiShoppingBagLight size={18} />
+              {itemCount > 0 && (
+                <span style={{
+                  position: "absolute",
+                  top: "-4px",
+                  right: "-4px",
+                  background: "#ba1415",
+                  color: "#fff",
+                  borderRadius: "50%",
+                  width: "18px",
+                  height: "18px",
+                  fontSize: "11px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: "600"
+                }}>
+                  {itemCount}
+                </span>
+              )}
             </button>
             {isAuthenticated && (
               <button
-                type="button"
-                onClick={() => {
-                  handleLogout();
-                  setMobileOpen(false);
+                className="header__action"
+                aria-label="Logout"
+                onClick={handleLogout}
+                style={{ 
+                  fontSize: "0.7rem", 
+                  padding: "0.4rem 0.8rem",
+                  width: "auto",
+                  height: "auto",
+                  minHeight: "36px"
                 }}
-                className={styles.mobileLink}
               >
                 Logout
               </button>
             )}
-                      <button
-                        type="button"
-              onClick={() => {
-                openCart();
-                setMobileOpen(false);
-              }}
-              className={styles.mobileLink}
-            >
-              View cart ({itemCount})
-                      </button>
           </div>
         </div>
-      )}
-    </header>
+        <div className="header__nav-row" ref={navRowRef}>
+          <nav className="header__nav" aria-label="Primary">
+            {shopNavMenu.map((item: ShopNavItem, index) => {
+              const hasDropdown =
+                !item.disableDropdown &&
+                ((item.columns && item.columns.length > 0) ||
+                  (item.quickLinks && item.quickLinks.length > 0) ||
+                  item.highlight);
+              const isActive = activeIndex === index;
+
+              return (
+                <div
+                  key={item.label}
+                  className={`header__nav-item${item.accent ? " header__nav-item--accent" : ""}${
+                    isActive ? " is-active" : ""
+                  }`}
+                  onMouseEnter={() => hasDropdown && handleNavItemEnter(index)}
+                  onMouseLeave={handleNavItemLeave}
+                >
+                  <button
+                    type="button"
+                    className="header__nav-trigger"
+                    aria-expanded={isActive && hasDropdown}
+                    aria-controls={hasDropdown ? `mega-${index}` : undefined}
+                  onClick={() => navigateToItem(item)}
+                  >
+                    {item.label}
+                  </button>
+                </div>
+              );
+            })}
+          </nav>
+          {activeIndex !== null && (() => {
+            const activeItem = shopNavMenu[activeIndex];
+            const hasContent =
+              activeItem &&
+              !activeItem.disableDropdown &&
+              ((activeItem.columns && activeItem.columns.length > 0) ||
+                (activeItem.quickLinks && activeItem.quickLinks.length > 0) ||
+                activeItem.highlight);
+
+            if (!hasContent) {
+              return null;
+            }
+
+            return (
+              <div
+                className="header__mega"
+                id={`mega-${activeIndex}`}
+                role="region"
+                aria-label={`${activeItem.label} menu`}
+                onMouseEnter={handleMegaMenuEnter}
+                onMouseLeave={handleMegaMenuLeave}
+              >
+                <div className="header__mega-grid">
+                  {activeItem.columns?.map((column) => (
+                    <div className="header__mega-section" key={column.heading}>
+                      <p className="header__mega-heading">{column.heading}</p>
+                      <ul>
+                        {column.links.map((entry) => (
+                          <li key={entry}>
+                            <button
+                              type="button"
+                              className="header__mega-link"
+                              onClick={() => navigateToItem(activeItem)}
+                            >
+                              {entry}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+
+                  {activeItem.quickLinks?.length ? (
+                    <div className="header__mega-section header__mega-section--quick">
+                      <p className="header__mega-heading">Quick links</p>
+                      <ul>
+                        {activeItem.quickLinks.map((link) => (
+                          <li key={link}>
+                            <button
+                              type="button"
+                              className="header__mega-link header__mega-link--quick"
+                              onClick={() => navigateToItem(activeItem)}
+                            >
+                              {link}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+
+                  {activeItem.highlight && (
+                    <aside className="header__mega-highlight">
+                      {activeItem.highlight.eyebrow && (
+                        <p className="header__mega-eyebrow">{activeItem.highlight.eyebrow}</p>
+                      )}
+                      <p className="header__mega-highlight-title">{activeItem.highlight.title}</p>
+                      {activeItem.highlight.description && (
+                        <p className="header__mega-description">{activeItem.highlight.description}</p>
+                      )}
+                      {activeItem.highlight.cta && (
+                        <button
+                          type="button"
+                          className="header__mega-cta"
+                          onClick={() => navigateToItem(activeItem)}
+                        >
+                          {activeItem.highlight.cta}
+                        </button>
+                      )}
+                      {activeItem.highlight.note && (
+                        <p className="header__mega-note">
+                          {activeItem.highlight.note}
+                          {activeItem.highlight.noteCta && (
+                            <button
+                              type="button"
+                              className="header__mega-note-cta"
+                              onClick={() => navigateToItem(activeItem)}
+                            >
+                              {activeItem.highlight.noteCta}
+                            </button>
+                          )}
+                        </p>
+                      )}
+                    </aside>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      </header>
+    </>
   );
 };

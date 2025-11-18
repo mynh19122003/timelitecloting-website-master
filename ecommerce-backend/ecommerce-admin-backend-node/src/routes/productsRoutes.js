@@ -16,6 +16,12 @@ router.get('/:id', productsController.get);
 // Update product
 router.patch('/:id', validate(productUpdateSchema), productsController.update);
 
+// Delete product
+router.delete('/:id', productsController.delete);
+
 module.exports = router;
+
+
+
 
 

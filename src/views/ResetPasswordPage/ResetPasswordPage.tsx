@@ -62,7 +62,7 @@ export const ResetPasswordPage = () => {
       setTimeout(() => {
         navigate('/login');
       }, 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Reset password error:', err);
       setError('Network error. Please check your connection and try again.');
       setIsSubmitting(false);
@@ -75,7 +75,7 @@ export const ResetPasswordPage = () => {
         <div className={styles.card}>
           <h1 className={styles.heading}>Create new password</h1>
           <p className={styles.description}>
-            Enter your new password below. Make sure it's at least 6 characters long.
+            Enter your new password below. Make sure it&apos;s at least 6 characters long.
           </p>
 
           {error && (

@@ -1,92 +1,160 @@
-/* eslint-disable @next/next/no-img-element */
+"use client";
+
 import { useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FiFilter } from "react-icons/fi";
-import { categoryLabels, normalizeCategory, type Category, type Product as UiProduct } from "../../data/products";
-import { ProductCard } from "../../components/ui/ProductCard";
+import { useLocation, useNavigate } from "react-router-dom";
+import { FiChevronDown, FiGrid, FiList, FiSliders } from "react-icons/fi";
+import { defaultCategorySlug, shopCatalog, toCategorySlug } from "../../components/Shop/shop.data";
+import { ProductCard } from "../../components/ui/ProductCard/ProductCard";
+import { FilterDropdown } from "../../components/ui/FilterDropdown/FilterDropdown";
 import styles from "./ShopPage.module.css";
 import ApiService from "../../services/api";
 import { getAdminMediaUrl, normalizePossibleMediaUrl, toProductsPid } from "../../config/api";
+import {
+  normalizeCategory,
+  type Category,
+  type Product as UiProduct,
+} from "../../data/products";
 
-const colorPalette = ["Crimson", "Gold", "Ivory", "Emerald", "Burgundy", "Champagne"];
+const slugToCategoryMap: Record<string, Category> = {
+  [toCategorySlug("Ao Dai")]: "ao-dai",
+  [toCategorySlug("Suiting")]: "vest",
+  [toCategorySlug("Bridal Gowns")]: "wedding",
+  [toCategorySlug("Evening Couture")]: "evening",
+  [toCategorySlug("Conical Hats")]: "conical-hats",
+  [toCategorySlug("Kidswear")]: "kidswear",
+  [toCategorySlug("Gift Procession Sets")]: "gift-procession-sets",
+};
 
-const priceRanges = [
-  { label: "All prices", value: "all" },
-  { label: "Under $1,500", value: "under-1500" },
-  { label: "$1,500 - $2,500", value: "1500-2500" },
-  { label: "Above $2,500", value: "above-2500" },
-];
+type ShopPageProps = {
+  category?: string;
+};
 
-type ExtendedCategory = Category | "all" | "other";
+type ApiProduct = {
+  id?: number | string;
+  slug?: string;
+  products_id?: string | number;
+  image_url?: string;
+  gallery?: string[];
+  category?: string;
+  name?: string;
+  short_description?: string;
+  description?: string;
+  price?: number | string;
+  original_price?: number | string | null;
+  colors?: string[] | string;
+  sizes?: string[] | string;
+  tags?: string[] | string;
+  is_featured?: boolean;
+  is_new?: boolean;
+  silhouette?: string;
+  fabric?: string;
+  occasion?: string;
+  sleeve?: string;
+  length?: string;
+  embellishment?: string;
+  rating?: number | string;
+  reviews?: number | string;
+  variant?: string;
+};
 
-export const ShopPage = () => {
-  const location = useLocation();
+export const ShopPage = ({ category }: ShopPageProps) => {
   const navigate = useNavigate();
-  const params = new URLSearchParams(location.search);
-  const defaultCategory = (params.get("category") as ExtendedCategory | null) ?? "all";
-  const searchQuery = params.get("search") ?? "";
-
-  const [selectedCategory, setSelectedCategory] = useState<ExtendedCategory>(defaultCategory);
-  const [selectedColor, setSelectedColor] = useState<string>("All");
-  const [priceRange, setPriceRange] = useState(priceRanges[0].value);
+  const location = useLocation();
+  const searchParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search],
+  );
+  const facet = searchParams.get("facet")?.trim() ?? "";
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc">("featured");
   const [allProducts, setAllProducts] = useState<UiProduct[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
+  const [selectedChip, setSelectedChip] = useState<string | null>(null);
+  const [filters, setFilters] = useState<{
+    silhouette: string | null;
+    fabric: string | null;
+    occasion: string | null;
+    sleeve: string | null;
+    length: string | null;
+    embellishment: string | null;
+  }>({
+    silhouette: null,
+    fabric: null,
+    occasion: null,
+    sleeve: null,
+    length: null,
+    embellishment: null,
+  });
 
-  useEffect(() => {
-    setSelectedCategory(defaultCategory);
-  }, [defaultCategory]);
+  const categoryFromSlug = (slugValue?: string | null): Category | null => {
+    if (!slugValue || slugValue === defaultCategorySlug) return null;
+    return slugToCategoryMap[slugValue] ?? null;
+  };
+
+  const slug = useMemo(() => {
+    if (!category) {
+      const urlCategory = searchParams.get("category");
+      if (urlCategory) {
+        const directMatch = shopCatalog[urlCategory] ? urlCategory : toCategorySlug(urlCategory);
+        return shopCatalog[directMatch] ? directMatch : defaultCategorySlug;
+      }
+      return defaultCategorySlug;
+    }
+    const directMatch = shopCatalog[category] ? category : toCategorySlug(category);
+    return shopCatalog[directMatch] ? directMatch : defaultCategorySlug;
+  }, [category, searchParams]);
+
+  const catalog = shopCatalog[slug] ?? shopCatalog[defaultCategorySlug];
+  const readableCategory = catalog.title;
 
   useEffect(() => {
     let isMounted = true;
-    const mapProduct = (p: any): UiProduct => {
-      const slug: string | undefined = p.slug ?? undefined;
-      const productsId: string | undefined = p.products_id ?? undefined;
+    const mapProduct = (p: ApiProduct): UiProduct => {
+      const slug: string | undefined = typeof p.slug === "string" ? p.slug : undefined;
+      const productsId: string | undefined =
+        typeof p.products_id === "string" || typeof p.products_id === "number"
+          ? String(p.products_id)
+          : undefined;
       
       // Helper to fallback to slug-based category detection if needed
       const fromSlug = (s?: string): Category | "other" => {
-        if (!s) return "other" as any;
-        if (s.startsWith("ao-dai-")) return "ao-dai" as any;
-        if (s.startsWith("vest-")) return "vest" as any;
-        if (s.startsWith("wedding-") || s.startsWith("bridal-")) return "wedding" as any;
-        if (s.startsWith("evening-")) return "evening" as any;
-        return "other" as any;
+        if (!s) return "other";
+        if (s.startsWith("ao-dai-")) return "ao-dai";
+        if (s.startsWith("vest-")) return "vest";
+        if (s.startsWith("wedding-") || s.startsWith("bridal-")) return "wedding";
+        if (s.startsWith("evening-")) return "evening";
+        if (s.startsWith("non-la")) return "conical-hats";
+        if (s.startsWith("kidswear")) return "kidswear";
+        if (s.startsWith("gift-procession") || s.startsWith("giftset") || s.includes("procession")) {
+          return "gift-procession-sets";
+        }
+        return "other";
       };
       
       const pickImage = (): string => {
         if (productsId) return getAdminMediaUrl(String(productsId));
-        const raw = typeof p.image_url === 'string' ? p.image_url.trim() : '';
-        if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('/')) return raw;
+        const raw = typeof p.image_url === "string" ? p.image_url.trim() : "";
+        if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("/")) return raw;
         return "/images/image_1.png";
       };
 
       const imageRaw = pickImage();
       const image = normalizePossibleMediaUrl(imageRaw) || "/images/image_1.png";
       const galleryRaw = Array.isArray(p.gallery) && p.gallery.length > 0 ? p.gallery : [image];
-      const gallery = galleryRaw.map((g: string) => normalizePossibleMediaUrl(g) || g);
+      const gallery = galleryRaw.map((g) => normalizePossibleMediaUrl(g) || g);
 
       // Normalize category from API (could be label like "Bridal Gowns" or slug like "wedding")
       const apiCategory = p.category ? normalizeCategory(p.category) : fromSlug(slug);
-      const finalCategory = apiCategory !== "other" ? (apiCategory as Category) : (fromSlug(slug) as any);
-      
-      // Debug logging for category normalization
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[ShopPage] Category normalization:', {
-          rawCategory: p.category,
-          slug: slug,
-          normalized: apiCategory,
-          finalCategory: finalCategory,
-          productName: p.name
-        });
-      }
+      const finalCategory = apiCategory !== "other" ? apiCategory : fromSlug(slug);
 
       // Helper to safely parse JSON strings
-      const parseJsonField = <T,>(value: any, fallback: T): T => {
+      const parseJsonField = <T,>(value: unknown, fallback: T): T => {
         if (Array.isArray(value)) return value as T;
-        if (typeof value === 'string') {
+        if (typeof value === "string") {
           try {
             const parsed = JSON.parse(value);
-            return Array.isArray(parsed) ? parsed as T : fallback;
+            return Array.isArray(parsed) ? (parsed as T) : fallback;
           } catch {
             return fallback;
           }
@@ -95,14 +163,18 @@ export const ShopPage = () => {
       };
 
       // Normalize products_id to PID format (e.g., PID00001)
-      // Fallback to id if products_id is not available
-      const pid = productsId ? toProductsPid(productsId) : (p.id ? toProductsPid(p.id) : undefined);
+      const pid = productsId
+        ? toProductsPid(productsId)
+        : p.id != null
+        ? toProductsPid(p.id)
+        : undefined;
 
       return {
         id: slug ?? String(p.id),
-        pid: pid,
-        name: p.name,
-        category: finalCategory,
+        pid,
+        name: p.name ?? "",
+        category: (finalCategory === "other" ? "other" : finalCategory) as Category,
+        variant: p.variant ?? undefined,
         shortDescription: p.short_description ?? "",
         description: p.description ?? "",
         price: Number(p.price ?? 0),
@@ -116,226 +188,458 @@ export const ShopPage = () => {
         tags: parseJsonField(p.tags, []),
         isFeatured: Boolean(p.is_featured ?? false),
         isNew: Boolean(p.is_new ?? false),
+        silhouette: p.silhouette ?? undefined,
+        fabric: p.fabric ?? undefined,
+        occasion: p.occasion ?? undefined,
+        sleeve: p.sleeve ?? undefined,
+        length: p.length ?? undefined,
+        embellishment: p.embellishment ?? undefined,
       };
     };
-    setLoading(true);
-    // Load a large page to effectively fetch all products for the grid
-    ApiService.getProducts({ limit: 1000 })
-      .then((res) => {
-        const list = res?.products ?? [];
-        if (isMounted) setAllProducts(list.map(mapProduct));
-      })
-      .catch((error: any) => {
-        // Log error to console
-        console.error('[ShopPage] Error loading products:', {
-          error: error?.message || error,
-          status: error?.status
+
+    const fetchAllProducts = async () => {
+      setLoading(true);
+      try {
+        const pageSize = 100;
+        let page = 1;
+        const aggregated: ApiProduct[] = [];
+
+        while (true) {
+          const response = await ApiService.getProducts({ page, limit: pageSize }, false);
+          const pageProducts = (response?.products ?? []) as ApiProduct[];
+          aggregated.push(...pageProducts);
+
+          const total = response?.total ?? aggregated.length;
+          const fetchedCount = aggregated.length;
+
+          const reachedEnd = pageProducts.length < pageSize || fetchedCount >= total;
+          if (reachedEnd) {
+            break;
+          }
+          page += 1;
+        }
+
+        if (isMounted) {
+          const mapped = aggregated.map(mapProduct);
+          const dedupedMap = new Map<string, UiProduct>();
+          mapped.forEach((product) => {
+            const key = product.pid ?? product.id;
+            dedupedMap.set(key, product);
+          });
+          setAllProducts(Array.from(dedupedMap.values()));
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : typeof error === "object" && error !== null && "message" in error
+            ? String((error as { message: unknown }).message)
+            : String(error);
+        const status =
+          typeof error === "object" && error !== null && "status" in error
+            ? (error as { status?: unknown }).status
+            : undefined;
+        console.error("[ShopPage] Error loading products:", {
+          error: errorMessage,
+          status,
         });
         if (isMounted) setAllProducts([]);
-      })
-      .finally(() => {
+      } finally {
         if (isMounted) setLoading(false);
-      });
+      }
+    };
+
+    fetchAllProducts();
+
     return () => {
       isMounted = false;
     };
   }, []);
 
-  const filteredProducts = useMemo(() => {
-    const knownCategories: Category[] = ["ao-dai", "wedding", "vest", "evening"];
+  // Get available variants for current category
+  const availableVariants = useMemo(() => {
+    const targetCategory = categoryFromSlug(slug);
     
-    // Debug logging
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[ShopPage] Filter state:', {
-        selectedCategory,
-        searchQuery,
-        totalProducts: allProducts.length,
-        productsByCategory: allProducts.reduce((acc, p) => {
-          acc[p.category] = (acc[p.category] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>)
-      });
+    if (!targetCategory) return [];
+    
+    const categoryProducts = allProducts.filter((p) => p.category === targetCategory);
+    const variants = new Set<string>();
+    categoryProducts.forEach((p) => {
+      if (p.variant) {
+        variants.add(p.variant);
+      }
+    });
+    return Array.from(variants).sort();
+  }, [allProducts, slug]);
+
+  // Get available filter options for current category
+  const availableFilterOptions = useMemo(() => {
+    const targetCategory = categoryFromSlug(slug);
+    
+    if (!targetCategory) {
+      return {
+        silhouette: [],
+        fabric: [],
+        occasion: [],
+        sleeve: [],
+        length: [],
+        embellishment: [],
+      };
     }
     
-    return allProducts
-      .filter((product) => {
-        // Search filter
-        if (searchQuery.trim()) {
-          const query = searchQuery.toLowerCase().trim();
-          const matchesSearch = 
-            product.name.toLowerCase().includes(query) ||
-            product.shortDescription.toLowerCase().includes(query) ||
-            product.description.toLowerCase().includes(query) ||
-            product.tags.some(tag => tag.toLowerCase().includes(query));
-          if (!matchesSearch) return false;
-        }
+    const categoryProducts = allProducts.filter((p) => p.category === targetCategory);
+    const options = {
+      silhouette: new Set<string>(),
+      fabric: new Set<string>(),
+      occasion: new Set<string>(),
+      sleeve: new Set<string>(),
+      length: new Set<string>(),
+      embellishment: new Set<string>(),
+    };
+    
+    categoryProducts.forEach((p) => {
+      if (p.silhouette) options.silhouette.add(p.silhouette);
+      if (p.fabric) options.fabric.add(p.fabric);
+      if (p.occasion) options.occasion.add(p.occasion);
+      if (p.sleeve) options.sleeve.add(p.sleeve);
+      if (p.length) options.length.add(p.length);
+      if (p.embellishment) options.embellishment.add(p.embellishment);
+    });
+    
+    return {
+      silhouette: Array.from(options.silhouette).sort(),
+      fabric: Array.from(options.fabric).sort(),
+      occasion: Array.from(options.occasion).sort(),
+      sleeve: Array.from(options.sleeve).sort(),
+      length: Array.from(options.length).sort(),
+      embellishment: Array.from(options.embellishment).sort(),
+    };
+  }, [allProducts, slug]);
 
-        if (selectedCategory && selectedCategory !== "all") {
-          if (selectedCategory === "other") {
-            if (knownCategories.includes(product.category as Category)) return false;
-          } else {
-            // Compare category (should be normalized slug)
-            const matches = product.category === (selectedCategory as Category);
-            if (!matches) {
-              if (process.env.NODE_ENV === 'development') {
-                console.log('[ShopPage] Category mismatch:', {
-                  productName: product.name,
-                  productCategory: product.category,
-                  selectedCategory,
-                  match: matches
-                });
-              }
-              return false;
-            }
-          }
-        }
-        if (selectedColor !== "All" && !product.colors.includes(selectedColor)) {
-          return false;
-        }
-        switch (priceRange) {
-          case "under-1500":
-            return product.price < 1500;
-          case "1500-2500":
-            return product.price >= 1500 && product.price <= 2500;
-          case "above-2500":
-            return product.price > 2500;
-          default:
-            return true;
-        }
-      })
-      .sort((a, b) => {
-        if (sortBy === "price-asc") return a.price - b.price;
-        if (sortBy === "price-desc") return b.price - a.price;
+  const filteredProducts = useMemo(() => {
+    let filtered = allProducts;
+
+    // Filter by category slug
+    if (slug && slug !== defaultCategorySlug) {
+      const targetCategory = categoryFromSlug(slug);
+      if (targetCategory) {
+        filtered = filtered.filter((p) => p.category === targetCategory);
+      }
+    }
+
+    // Filter by variant
+    if (selectedVariant) {
+      filtered = filtered.filter((p) => p.variant === selectedVariant);
+    }
+
+    // Filter by chip (tags or variant)
+    if (selectedChip) {
+      filtered = filtered.filter((p) => 
+        p.tags.some((tag) => tag.toLowerCase().includes(selectedChip.toLowerCase())) ||
+        p.variant?.toLowerCase().includes(selectedChip.toLowerCase()) ||
+        p.name.toLowerCase().includes(selectedChip.toLowerCase())
+      );
+    }
+
+    // Filter by filters
+    if (filters.silhouette) {
+      filtered = filtered.filter((p) => p.silhouette === filters.silhouette);
+    }
+    if (filters.fabric) {
+      filtered = filtered.filter((p) => p.fabric === filters.fabric);
+    }
+    if (filters.occasion) {
+      filtered = filtered.filter((p) => p.occasion === filters.occasion);
+    }
+    if (filters.sleeve) {
+      filtered = filtered.filter((p) => p.sleeve === filters.sleeve);
+    }
+    if (filters.length) {
+      filtered = filtered.filter((p) => p.length === filters.length);
+    }
+    if (filters.embellishment) {
+      filtered = filtered.filter((p) => p.embellishment === filters.embellishment);
+    }
+
+    // Filter by facet (search)
+    if (facet) {
+      const query = facet.toLowerCase();
+      filtered = filtered.filter(
+        (product) =>
+          product.name.toLowerCase().includes(query) ||
+          product.shortDescription.toLowerCase().includes(query) ||
+          product.description.toLowerCase().includes(query) ||
+          product.tags.some((tag) => tag.toLowerCase().includes(query))
+      );
+    }
+
+    // Sort
+    if (sortBy === "price-asc") {
+      filtered = [...filtered].sort((a, b) => a.price - b.price);
+    } else if (sortBy === "price-desc") {
+      filtered = [...filtered].sort((a, b) => b.price - a.price);
+    } else {
+      // Featured: sort by rating and featured status
+      filtered = [...filtered].sort((a, b) => {
+        if (a.isFeatured && !b.isFeatured) return -1;
+        if (!a.isFeatured && b.isFeatured) return 1;
         return b.rating - a.rating;
       });
-  }, [allProducts, priceRange, selectedCategory, selectedColor, sortBy, searchQuery]);
+    }
 
-  const handleCategoryChange = (category: ExtendedCategory) => {
-    setSelectedCategory(category);
-    if (!category || category === "all") params.delete("category");
-    else params.set("category", category);
-    navigate({ pathname: "/shop", search: params.toString() });
+    return filtered;
+  }, [allProducts, slug, facet, sortBy, selectedVariant, selectedChip, filters]);
+
+  const handleVariantChange = (variant: string | null) => {
+    setSelectedVariant(variant);
+    const params = new URLSearchParams(searchParams.toString());
+    if (variant) {
+      params.set("variant", variant);
+    } else {
+      params.delete("variant");
+    }
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
+  };
+
+  // Initialize filters from URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    
+    const variantParam = params.get("variant");
+    setSelectedVariant((prev) => {
+      if (variantParam && variantParam !== prev) {
+        return variantParam;
+      }
+      if (!variantParam && prev !== null) {
+        return null;
+      }
+      return prev;
+    });
+
+    const chipParam = params.get("chip");
+    setSelectedChip((prev) => {
+      if (chipParam && chipParam !== prev) {
+        return chipParam;
+      }
+      if (!chipParam && prev !== null) {
+        return null;
+      }
+      return prev;
+    });
+
+    const newFilters = {
+      silhouette: params.get("silhouette"),
+      fabric: params.get("fabric"),
+      occasion: params.get("occasion"),
+      sleeve: params.get("sleeve"),
+      length: params.get("length"),
+      embellishment: params.get("embellishment"),
+    };
+
+    setFilters((prev) => {
+      const filtersChanged = 
+        newFilters.silhouette !== prev.silhouette ||
+        newFilters.fabric !== prev.fabric ||
+        newFilters.occasion !== prev.occasion ||
+        newFilters.sleeve !== prev.sleeve ||
+        newFilters.length !== prev.length ||
+        newFilters.embellishment !== prev.embellishment;
+
+      return filtersChanged ? newFilters : prev;
+    });
+  }, [location.search]);
+
+  const handleFilterChange = (filterName: keyof typeof filters, value: string | null) => {
+    setFilters((prev) => ({ ...prev, [filterName]: value }));
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) {
+      params.set(filterName, value);
+    } else {
+      params.delete(filterName);
+    }
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
+  };
+
+  const handleChipClick = (chip: string) => {
+    const isActive = selectedChip === chip;
+    const newChip = isActive ? null : chip;
+    setSelectedChip(newChip);
+    const params = new URLSearchParams(searchParams.toString());
+    if (newChip) {
+      params.set("chip", newChip);
+    } else {
+      params.delete("chip");
+    }
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
   };
 
   return (
     <div className={styles.page}>
-      <section className={styles.introSection}>
-        <div className={styles.introWrapper}>
-          <div className={styles.introCopy}>
-            <span className={styles.eyebrow}>Timelite Shop</span>
-            <h1 className={styles.heading}>Wardrobe heroes for elevated celebrations</h1>
-            <p className={styles.description}>
-              Begin with the ao dai, the heart of our house, then explore tailored vests, bridal gowns,
-              and evening dresses designed for American venues and lifestyles.
-            </p>
-            <Link to="#collections" className={styles.linkUnderline}>
-              Browse couture collections
-            </Link>
-          </div>
-          <div className={styles.conciergeCard}>
-            <p className={styles.conciergeTitle}>Concierge Styling</p>
-            <p className={styles.conciergeText}>
-              Our New York stylists coordinate Zoom consultations, lookbooks, and alteration schedules
-              tailored to your event timeline.
-            </p>
-            <Link to="/contact" className={styles.conciergeCta}>
-              Book now
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section id="collections" className={styles.collectionsSection}>
-        <div className={styles.filterBar}>
-          <div className={styles.categoryTabs}>
-            {(["all", "ao-dai", "wedding", "vest", "evening", "other"] as ExtendedCategory[]).map((category) => {
-              const isActive = selectedCategory === category;
-              const buttonClass = `${styles.categoryButton} ${
-                isActive ? styles.categoryButtonActive : ""
-              }`.trim();
-              const label = category === "all" ? "All" : category === "other" ? "Other" : categoryLabels[category as Category];
-              return (
-                <button
-                  key={category}
-                  onClick={() => handleCategoryChange(category)}
-                  className={buttonClass}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className={styles.filterControls}>
-            <div className={styles.filterGroup}>
-              <FiFilter />
-              Filters
-            </div>
-            <select
-              value={selectedColor}
-              onChange={(event) => setSelectedColor(event.target.value)}
-              className={styles.select}
-            >
-              <option value="All">All colors</option>
-              {colorPalette.map((color) => (
-                <option key={color} value={color}>
-                  {color}
-                </option>
-              ))}
-            </select>
-            <select
-              value={priceRange}
-              onChange={(event) => setPriceRange(event.target.value)}
-              className={styles.select}
-            >
-              {priceRanges.map((range) => (
-                <option key={range.value} value={range.value}>
-                  {range.label}
-                </option>
-              ))}
-            </select>
-            <label className={styles.sortSelect}>
-              <span>Sort</span>
-              <select
-                value={sortBy}
-                onChange={(event) =>
-                  setSortBy(event.target.value as typeof sortBy)
-                }
-                className={styles.select}
-              >
-                <option value="featured">Featured</option>
-                <option value="price-asc">Price Low to High</option>
-                <option value="price-desc">Price High to Low</option>
-              </select>
-            </label>
+      <section className={styles.catalog}>
+        <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+          <button type="button" onClick={() => navigate("/")}>
+            Home
+          </button>
+          <span aria-hidden="true">/</span>
+          <button type="button" onClick={() => navigate(`/shop?category=${slug}`)}>
+            {readableCategory}
+          </button>
+          {facet ? (
+            <>
+              <span aria-hidden="true">/</span>
+              <span className={styles.breadcrumbCurrent}>{facet}</span>
+            </>
+          ) : null}
+        </nav>
+        <header className={styles.heading}>
+          <h1>{readableCategory}</h1>
+          <p>{catalog.subtitle}</p>
+        </header>
+        <div className={styles.chips} role="tablist" aria-label="Sub categories">
+          {catalog.chips.map((chip) => (
             <button
-              onClick={() => {
-                setSelectedColor("All");
-                setPriceRange("all");
-                setSortBy("featured");
-              }}
-              className={styles.resetButton}
+              key={chip}
+              type="button"
+              className={`${styles.chip} ${selectedChip === chip ? styles.chipActive : ""}`}
+              onClick={() => handleChipClick(chip)}
             >
-              Reset
+              {chip}
+            </button>
+          ))}
+        </div>
+        
+        {availableVariants.length > 0 && (
+          <div className={styles.variantFilters} role="group" aria-label="Variant filters">
+            <button
+              type="button"
+              className={`${styles.variantChip} ${!selectedVariant ? styles.variantChipActive : ""}`}
+              onClick={() => handleVariantChange(null)}
+            >
+              Tất cả
+            </button>
+            {availableVariants.map((variant) => (
+              <button
+                key={variant}
+                type="button"
+                className={`${styles.variantChip} ${selectedVariant === variant ? styles.variantChipActive : ""}`}
+                onClick={() => handleVariantChange(variant)}
+              >
+                {variant}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className={styles.toolbar}>
+          <div className={styles.filters}>
+            <button type="button" className={`${styles.filter} ${styles.filterPrimary}`}>
+              <FiSliders size={16} />
+              Filter
+            </button>
+            {catalog.filters.includes("Silhouette") && availableFilterOptions.silhouette.length > 0 && (
+              <FilterDropdown
+                label="Silhouette"
+                options={availableFilterOptions.silhouette}
+                selectedValue={filters.silhouette}
+                onSelect={(value) => handleFilterChange("silhouette", value)}
+                placeholder="All Silhouette"
+              />
+            )}
+            {catalog.filters.includes("Fabric") && availableFilterOptions.fabric.length > 0 && (
+              <FilterDropdown
+                label="Fabric"
+                options={availableFilterOptions.fabric}
+                selectedValue={filters.fabric}
+                onSelect={(value) => handleFilterChange("fabric", value)}
+                placeholder="All Fabric"
+              />
+            )}
+            {catalog.filters.includes("Occasion") && availableFilterOptions.occasion.length > 0 && (
+              <FilterDropdown
+                label="Occasion"
+                options={availableFilterOptions.occasion}
+                selectedValue={filters.occasion}
+                onSelect={(value) => handleFilterChange("occasion", value)}
+                placeholder="All Occasion"
+              />
+            )}
+            {catalog.filters.includes("Sleeve") && availableFilterOptions.sleeve.length > 0 && (
+              <FilterDropdown
+                label="Sleeve"
+                options={availableFilterOptions.sleeve}
+                selectedValue={filters.sleeve}
+                onSelect={(value) => handleFilterChange("sleeve", value)}
+                placeholder="All Sleeve"
+              />
+            )}
+            {catalog.filters.includes("Length") && availableFilterOptions.length.length > 0 && (
+              <FilterDropdown
+                label="Length"
+                options={availableFilterOptions.length}
+                selectedValue={filters.length}
+                onSelect={(value) => handleFilterChange("length", value)}
+                placeholder="All Length"
+              />
+            )}
+            {catalog.filters.includes("Embellishment") && availableFilterOptions.embellishment.length > 0 && (
+              <FilterDropdown
+                label="Embellishment"
+                options={availableFilterOptions.embellishment}
+                selectedValue={filters.embellishment}
+                onSelect={(value) => handleFilterChange("embellishment", value)}
+                placeholder="All Embellishment"
+              />
+            )}
+          </div>
+          <div className={styles.view}>
+            <div className={styles.viewToggle} role="group" aria-label="View options">
+              <button
+                type="button"
+                className={`${styles.viewButton} ${viewMode === "grid" ? styles.viewButtonActive : ""}`}
+                aria-label="Grid view"
+                onClick={() => setViewMode("grid")}
+              >
+                <FiGrid size={16} />
+              </button>
+              <button
+                type="button"
+                className={`${styles.viewButton} ${viewMode === "list" ? styles.viewButtonActive : ""}`}
+                aria-label="List view"
+                onClick={() => setViewMode("list")}
+              >
+                <FiList size={16} />
+              </button>
+            </div>
+            <button
+              type="button"
+              className={styles.sort}
+              onClick={() => {
+                const nextSort: typeof sortBy =
+                  sortBy === "featured" ? "price-asc" : sortBy === "price-asc" ? "price-desc" : "featured";
+                setSortBy(nextSort);
+              }}
+            >
+              Sort by <strong>{sortBy === "featured" ? "Featured Items" : sortBy === "price-asc" ? "Price Low to High" : "Price High to Low"}</strong>
+              <FiChevronDown size={14} />
             </button>
           </div>
         </div>
 
-        <div className={styles.productsGrid}>
+        <div className={styles.grid}>
           {loading ? (
-            <div className={styles.emptyState}><p>Loading products...</p></div>
+            <div className={styles.emptyState}>
+              <p className={styles.emptyText}>Loading products...</p>
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className={styles.emptyState}>
+              <p className={styles.emptyText}>No products found.</p>
+            </div>
           ) : (
             filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))
           )}
         </div>
-
-        {filteredProducts.length === 0 && (
-          <div className={styles.emptyState}>
-            <p className={styles.emptyText}>No products match your filters.</p>
-          </div>
-        )}
       </section>
     </div>
   );

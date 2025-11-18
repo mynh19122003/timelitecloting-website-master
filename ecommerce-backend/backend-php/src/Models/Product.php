@@ -15,7 +15,7 @@ class Product
         $this->db = Database::getInstance();
     }
 
-    public function getAll(int $page = 1, int $limit = 10, string $search = '', string $category = '', string $sortBy = 'created_at', string $sortOrder = 'DESC'): array
+    public function getAll(int $page = 1, int $limit = 10, string $search = '', string $category = '', string $variant = '', string $sortBy = 'created_at', string $sortOrder = 'DESC'): array
     {
         try {
             $offset = ($page - 1) * $limit;
@@ -31,6 +31,10 @@ class Product
             if ($category) {
                 $conditions[] = 'category = ?';
                 $searchParams[] = $category;
+            }
+            if ($variant) {
+                $conditions[] = 'variant = ?';
+                $searchParams[] = $variant;
             }
 
             $whereClause = !empty($conditions) ? 'WHERE ' . implode(' AND ', $conditions) : '';
@@ -61,6 +65,7 @@ class Product
                     slug,
                     name,
                     category,
+                    variant,
                     short_description,
                     description,
                     price,
@@ -126,6 +131,7 @@ class Product
                     slug,
                     name,
                     category,
+                    variant,
                     short_description,
                     description,
                     price,
@@ -178,6 +184,7 @@ class Product
                     slug,
                     name,
                     category,
+                    variant,
                     short_description,
                     description,
                     price,
@@ -262,6 +269,27 @@ class Product
             );
             return $stmt->execute([$quantity, $productId]);
         } catch (PDOException $e) {
+            throw new \Exception('ERR_UPDATE_STOCK_FAILED');
+        }
+    }
+
+    // JSON parsing no longer required with minimal schema
+}
+
+            throw new \Exception('ERR_UPDATE_STOCK_FAILED');
+        }
+    }
+
+    // JSON parsing no longer required with minimal schema
+}
+
+            throw new \Exception('ERR_UPDATE_STOCK_FAILED');
+        }
+    }
+
+    // JSON parsing no longer required with minimal schema
+}
+
             throw new \Exception('ERR_UPDATE_STOCK_FAILED');
         }
     }

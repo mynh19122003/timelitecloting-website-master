@@ -1,17 +1,20 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 :root {
   color-scheme: light;
-  background-color: #ffffff;
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
-  font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  color: #222222;
-  background-color: #ffffff;
+  margin: 0;
+  background: var(--color-background-main);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   min-height: 100vh;
 }
 
@@ -20,6 +23,11 @@ a {
   text-decoration: none;
 }
 
-* {
-  box-sizing: border-box;
+button {
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
 }
+
+/* component-level styles moved to src/screen/Homepage/homepage.ts */

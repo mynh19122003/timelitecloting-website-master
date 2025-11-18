@@ -24,20 +24,21 @@ export const signIn = async (email, password) => {
   const payload = res?.data ?? {}
   const data = payload?.data ?? payload ?? {}
 
+  // Save JWT token for authentication (used for all API requests)
   const token = data?.token ?? payload?.token
-  if (token) window.localStorage.setItem('fastcart:token', token)
-
-  // Dev-only: log nơi lưu token sau đăng nhập (JWT cho người dùng/admin)
-  if (import.meta?.env?.DEV) {
+  if (token) {
     try {
-      const saved = window.localStorage.getItem('fastcart:token')
-      const masked = typeof saved === 'string' && saved.length > 12
-        ? `${saved.slice(0, 6)}…${saved.slice(-6)}`
-        : saved
+      window.localStorage.setItem('fastcart:token', token)
+  if (import.meta?.env?.DEV) {
+        const masked = typeof token === 'string' && token.length > 12
+          ? `${token.slice(0, 6)}…${token.slice(-6)}`
+          : token
+        // eslint-disable-next-line no-console
+        console.info('[DEBUG] ✅ JWT token saved to localStorage:', masked)
+      }
+    } catch (err) {
       // eslint-disable-next-line no-console
-      console.info('[DEBUG] Saved login token to localStorage key fastcart:token:', masked || '(empty)')
-    } catch (_) {
-      // ignore
+      console.error('[DEBUG] ❌ Failed to save JWT token to localStorage:', err)
     }
   }
 
@@ -55,6 +56,7 @@ export const fetchMe = async () => {
 
   const payload = res?.data ?? {}
   const data = payload?.data ?? payload ?? {}
+  
   const rawUser = data?.user ?? data?.admin ?? data ?? {}
   return normalizeAdmin(rawUser)
 }
@@ -68,6 +70,7 @@ export const getProfile = async () => {
 
   const payload = res?.data ?? {}
   const data = payload?.data ?? payload ?? {}
+  
   const rawUser = data?.user ?? data?.admin ?? data ?? {}
   return normalizeAdmin(rawUser)
 }
@@ -99,6 +102,7 @@ export const clearSession = () => {
   try {
     window.localStorage.removeItem('fastcart:token')
     window.localStorage.removeItem('fastcart:user')
+    window.localStorage.removeItem('fastcart:admin_token')
   } catch (_) {
     // no-op
   }

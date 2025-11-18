@@ -25,7 +25,7 @@ import {
   FiHome,
   FiShoppingBag,
 } from "react-icons/fi";
-import { mockOrderHistory, orderStatusLabels, OrderStatus } from "../../data/orders";
+import { orderStatusLabels, OrderStatus } from "../../data/orders";
 import { useAuth } from "../../context/AuthContext";
 import { ApiService, ApiError } from "../../services/api";
 import CountryPhoneInput from "react-country-phone-input";
@@ -960,7 +960,7 @@ export const ProfilePage = () => {
         // API returned unexpected format, use empty array
         setOrderHistory([]);
       }
-    } catch (error) {
+    } catch {
       // API not available yet, silently use empty array
       setOrderHistory([]);
     } finally {

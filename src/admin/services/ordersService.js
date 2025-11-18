@@ -38,7 +38,12 @@ export const listOrders = async ({ page = 1, limit = 10, status, order_id } = {}
 
 export const getOrder = async (orderId) => {
   try {
-    const res = await AdminApi.get(`/orders/${orderId}`)
+    // Ensure orderId is a string and properly encoded
+    const orderIdStr = typeof orderId === 'string' ? orderId : String(orderId || '')
+    if (!orderIdStr) {
+      throw new Error('Missing order ID')
+    }
+    const res = await AdminApi.get(`/orders/${encodeURIComponent(orderIdStr)}`)
     const payload = res?.data || {}
     const data = payload?.data || payload || {}
     

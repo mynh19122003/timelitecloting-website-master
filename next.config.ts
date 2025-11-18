@@ -1,9 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Enable static export for VPS deployment
-  output: 'export',
-  
   // Disable ESLint during build for production deployment
   eslint: {
     ignoreDuringBuilds: true,

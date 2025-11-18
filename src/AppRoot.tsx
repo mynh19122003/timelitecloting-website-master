@@ -12,6 +12,7 @@ import { ScrollToTop } from "./components/layout/ScrollToTop";
 
 const HomePage = lazy(() => import("./views/HomePage").then(m => ({ default: m.HomePage })));
 const ShopPage = lazy(() => import("./views/ShopPage").then(m => ({ default: m.ShopPage })));
+const ProductsPage = lazy(() => import("./views/ProductsPage").then(m => ({ default: m.default })));
 const ProductDetailPage = lazy(() => import("./views/ProductDetailPage").then(m => ({ default: m.ProductDetailPage })));
 const CartPage = lazy(() => import("./views/CartPage").then(m => ({ default: m.CartPage })));
 const CheckoutPage = lazy(() => import("./views/CheckoutPage").then(m => ({ default: m.CheckoutPage })));
@@ -41,8 +42,14 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 export default function AppRoot() {
-  const SiteLayout = () => (
+  const DefaultLayout = () => (
     <Layout>
+      <Outlet />
+    </Layout>
+  );
+
+  const HomepageLayout = () => (
+    <Layout showNavbar={false}>
       <Outlet />
     </Layout>
   );
@@ -56,9 +63,13 @@ export default function AppRoot() {
               <ScrollToTop />
               <ToastContainer />
               <Routes>
-                <Route element={<SiteLayout />}>
+                <Route element={<HomepageLayout />}>
                   <Route path="/" element={<Suspense fallback={<PageLoader />}><HomePage /></Suspense>} />
+                </Route>
+
+                <Route element={<DefaultLayout />}>
                   <Route path="/shop" element={<Suspense fallback={<PageLoader />}><ShopPage /></Suspense>} />
+                  <Route path="/products" element={<Suspense fallback={<PageLoader />}><ProductsPage /></Suspense>} />
                   <Route path="/product/:id" element={<Suspense fallback={<PageLoader />}><ProductDetailPage /></Suspense>} />
                   <Route path="/cart" element={<Suspense fallback={<PageLoader />}><CartPage /></Suspense>} />
                   <Route path="/checkout" element={<Suspense fallback={<PageLoader />}><CheckoutPage /></Suspense>} />

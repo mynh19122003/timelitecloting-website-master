@@ -87,7 +87,7 @@ export const CheckoutPage = () => {
       const hasToken = ApiService.isAuthenticated();
 
       try {
-        const profile = hasToken ? await ApiService.getProfile() : (getUserData() as any);
+        const profile = hasToken ? await ApiService.getProfile() : getUserData();
         
         // Parse name into first/last name
         const nameParts = ((profile && profile.name) || '').trim().split(' ').filter(Boolean);
@@ -98,7 +98,7 @@ export const CheckoutPage = () => {
         const rawAddress = (profile && profile.address) || '';
         const addressParts = rawAddress.split(',').map(s => s.trim());
         let streetAddress = addressParts[0] || '';
-        let city = addressParts[1] || '';
+        const city = addressParts[1] || '';
         let state = '';
         let zipCode = '';
         if (addressParts.length >= 3) {
@@ -116,13 +116,13 @@ export const CheckoutPage = () => {
           firstName,
           lastName,
           email: (profile && profile.email) || prev.email,
-          phone: (profile && (profile.phone as any)) || prev.phone,
+          phone: (profile && profile.phone) || prev.phone,
           streetAddress: streetAddress || prev.streetAddress,
           city: city || prev.city,
           state: state || prev.state,
           zipCode: zipCode || prev.zipCode,
         }));
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Failed to load profile:', err);
         // Don't show error to user - they can still fill the form manually
       } finally {
@@ -236,23 +236,27 @@ export const CheckoutPage = () => {
       // Prepare order data for backend
       const fullAddress = `${formData.streetAddress}, ${formData.city}, ${formData.state} ${formData.zipCode}`.trim();
       
-      // 🔍 DEBUG: Log cart items to check IDs
-      console.log('=== CHECKOUT DEBUG ===');
-      console.log('Cart items:', items);
-      
       // Build items with products_id (PID) or product_slug fallback
+      type OrderItemPayload = {
+        quantity: number;
+        color: string;
+        size: string;
+        products_id?: string | number;
+        product_slug?: string;
+      };
+
       const orderData = {
         firstname: formData.firstName,
         lastname: formData.lastName,
         address: fullAddress,
         phonenumber: formData.phone,
         payment_method: formData.paymentMethod,
-        items: items.map(item => {
-          const base = {
+        items: items.map<OrderItemPayload>(item => {
+          const base: OrderItemPayload = {
             quantity: item.quantity,
             color: item.color,
             size: item.size
-          } as any;
+          };
           
           // Use pid (products_id) from cart item if available
           if (item.pid) {
@@ -289,9 +293,15 @@ export const CheckoutPage = () => {
       // Navigate to order history
       navigate('/profile?tab=orders');
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Order creation failed:', err);
-      setError(err.message || 'Failed to place order. Please try again or contact support.');
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'object' && err !== null && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : 'Failed to place order. Please try again or contact support.';
+      setError(message);
       setIsSubmitting(false);
     }
   };

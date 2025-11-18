@@ -49,6 +49,7 @@ CREATE TABLE products (
     slug VARCHAR(255) UNIQUE NOT NULL, -- maps to frontend product id (e.g., 'ao-dai-regal-crimson')
     name VARCHAR(255) NOT NULL,
     category VARCHAR(64) NULL,
+    variant VARCHAR(128) NULL, -- variant of product (e.g., 'Áo Dài Cách Tân', 'Áo Dài Truyền Thống')
     short_description TEXT NULL,
     description TEXT NULL,
     price DECIMAL(10, 2) NOT NULL,
@@ -67,6 +68,7 @@ CREATE TABLE products (
     INDEX idx_slug (slug),
     INDEX idx_name (name),
     INDEX idx_category (category),
+    INDEX idx_variant (variant),
     INDEX idx_price (price),
     INDEX idx_stock (stock)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -121,4 +123,10 @@ CREATE TABLE chat_sessions (
   INDEX idx_user_id (user_id),
   INDEX idx_is_active (is_active),
   INDEX idx_last_activity (last_activity)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Bảng quản lý phiên chat Socket.IO';
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Bảng quản lý phiên chat Socket.IO';
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Bảng quản lý phiên chat Socket.IO';
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Bảng quản lý phiên chat Socket.IO';

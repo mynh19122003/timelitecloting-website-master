@@ -1,0 +1,1280 @@
+{
+  "folder": "mam_qua",
+  "generated_at": "2025-11-18T14:21:03.074Z",
+  "total_assets": 42,
+  "config_snapshot": {
+    "category": "Gift Procession Sets",
+    "variant": "Mam Qua",
+    "namePrefix": "Mam Qua",
+    "slugPrefix": "mam-qua",
+    "productIdStart": 50001,
+    "sequenceStart": 1,
+    "asset_plan": {
+      "output_root": "storage/products",
+      "main_name": "main.webp",
+      "gallery": []
+    }
+  },
+  "products": [
+    {
+      "products_id": "PID50001",
+      "slug": "mam-qua-001",
+      "name": "Mam Qua 001",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50001/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/1e2ca2841bb397edcea2124.jpg",
+      "planned_output": "storage/products/PID50001/main.webp"
+    },
+    {
+      "products_id": "PID50002",
+      "slug": "mam-qua-002",
+      "name": "Mam Qua 002",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50002/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/1f58fb2e4a19c6479f08123.jpg",
+      "planned_output": "storage/products/PID50002/main.webp"
+    },
+    {
+      "products_id": "PID50003",
+      "slug": "mam-qua-003",
+      "name": "Mam Qua 003",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50003/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/3bbbe4ce55f9d9a780e8106.jpg",
+      "planned_output": "storage/products/PID50003/main.webp"
+    },
+    {
+      "products_id": "PID50004",
+      "slug": "mam-qua-004",
+      "name": "Mam Qua 004",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50004/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/4a7d010eb0393c67652894.jpg",
+      "planned_output": "storage/products/PID50004/main.webp"
+    },
+    {
+      "products_id": "PID50005",
+      "slug": "mam-qua-005",
+      "name": "Mam Qua 005",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50005/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/8e1b2d6b9c5c1002494d85.jpg",
+      "planned_output": "storage/products/PID50005/main.webp"
+    },
+    {
+      "products_id": "PID50006",
+      "slug": "mam-qua-006",
+      "name": "Mam Qua 006",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50006/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/10f60e9ebfa933f76ab8108.jpg",
+      "planned_output": "storage/products/PID50006/main.webp"
+    },
+    {
+      "products_id": "PID50007",
+      "slug": "mam-qua-007",
+      "name": "Mam Qua 007",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50007/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/024a1739a60e2a50731f95.jpg",
+      "planned_output": "storage/products/PID50007/main.webp"
+    },
+    {
+      "products_id": "PID50008",
+      "slug": "mam-qua-008",
+      "name": "Mam Qua 008",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50008/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/24acb7da06ed8ab3d3fc114.jpg",
+      "planned_output": "storage/products/PID50008/main.webp"
+    },
+    {
+      "products_id": "PID50009",
+      "slug": "mam-qua-009",
+      "name": "Mam Qua 009",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50009/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/849ccff57ec2f29cabd3110.jpg",
+      "planned_output": "storage/products/PID50009/main.webp"
+    },
+    {
+      "products_id": "PID50010",
+      "slug": "mam-qua-010",
+      "name": "Mam Qua 010",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50010/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/5900de686f5fe301ba4e87.jpg",
+      "planned_output": "storage/products/PID50010/main.webp"
+    },
+    {
+      "products_id": "PID50011",
+      "slug": "mam-qua-011",
+      "name": "Mam Qua 011",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50011/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/9463f5134424c87a913586.jpg",
+      "planned_output": "storage/products/PID50011/main.webp"
+    },
+    {
+      "products_id": "PID50012",
+      "slug": "mam-qua-012",
+      "name": "Mam Qua 012",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50012/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/112289416080015938983.jpg",
+      "planned_output": "storage/products/PID50012/main.webp"
+    },
+    {
+      "products_id": "PID50013",
+      "slug": "mam-qua-013",
+      "name": "Mam Qua 013",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50013/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/252446628194654822388.jpg",
+      "planned_output": "storage/products/PID50013/main.webp"
+    },
+    {
+      "products_id": "PID50014",
+      "slug": "mam-qua-014",
+      "name": "Mam Qua 014",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50014/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/357253379799165639084.jpg",
+      "planned_output": "storage/products/PID50014/main.webp"
+    },
+    {
+      "products_id": "PID50015",
+      "slug": "mam-qua-015",
+      "name": "Mam Qua 015",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50015/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/357253379799165639089.jpg",
+      "planned_output": "storage/products/PID50015/main.webp"
+    },
+    {
+      "products_id": "PID50016",
+      "slug": "mam-qua-016",
+      "name": "Mam Qua 016",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50016/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/357253379799165639090.jpg",
+      "planned_output": "storage/products/PID50016/main.webp"
+    },
+    {
+      "products_id": "PID50017",
+      "slug": "mam-qua-017",
+      "name": "Mam Qua 017",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50017/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/357253379799165639091.jpg",
+      "planned_output": "storage/products/PID50017/main.webp"
+    },
+    {
+      "products_id": "PID50018",
+      "slug": "mam-qua-018",
+      "name": "Mam Qua 018",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50018/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/357253379799165639092.jpg",
+      "planned_output": "storage/products/PID50018/main.webp"
+    },
+    {
+      "products_id": "PID50019",
+      "slug": "mam-qua-019",
+      "name": "Mam Qua 019",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50019/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/357253379799165639093.jpg",
+      "planned_output": "storage/products/PID50019/main.webp"
+    },
+    {
+      "products_id": "PID50020",
+      "slug": "mam-qua-020",
+      "name": "Mam Qua 020",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50020/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/357253379799165639096.jpg",
+      "planned_output": "storage/products/PID50020/main.webp"
+    },
+    {
+      "products_id": "PID50021",
+      "slug": "mam-qua-021",
+      "name": "Mam Qua 021",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50021/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/357253379799165639097.jpg",
+      "planned_output": "storage/products/PID50021/main.webp"
+    },
+    {
+      "products_id": "PID50022",
+      "slug": "mam-qua-022",
+      "name": "Mam Qua 022",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50022/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/2524466281946548223111.jpg",
+      "planned_output": "storage/products/PID50022/main.webp"
+    },
+    {
+      "products_id": "PID50023",
+      "slug": "mam-qua-023",
+      "name": "Mam Qua 023",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50023/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/2524466281946548223115.jpg",
+      "planned_output": "storage/products/PID50023/main.webp"
+    },
+    {
+      "products_id": "PID50024",
+      "slug": "mam-qua-024",
+      "name": "Mam Qua 024",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50024/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/2524466281946548223117.jpg",
+      "planned_output": "storage/products/PID50024/main.webp"
+    },
+    {
+      "products_id": "PID50025",
+      "slug": "mam-qua-025",
+      "name": "Mam Qua 025",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50025/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/2524466281946548223118.jpg",
+      "planned_output": "storage/products/PID50025/main.webp"
+    },
+    {
+      "products_id": "PID50026",
+      "slug": "mam-qua-026",
+      "name": "Mam Qua 026",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50026/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/2524466281946548223119.jpg",
+      "planned_output": "storage/products/PID50026/main.webp"
+    },
+    {
+      "products_id": "PID50027",
+      "slug": "mam-qua-027",
+      "name": "Mam Qua 027",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50027/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/3572533797991656390100.jpg",
+      "planned_output": "storage/products/PID50027/main.webp"
+    },
+    {
+      "products_id": "PID50028",
+      "slug": "mam-qua-028",
+      "name": "Mam Qua 028",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50028/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/3572533797991656390101.jpg",
+      "planned_output": "storage/products/PID50028/main.webp"
+    },
+    {
+      "products_id": "PID50029",
+      "slug": "mam-qua-029",
+      "name": "Mam Qua 029",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50029/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/3572533797991656390104.jpg",
+      "planned_output": "storage/products/PID50029/main.webp"
+    },
+    {
+      "products_id": "PID50030",
+      "slug": "mam-qua-030",
+      "name": "Mam Qua 030",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50030/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/3572533797991656390105.jpg",
+      "planned_output": "storage/products/PID50030/main.webp"
+    },
+    {
+      "products_id": "PID50031",
+      "slug": "mam-qua-031",
+      "name": "Mam Qua 031",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50031/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/3572533797991656390107.jpg",
+      "planned_output": "storage/products/PID50031/main.webp"
+    },
+    {
+      "products_id": "PID50032",
+      "slug": "mam-qua-032",
+      "name": "Mam Qua 032",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50032/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/3572533797991656390109.jpg",
+      "planned_output": "storage/products/PID50032/main.webp"
+    },
+    {
+      "products_id": "PID50033",
+      "slug": "mam-qua-033",
+      "name": "Mam Qua 033",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50033/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/3572533797991656390112.jpg",
+      "planned_output": "storage/products/PID50033/main.webp"
+    },
+    {
+      "products_id": "PID50034",
+      "slug": "mam-qua-034",
+      "name": "Mam Qua 034",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50034/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/3572533797991656390116.jpg",
+      "planned_output": "storage/products/PID50034/main.webp"
+    },
+    {
+      "products_id": "PID50035",
+      "slug": "mam-qua-035",
+      "name": "Mam Qua 035",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50035/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/3572533797991656390120.jpg",
+      "planned_output": "storage/products/PID50035/main.webp"
+    },
+    {
+      "products_id": "PID50036",
+      "slug": "mam-qua-036",
+      "name": "Mam Qua 036",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50036/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/3572533797991656390121.jpg",
+      "planned_output": "storage/products/PID50036/main.webp"
+    },
+    {
+      "products_id": "PID50037",
+      "slug": "mam-qua-037",
+      "name": "Mam Qua 037",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50037/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/3572533797991656390122.jpg",
+      "planned_output": "storage/products/PID50037/main.webp"
+    },
+    {
+      "products_id": "PID50038",
+      "slug": "mam-qua-038",
+      "name": "Mam Qua 038",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50038/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/af8e46fdf7ca7b9422db102.jpg",
+      "planned_output": "storage/products/PID50038/main.webp"
+    },
+    {
+      "products_id": "PID50039",
+      "slug": "mam-qua-039",
+      "name": "Mam Qua 039",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50039/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/d4f3f29b43accff296bd113.jpg",
+      "planned_output": "storage/products/PID50039/main.webp"
+    },
+    {
+      "products_id": "PID50040",
+      "slug": "mam-qua-040",
+      "name": "Mam Qua 040",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50040/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/dde59d912ca6a0f8f9b7103.jpg",
+      "planned_output": "storage/products/PID50040/main.webp"
+    },
+    {
+      "products_id": "PID50041",
+      "slug": "mam-qua-041",
+      "name": "Mam Qua 041",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50041/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/f266e0155122dd7c843398.jpg",
+      "planned_output": "storage/products/PID50041/main.webp"
+    },
+    {
+      "products_id": "PID50042",
+      "slug": "mam-qua-042",
+      "name": "Mam Qua 042",
+      "category": "Gift Procession Sets",
+      "variant": "Mam Qua",
+      "short_description": "High-end Mam Qua arrangement shots.",
+      "description": "Placeholder preset for ceremonial gift set imagery. Enable when ready.",
+      "price": 1250000,
+      "original_price": 1380000,
+      "stock": 30,
+      "colors": [
+        "Red",
+        "Gold"
+      ],
+      "sizes": [
+        "One Size"
+      ],
+      "image_url": "PID50042/main.webp",
+      "gallery": [],
+      "rating": 4.6,
+      "reviews": 10,
+      "tags": [
+        "gift-set"
+      ],
+      "is_featured": false,
+      "is_new": true,
+      "source_image": "push-api/mam_qua/f1060575b442381c615399.jpg",
+      "planned_output": "storage/products/PID50042/main.webp"
+    }
+  ]
+}

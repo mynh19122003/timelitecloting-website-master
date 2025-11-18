@@ -5,6 +5,7 @@ class AuthController {
     try {
       const { email, password } = req.body;
       const result = await adminUserService.login(email, password);
+      
       return res.json({ success: true, message: 'Login successful', data: result });
     } catch (err) {
       if (err.message === 'ERR_INVALID_CREDENTIALS') {

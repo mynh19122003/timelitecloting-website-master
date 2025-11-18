@@ -1,4 +1,11 @@
-export type Category = "ao-dai" | "vest" | "wedding" | "evening";
+export type Category =
+  | "ao-dai"
+  | "vest"
+  | "wedding"
+  | "evening"
+  | "conical-hats"
+  | "kidswear"
+  | "gift-procession-sets";
 export type ProductCategory = Category; // Alias for backward compatibility
 
 export type Product = {
@@ -6,6 +13,7 @@ export type Product = {
   pid?: string; // Product ID from backend (e.g., PID00001)
   name: string;
   category: Category;
+  variant?: string; // Variant of product (e.g., 'Áo Dài Cách Tân', 'Áo Dài Truyền Thống')
   shortDescription: string;
   description: string;
   price: number;
@@ -19,6 +27,13 @@ export type Product = {
   tags: string[];
   isFeatured?: boolean;
   isNew?: boolean;
+  // Filter fields
+  silhouette?: string;
+  fabric?: string;
+  occasion?: string;
+  sleeve?: string;
+  length?: string;
+  embellishment?: string;
 };
 
 // Map frontend string IDs to backend numeric IDs
@@ -47,6 +62,9 @@ export const categoryLabels: Record<Category, string> = {
   vest: "Tailored Suiting",
   wedding: "Bridal Gowns",
   evening: "Evening Dresses",
+  "conical-hats": "Conical Hats",
+  kidswear: "Kidswear",
+  "gift-procession-sets": "Gift Procession Sets",
 };
 
 // Reverse mapping: category label (from API) -> category slug (frontend)
@@ -55,19 +73,45 @@ export const categoryLabelToSlug: Record<string, Category> = {
   "Tailored Suiting": "vest",
   "Bridal Gowns": "wedding",
   "Evening Dresses": "evening",
+  "Conical Hats": "conical-hats",
+  Accessories: "conical-hats",
+  "Kidswear": "kidswear",
+  "Gift Procession Sets": "gift-procession-sets",
+  "Gift Procession": "gift-procession-sets",
   // Also support common variations
   "ao-dai": "ao-dai",
   "vest": "vest",
   "wedding": "wedding",
   "evening": "evening",
+  "conical-hats": "conical-hats",
+  "kidswear": "kidswear",
+  "gift-procession-sets": "gift-procession-sets",
 };
 
 // Category keywords for fuzzy matching (ordered by priority: longer/more specific first)
 const categoryKeywords: Record<Category, string[]> = {
-  "wedding": ["bridal gown", "bridal gowns", "wedding gown", "wedding gowns", "bridal", "wedding"],
-  "evening": ["evening dress", "evening dresses", "evening"],
+  wedding: ["bridal gown", "bridal gowns", "wedding gown", "wedding gowns", "bridal", "wedding"],
+  evening: ["evening dress", "evening dresses", "evening"],
   "ao-dai": ["ao dai", "ao-dai", "aodai"],
-  "vest": ["tailored suiting", "suiting", "tailored", "vest"],
+  vest: ["tailored suiting", "suiting", "tailored", "vest"],
+  "conical-hats": ["non la", "non-la", "conical hat", "conical hats", "accessory", "accessories"],
+  kidswear: ["kidswear", "kids wear", "child", "children", "mini"],
+  "gift-procession-sets": ["procession", "gift set", "tráp cưới", "gift procession"],
+};
+
+export const categorySlugs: Category[] = [
+  "ao-dai",
+  "vest",
+  "wedding",
+  "evening",
+  "conical-hats",
+  "kidswear",
+  "gift-procession-sets",
+];
+
+export const isCategorySlug = (value: string | null | undefined): value is Category => {
+  if (!value) return false;
+  return (categorySlugs as string[]).includes(value);
 };
 
 // Helper function to normalize category from API to frontend slug

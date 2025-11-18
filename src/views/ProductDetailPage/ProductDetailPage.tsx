@@ -20,6 +20,42 @@ import { getAdminMediaUrlByAny, normalizePossibleMediaUrl, toProductsPid } from 
 const formatCurrency = (value: number) =>
   `$${value.toLocaleString("en-US", { minimumFractionDigits: 0 })}`;
 
+type ApiProduct = {
+  id?: number | string;
+  slug?: string;
+  products_id?: string | number;
+  product_id?: string | number;
+  productId?: string | number;
+  image_url?: string;
+  gallery?: string[];
+  category?: string;
+  name?: string;
+  short_description?: string;
+  description?: string;
+  price?: number | string;
+  original_price?: number | string | null;
+  colors?: string[] | string;
+  sizes?: string[] | string;
+  tags?: string[] | string;
+  is_featured?: boolean;
+  is_new?: boolean;
+};
+
+const safeParseArray = (value: unknown): string[] | null => {
+  if (Array.isArray(value)) {
+    return value.map((v) => String(v));
+  }
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed.map((v) => String(v)) : null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+};
+
 export const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -52,7 +88,7 @@ export const ProductDetailPage = () => {
   useEffect(() => {
     if (!id) return;
     let isMounted = true;
-    const mapProduct = (p: any): UiProduct => {
+    const mapProduct = (p: ApiProduct): UiProduct => {
       const slug: string | undefined = p.slug ?? undefined;
       const pidLike: string | number | undefined = p.products_id ?? p.product_id ?? p.id ?? p.productId;
       
@@ -60,15 +96,15 @@ export const ProductDetailPage = () => {
       const pid = pidLike ? toProductsPid(pidLike) : undefined;
       
       const fromSlug = (s?: string): Category | "other" => {
-        if (!s) return "other" as any;
-        if (s.startsWith("ao-dai-")) return "ao-dai" as any;
-        if (s.startsWith("vest-")) return "vest" as any;
-        if (s.startsWith("wedding-") || s.startsWith("bridal-")) return "wedding" as any;
-        if (s.startsWith("evening-")) return "evening" as any;
-        return "other" as any;
+        if (!s) return "other";
+        if (s.startsWith("ao-dai-")) return "ao-dai";
+        if (s.startsWith("vest-")) return "vest";
+        if (s.startsWith("wedding-") || s.startsWith("bridal-")) return "wedding";
+        if (s.startsWith("evening-")) return "evening";
+        return "other";
       };
       
-      const raw = typeof p.image_url === 'string' ? p.image_url.trim() : '';
+      const raw = typeof p.image_url === "string" ? p.image_url.trim() : "";
       const fromPid = getAdminMediaUrlByAny(pidLike);
       let image = fromPid ?? '';
       if (!image) {
@@ -83,23 +119,23 @@ export const ProductDetailPage = () => {
       image = normalizePossibleMediaUrl(image) || "/images/image_1.png";
       
       const galleryRaw = Array.isArray(p.gallery) && p.gallery.length ? p.gallery : [image];
-      const gallery = galleryRaw.map((g: string) => normalizePossibleMediaUrl(g) || g);
+      const gallery = galleryRaw.map((g) => normalizePossibleMediaUrl(g) || g);
       
       // Normalize category from API (could be label like "Bridal Gowns" or slug like "wedding")
       const apiCategory = p.category ? normalizeCategory(p.category) : fromSlug(slug);
-      const finalCategory = apiCategory !== "other" ? (apiCategory as Category) : (fromSlug(slug) as any);
+      const finalCategory = apiCategory !== "other" ? apiCategory : fromSlug(slug);
       
       return {
         id: slug ?? String(p.id),
-        pid: pid,
-        name: p.name,
+        pid,
+        name: p.name ?? "",
         category: finalCategory,
         shortDescription: p.short_description ?? "",
         description: p.description ?? "",
         price: Number(p.price ?? 0),
         originalPrice: p.original_price != null ? Number(p.original_price) : undefined,
-        colors: Array.isArray(p.colors) ? p.colors : (typeof p.colors === 'string' ? (safeParseArray(p.colors) || []) : []),
-        sizes: Array.isArray(p.sizes) ? p.sizes : (typeof p.sizes === 'string' ? (safeParseArray(p.sizes) || ["S", "M", "L"]) : ["S", "M", "L"]),
+        colors: Array.isArray(p.colors) ? p.colors : (safeParseArray(p.colors) || []),
+        sizes: Array.isArray(p.sizes) ? p.sizes : (safeParseArray(p.sizes) || ["S", "M", "L"]),
         image,
         gallery,
         rating: Number(p.rating ?? 0),
@@ -110,20 +146,11 @@ export const ProductDetailPage = () => {
       };
     };
 
-    const safeParseArray = (value: string): string[] | null => {
-      try {
-        const parsed = JSON.parse(value);
-        return Array.isArray(parsed) ? parsed : null;
-      } catch {
-        return null;
-      }
-    };
-
     setLoading(true);
     // Use getProduct instead of getProductBySlug to support both PID and slug
     ApiService.getProduct(id)
       .then((res) => {
-        const data = (res as any).data ?? res;
+        const data = (res as { data?: ApiProduct } | ApiProduct).data ?? res;
         const mapped = mapProduct(data);
         if (!isMounted) return;
         setProduct(mapped);
@@ -147,14 +174,14 @@ export const ProductDetailPage = () => {
       })
       .then((listRes) => {
         if (!listRes || !isMounted) return;
-        const list = (listRes as any).products ?? [];
+        const list = (listRes as { products?: ApiProduct[] } | ApiProduct[]).products ?? listRes;
         const related = list
-          .map((p: any) => mapProduct(p))
+          .map((p) => mapProduct(p))
           .filter((p: UiProduct) => p.id !== id)
           .slice(0, 3);
         setRelatedProducts(related);
       })
-      .catch((error: any) => {
+      .catch((error: unknown) => {
         // Log error to console
         console.error('[ProductDetailPage] Error loading product:', {
           id,
@@ -179,7 +206,7 @@ export const ProductDetailPage = () => {
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, [id, navigate]);
 
   const comparisonSet = useMemo(() => {
     if (!product) {
