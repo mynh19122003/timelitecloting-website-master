@@ -7,7 +7,6 @@ const isNext = typeof process !== 'undefined' && process.env
 const isVite = typeof import.meta !== 'undefined' && import.meta.env
 const isDev = (isNext && process.env.NODE_ENV === 'development')
   || (isVite && import.meta?.env?.DEV)
-  || (typeof window !== 'undefined' && window.location.hostname === 'localhost')
 
 const apiBaseUrl = getApiBaseUrl()
 // Log API base URL trong dev mode để debug

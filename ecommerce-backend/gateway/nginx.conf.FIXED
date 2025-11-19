@@ -1,3 +1,11 @@
+# FIXED CORS Configuration
+# This file fixes the CORS issue where "*" cannot be used with credentials: true
+# 
+# Usage:
+# 1. Backup current nginx.conf: cp nginx.conf nginx.conf.backup
+# 2. Replace with this file: cp nginx.conf.FIXED_CORS nginx.conf
+# 3. Restart gateway: docker-compose restart gateway
+
 upstream backend_node {
     server backend-node:3001;
 }
@@ -25,8 +33,33 @@ server {
     add_header Referrer-Policy "no-referrer-when-downgrade" always;
     add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
 
-    # CORS - ACCEPT ALL ORIGINS
-    # No conditions, all origins accepted
+    # CORS origin resolution - FIXED to support credentials
+    # Use origin from request if valid, otherwise use "*" (no credentials)
+    set $cors_origin "*";
+    set $cors_credentials "false";
+    
+    # Development origins (localhost)
+    if ($http_origin ~* "^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$") {
+        set $cors_origin $http_origin;
+        set $cors_credentials "true";
+    }
+    
+    # Production origins
+    if ($http_origin ~* "^https?://(www\.)?timeliteclothing\.com$") {
+        set $cors_origin $http_origin;
+        set $cors_credentials "true";
+    }
+    
+    if ($http_origin ~* "^https?://api\.timeliteclothing\.com$") {
+        set $cors_origin $http_origin;
+        set $cors_credentials "true";
+    }
+    
+    # If no origin header, allow same-origin (no CORS needed)
+    if ($http_origin = "") {
+        set $cors_origin "*";
+        set $cors_credentials "false";
+    }
 
     # Global preflight handler (let OPTIONS through fast)
     location / {
@@ -47,17 +80,19 @@ server {
 
     # Node.js backend routes
     location /api/node/ {
-        # CORS - ACCEPT ALL
-        add_header Access-Control-Allow-Origin "*" always;
+        # Set CORS headers - FIXED: Use dynamic origin, not "*" with credentials
+        add_header Access-Control-Allow-Origin $cors_origin always;
         add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH" always;
         add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With" always;
+        add_header Access-Control-Allow-Credentials $cors_credentials always;
         add_header Access-Control-Max-Age "3600" always;
         
-        # Handle preflight OPTIONS
+        # Handle preflight OPTIONS requests
         if ($request_method = 'OPTIONS') {
-            add_header Access-Control-Allow-Origin "*" always;
+            add_header Access-Control-Allow-Origin $cors_origin always;
             add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH" always;
             add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With" always;
+            add_header Access-Control-Allow-Credentials $cors_credentials always;
             add_header Access-Control-Max-Age "3600" always;
             add_header Content-Length 0;
             add_header Content-Type text/plain;
@@ -79,25 +114,29 @@ server {
         proxy_read_timeout 30s;
     }
 
-    # Admin Auth routes
+    # Explicit route for Admin Auth to avoid any mis-routing
+    # Ensure /admin/auth/* always goes to admin_node
     location /admin/auth/ {
         # Hide upstream CORS headers to prevent duplicates
         proxy_hide_header Access-Control-Allow-Origin;
         proxy_hide_header Access-Control-Allow-Methods;
         proxy_hide_header Access-Control-Allow-Headers;
+        proxy_hide_header Access-Control-Allow-Credentials;
         proxy_hide_header Access-Control-Max-Age;
 
-        # CORS - ACCEPT ALL
-        add_header Access-Control-Allow-Origin "*" always;
+        # CORS for Admin Panel - FIXED
+        add_header Access-Control-Allow-Origin $cors_origin always;
         add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH" always;
         add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With" always;
+        add_header Access-Control-Allow-Credentials $cors_credentials always;
         add_header Access-Control-Max-Age "3600" always;
 
         # Preflight
         if ($request_method = 'OPTIONS') {
-            add_header Access-Control-Allow-Origin "*" always;
+            add_header Access-Control-Allow-Origin $cors_origin always;
             add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH" always;
             add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With" always;
+            add_header Access-Control-Allow-Credentials $cors_credentials always;
             add_header Access-Control-Max-Age "3600" always;
             add_header Content-Length 0;
             add_header Content-Type text/plain;
@@ -119,26 +158,30 @@ server {
 
     # Admin backend routes
     location /admin/ {
-        # Hide upstream CORS headers
+        # Hide any CORS headers from upstream Node to prevent duplicates
+        # Must be set before proxy_pass
         proxy_hide_header Access-Control-Allow-Origin;
         proxy_hide_header Access-Control-Allow-Methods;
         proxy_hide_header Access-Control-Allow-Headers;
+        proxy_hide_header Access-Control-Allow-Credentials;
         proxy_hide_header Access-Control-Max-Age;
 
-        # Disable request buffering
+        # Disable request buffering to stream uploads
         proxy_request_buffering off;
 
-        # CORS - ACCEPT ALL
-        add_header Access-Control-Allow-Origin "*" always;
+        # Set CORS headers - FIXED
+        add_header Access-Control-Allow-Origin $cors_origin always;
         add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH" always;
         add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With" always;
+        add_header Access-Control-Allow-Credentials $cors_credentials always;
         add_header Access-Control-Max-Age "3600" always;
 
-        # Preflight
+        # Handle preflight OPTIONS requests
         if ($request_method = 'OPTIONS') {
-            add_header Access-Control-Allow-Origin "*" always;
+            add_header Access-Control-Allow-Origin $cors_origin always;
             add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH" always;
             add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With" always;
+            add_header Access-Control-Allow-Credentials $cors_credentials always;
             add_header Access-Control-Max-Age "3600" always;
             add_header Content-Length 0;
             add_header Content-Type text/plain;
@@ -160,21 +203,24 @@ server {
 
     # PHP backend routes
     location ~ ^/api/php/(.*)$ {
-        # Preflight
+        # Handle preflight OPTIONS requests first
         if ($request_method = 'OPTIONS') {
-            add_header Access-Control-Allow-Origin "*" always;
+            add_header Access-Control-Allow-Origin $cors_origin always;
             add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH" always;
             add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With" always;
+            add_header Access-Control-Allow-Credentials $cors_credentials always;
             add_header Access-Control-Max-Age "3600" always;
             add_header Content-Length 0;
             add_header Content-Type text/plain;
             return 204;
         }
         
-        # Hide PHP-FPM CORS headers
+        # Hide any CORS headers from PHP-FPM to prevent duplicates
+        # Must be set before fastcgi_pass
         fastcgi_hide_header Access-Control-Allow-Origin;
         fastcgi_hide_header Access-Control-Allow-Methods;
         fastcgi_hide_header Access-Control-Allow-Headers;
+        fastcgi_hide_header Access-Control-Allow-Credentials;
         fastcgi_hide_header Access-Control-Max-Age;
         
         set $php_uri /api/$1;
@@ -189,26 +235,30 @@ server {
         fastcgi_send_timeout 30s;
         fastcgi_read_timeout 30s;
         
-        # CORS - ACCEPT ALL
-        add_header Access-Control-Allow-Origin "*" always;
+        # Set CORS headers after fastcgi - FIXED
+        # Use 'always' to ensure headers are added even for error responses
+        add_header Access-Control-Allow-Origin $cors_origin always;
         add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH" always;
         add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With" always;
+        add_header Access-Control-Allow-Credentials $cors_credentials always;
         add_header Access-Control-Max-Age "3600" always;
     }
 
-    # User routes
+        # Default route - simple routing by prefix
     location /api/users {
-        # CORS - ACCEPT ALL
-        add_header Access-Control-Allow-Origin "*" always;
+        # Set CORS headers - FIXED
+        add_header Access-Control-Allow-Origin $cors_origin always;
         add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH" always;
         add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With" always;
+        add_header Access-Control-Allow-Credentials $cors_credentials always;
         add_header Access-Control-Max-Age "3600" always;
         
-        # Preflight
+        # Handle preflight OPTIONS requests
         if ($request_method = 'OPTIONS') {
-            add_header Access-Control-Allow-Origin "*" always;
+            add_header Access-Control-Allow-Origin $cors_origin always;
             add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH" always;
             add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With" always;
+            add_header Access-Control-Allow-Credentials $cors_credentials always;
             add_header Access-Control-Max-Age "3600" always;
             add_header Content-Length 0;
             add_header Content-Type text/plain;
@@ -223,19 +273,20 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # Orders routes
     location /api/orders {
-        # CORS - ACCEPT ALL
-        add_header Access-Control-Allow-Origin "*" always;
+        # Set CORS headers - FIXED
+        add_header Access-Control-Allow-Origin $cors_origin always;
         add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH" always;
         add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With" always;
+        add_header Access-Control-Allow-Credentials $cors_credentials always;
         add_header Access-Control-Max-Age "3600" always;
         
-        # Preflight
+        # Handle preflight OPTIONS requests
         if ($request_method = 'OPTIONS') {
-            add_header Access-Control-Allow-Origin "*" always;
+            add_header Access-Control-Allow-Origin $cors_origin always;
             add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH" always;
             add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With" always;
+            add_header Access-Control-Allow-Credentials $cors_credentials always;
             add_header Access-Control-Max-Age "3600" always;
             add_header Content-Length 0;
             add_header Content-Type text/plain;
@@ -250,23 +301,25 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # Products routes (PHP)
     location /api/products {
-        # Preflight
+        # Handle preflight OPTIONS requests first
         if ($request_method = 'OPTIONS') {
-            add_header Access-Control-Allow-Origin "*" always;
+            add_header Access-Control-Allow-Origin $cors_origin always;
             add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH" always;
             add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With" always;
+            add_header Access-Control-Allow-Credentials $cors_credentials always;
             add_header Access-Control-Max-Age "3600" always;
             add_header Content-Length 0;
             add_header Content-Type text/plain;
             return 204;
         }
         
-        # Hide PHP-FPM CORS headers
+        # Hide any CORS headers from PHP-FPM to prevent duplicates
+        # Must be set before fastcgi_pass
         fastcgi_hide_header Access-Control-Allow-Origin;
         fastcgi_hide_header Access-Control-Allow-Methods;
         fastcgi_hide_header Access-Control-Allow-Headers;
+        fastcgi_hide_header Access-Control-Allow-Credentials;
         fastcgi_hide_header Access-Control-Max-Age;
         
         include fastcgi_params;
@@ -277,10 +330,11 @@ server {
         fastcgi_param DOCUMENT_URI $request_uri;
         fastcgi_param DOCUMENT_ROOT /var/www/html;
         
-        # CORS - ACCEPT ALL
-        add_header Access-Control-Allow-Origin "*" always;
+        # Set CORS headers after fastcgi - FIXED
+        add_header Access-Control-Allow-Origin $cors_origin always;
         add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH" always;
         add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With" always;
+        add_header Access-Control-Allow-Credentials $cors_credentials always;
         add_header Access-Control-Max-Age "3600" always;
     }
 
@@ -292,3 +346,4 @@ server {
         root /usr/share/nginx/html;
     }
 }
+

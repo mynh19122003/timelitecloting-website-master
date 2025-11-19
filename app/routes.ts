@@ -32,12 +32,13 @@ export const STOREFRONT_ROUTES = [
 ] as const;
 
 // Error pages - required for static export
+// Note: 500.html is handled by public/500.html file, not as a route
 export const ERROR_ROUTES = [
   { slug: ['400'] }, // Bad Request
   { slug: ['401'] }, // Unauthorized
   { slug: ['403'] }, // Forbidden
   { slug: ['404'] }, // Not Found
-  { slug: ['500'] }, // Internal Server Error
+  // { slug: ['500'] }, // Internal Server Error - handled by public/500.html
   { slug: ['502'] }, // Bad Gateway
   { slug: ['503'] }, // Service Unavailable
 ] as const;

@@ -5,6 +5,31 @@
 :root {
   color-scheme: light;
   background-color: #ffffff;
+  
+  /* Admin page variables */
+  --bg: #f6f8fb;
+  --card: #ffffff;
+  --muted: #8b94a6;
+  --primary: #1e9b7a;
+  --danger: #e05353;
+  --shadow: 0 10px 30px rgba(16,24,40,0.06);
+  
+  /* Button variables */
+  --btn-primary: #1e9b7a;
+  --btn-danger: #e05353;
+  --btn-ghost: transparent;
+  --btn-muted: #f3f6fb;
+  
+  /* Auth layout variables */
+  --auth-bg: #f3f6ff;
+  --auth-card-bg: #ffffff;
+  --auth-primary: #142a5c;
+  --auth-primary-hover: #0f2149;
+  --auth-border: rgba(20, 42, 92, 0.12);
+  --auth-muted: #64748b;
+  --auth-soft: #e2e8f0;
+  --auth-radius: 24px;
+  --auth-shadow: 0 32px 60px -40px rgba(15, 23, 42, 0.45);
 }
 
 body {

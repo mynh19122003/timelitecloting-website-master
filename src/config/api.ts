@@ -1,28 +1,71 @@
-// API Configuration - Production ready for static export
-const normalizeAdminBaseUrl = (input: string): string => {
+// API hosts for different environments
+// NOTE: Theo yêu cầu production, frontend LUÔN trỏ về domain API chính thức.
+// Nếu muốn override cho môi trường đặc biệt, hãy dùng biến môi trường.
+const PROD_API_ORIGIN = 'https://api.timeliteclothing.com';
+const PROD_ADMIN_ORIGIN = 'https://api.timeliteclothing.com';
+
+const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '0.0.0.0', '[::1]']);
+
+const isLocalHostname = (hostname: string | undefined | null): boolean => {
+  if (!hostname) return false;
+  return LOCAL_HOSTNAMES.has(hostname.toLowerCase());
+};
+
+const getRuntimeLocation = (): Location | null => {
+  if (typeof window !== 'undefined' && window.location) return window.location;
+  if (typeof globalThis !== 'undefined' && typeof (globalThis as { location?: Location }).location !== 'undefined') {
+    return (globalThis as { location?: Location }).location ?? null;
+  }
+  return null;
+};
+
+const normalizeAbsoluteUrl = (input: string | undefined | null, fallback: string): string => {
+  const trimmed = (input || '').trim();
+  if (!trimmed) return fallback;
   try {
-    const url = new URL(input);
+    const url = new URL(trimmed);
+    // Remove trailing slash to keep consistent concatenation later
     return url.toString().replace(/\/+$/, '');
   } catch {
-    return 'http://localhost:3001';
+    return fallback;
   }
 };
 
-const RAW_ADMIN_BASE = process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3001';
-const RESOLVED_ADMIN_BASE = normalizeAdminBaseUrl(RAW_ADMIN_BASE);
+const forceProdIfDeployed = (url: string): string => {
+  try {
+    const parsed = new URL(url);
+    if (!isLocalHostname(parsed.hostname)) {
+      return url;
+    }
+    const runtimeLocation = getRuntimeLocation();
+    if (runtimeLocation && !isLocalHostname(runtimeLocation.hostname)) {
+      console.warn('[api] Detected production origin but API URL points to localhost. Forcing production API domain.', {
+        runtimeHost: runtimeLocation.hostname,
+        previousApiHost: parsed.hostname,
+        forced: PROD_API_ORIGIN,
+      });
+      return PROD_API_ORIGIN;
+    }
+    return url;
+  } catch {
+    return url;
+  }
+};
 
-// Resolve API base URL - Production ready for static export
+const resolveAdminBaseUrl = (): string => {
+  const defaultOrigin = PROD_ADMIN_ORIGIN;
+  const normalized = normalizeAbsoluteUrl(process.env.NEXT_PUBLIC_ADMIN_URL, defaultOrigin);
+  return forceProdIfDeployed(normalized);
+};
+
 const resolveApiBaseUrl = (): string => {
-  // Always use production API for static export
-  // Override with NEXT_PUBLIC_API_URL if needed for different environments
-  const fromEnv = process.env.NEXT_PUBLIC_API_URL;
-  if (fromEnv) {
-    return fromEnv.trim();
-  }
-  
-  // Default to Docker gateway in local development
-  return 'http://localhost:3002';
+  const envOverride = process.env.NEXT_PUBLIC_API_URL;
+  const base = envOverride?.trim() ? normalizeAbsoluteUrl(envOverride, envOverride.trim()) : PROD_API_ORIGIN;
+  // Nếu build runtime đang ở production domain nhưng env vẫn để localhost, chuyển sang domain chính
+  return forceProdIfDeployed(base);
 };
+
+const RESOLVED_ADMIN_BASE = resolveAdminBaseUrl();
 
 export const API_CONFIG = {
   // Base URL for API calls
@@ -83,7 +126,7 @@ export const getPhpApiUrl = (endpoint: string): string => {
   return `${API_CONFIG.BASE_URL}${endpoint}`;
 };
 
-// Helper to build admin media URL, e.g. http://localhost:3001/admin/media/PID00001/main.webp
+// Helper to build admin media URL, e.g. https://api.timeliteclothing.com/admin/media/PID00001/main.webp
 export const getAdminMediaUrl = (productsId: string, fileName: string = 'main.webp'): string => {
   const pid = encodeURIComponent(productsId);
   const file = encodeURIComponent(fileName);
@@ -129,23 +172,22 @@ export const getAdminMediaUrlByAny = (idLike: unknown, fileName: string = 'main.
   return url;
 };
 
-// Normalize any media-like URL so it points to the correct admin host
+// Normalize any media-like URL so it points to the configured admin host
 // - If it starts with /admin/media, prefix ADMIN_BASE_URL
-// - If it points to localhost:3002/admin/media, rewrite to localhost:3001
+// - If it is an absolute URL that already hits /admin/media, force it to ADMIN_BASE_URL
 // - Keep other hosts untouched
 export const normalizePossibleMediaUrl = (input: string | undefined | null): string => {
   const value = String(input ?? '').trim();
   if (!value) return '';
+  const adminBaseUrl = API_CONFIG.ADMIN_BASE_URL;
   try {
     if (value.startsWith('/admin/media/')) {
-      return `${API_CONFIG.ADMIN_BASE_URL}${value}`;
+      return `${adminBaseUrl}${value}`;
     }
     if (/^https?:\/\//i.test(value)) {
-      const u = new URL(value);
-      if (u.hostname === 'localhost' && u.port === '3002' && u.pathname.startsWith('/admin/media/')) {
-        u.port = '3001';
-        u.protocol = 'http:'; // ensure http for local admin
-        return u.toString();
+      const parsed = new URL(value);
+      if (parsed.pathname.startsWith('/admin/media/')) {
+        return `${adminBaseUrl}${parsed.pathname}`;
       }
       return value;
     }

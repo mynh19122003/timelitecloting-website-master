@@ -22,7 +22,7 @@ const server = http.createServer(app);
 const PORT = process.env.ADMIN_NODE_PORT || 3001;
 
 const isProduction = process.env.NODE_ENV === 'production'
-const prodAllowList = ['https://yourdomain.com']
+const prodAllowList = ['https://api.timeliteclothing.com']
 
 const corsOptions = {
   origin: (origin, callback) => {

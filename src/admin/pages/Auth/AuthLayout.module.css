@@ -1,17 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-:root {
-  --auth-bg: #f3f6ff;
-  --auth-card-bg: #ffffff;
-  --auth-primary: #142a5c;
-  --auth-primary-hover: #0f2149;
-  --auth-border: rgba(20, 42, 92, 0.12);
-  --auth-muted: #64748b;
-  --auth-soft: #e2e8f0;
-  --auth-radius: 24px;
-  --auth-shadow: 0 32px 60px -40px rgba(15, 23, 42, 0.45);
-}
-
 .page {
   min-height: 100vh;
   margin: 0;

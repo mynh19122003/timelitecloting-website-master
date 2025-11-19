@@ -34,16 +34,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     });
   };
 
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const currentSrc = e.currentTarget.src;
-    // Normalize any lingering :3002 links back to :3001
-    if (currentSrc.includes(':3002/admin/media/')) {
-      const fixed = currentSrc.replace(':3002/admin/media/', ':3001/admin/media/');
-      setImageSrc(fixed);
-    } else {
-      // Fallback to placeholder
-      setImageSrc('/images/image_1.png');
-    }
+  const handleImageError = () => {
+    setImageSrc('/images/image_1.png');
   };
 
   return (

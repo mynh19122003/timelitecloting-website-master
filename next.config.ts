@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Static export configuration for VPS deployment
+  output: 'export',
+  
   // Disable ESLint during build for production deployment
   eslint: {
     ignoreDuringBuilds: true,
@@ -32,27 +35,8 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
       {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '3002',
-        pathname: '/admin/media/**',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '3001',
-        pathname: '/admin/media/**',
-      },
-      // Allow images from any domain for production (VPS)
-      // You can restrict this to specific domains for better security
-      {
-        protocol: 'http',
-        hostname: '**',
-        pathname: '/admin/media/**',
-      },
-      {
         protocol: 'https',
-        hostname: '**',
+        hostname: 'api.timeliteclothing.com',
         pathname: '/admin/media/**',
       },
     ],

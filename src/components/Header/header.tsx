@@ -40,32 +40,32 @@ export function Header({ navMenu }: HeaderProps) {
     <>
       <style>{headerStyles}</style>
       <header className={`header${activeIndex !== null ? " header--dropdown-open" : ""}`}>
-        <div className="header__top">
-          <div className="header__brand">
-            <span className="header__brand-mark">
+      <div className="header__top">
+        <div className="header__brand">
+          <span className="header__brand-mark">
               <img
-                className="header__brand-logo"
-                src="/Image/Logo.png"
-                alt="Timelite logo"
-              />
-            </span>
+              className="header__brand-logo"
+              src="/Image/Logo.png"
+              alt="Timelite logo"
+            />
+          </span>
             <span className="header__brand-name" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
               Timelite
             </span>
-          </div>
-          <div className="header__search">
-            <FiSearch size={18} />
-            <input type="search" aria-label="Search products" placeholder="What are you looking for?" />
-          </div>
-          <div className="header__actions">
+        </div>
+        <div className="header__search">
+          <FiSearch size={18} />
+          <input type="search" aria-label="Search products" placeholder="What are you looking for?" />
+        </div>
+        <div className="header__actions">
             <button className="header__action" aria-label="Order tracking" onClick={() => navigate("/profile?tab=orders")}>
-              <PiPackageLight size={22} />
-            </button>
+            <PiPackageLight size={22} />
+          </button>
             <button className="header__profile" aria-label="Account" onClick={handleAccountClick}>
-              <PiUserCircleLight size={22} />
-            </button>
+            <PiUserCircleLight size={22} />
+          </button>
             <button className="header__icon" aria-label="Shopping bag" onClick={openCart}>
-              <PiShoppingBagLight size={22} />
+            <PiShoppingBagLight size={22} />
               {itemCount > 0 && (
                 <span style={{
                   position: "absolute",
@@ -85,11 +85,11 @@ export function Header({ navMenu }: HeaderProps) {
                   {itemCount}
                 </span>
               )}
-            </button>
-          </div>
+          </button>
         </div>
+      </div>
         <div className="header__nav-row" onMouseLeave={closeMenu}>
-          <nav className="header__nav" aria-label="Primary">
+        <nav className="header__nav" aria-label="Primary">
             {navMenu.map((item, index) => {
               const hasDropdown =
                 !item.disableDropdown &&
@@ -99,16 +99,16 @@ export function Header({ navMenu }: HeaderProps) {
               const isActive = activeIndex === index;
 
               return (
-                <div
-                  key={item.label}
+            <div
+              key={item.label}
                   className={`header__nav-item${item.accent ? " header__nav-item--accent" : ""}${
                     isActive ? " is-active" : ""
                   }`}
                   onMouseEnter={() => hasDropdown && handleNavItemEnter(index)}
-                >
-                  <button
-                    type="button"
-                    className="header__nav-trigger"
+            >
+              <button
+                type="button"
+                className="header__nav-trigger"
                     aria-expanded={isActive && hasDropdown}
                     aria-controls={hasDropdown ? `mega-${index}` : undefined}
                     onClick={() => {
@@ -117,13 +117,13 @@ export function Header({ navMenu }: HeaderProps) {
                         closeMenu();
                       }
                     }}
-                  >
-                    {item.label}
-                  </button>
-                </div>
+              >
+                {item.label}
+              </button>
+            </div>
               );
             })}
-          </nav>
+        </nav>
           {activeIndex !== null && (() => {
             const activeItem = navMenu[activeIndex];
             const hasContent =
@@ -136,20 +136,20 @@ export function Header({ navMenu }: HeaderProps) {
             if (!hasContent) return null;
 
             return (
-              <div
-                className="header__mega"
-                id={`mega-${activeIndex}`}
-                role="region"
+          <div 
+            className="header__mega" 
+            id={`mega-${activeIndex}`} 
+            role="region" 
                 aria-label={`${activeItem.label} menu`}
-                onMouseEnter={() => setActiveIndex(activeIndex)}
-              >
-                <div className="header__mega-grid">
+            onMouseEnter={() => setActiveIndex(activeIndex)}
+          >
+            <div className="header__mega-grid">
                   {activeItem.columns?.map((column) => (
                     <div className="header__mega-section" key={column.heading}>
                       <p className="header__mega-heading">{column.heading}</p>
-                      <ul>
+                  <ul>
                         {column.links.map((entry) => (
-                          <li key={entry}>
+                      <li key={entry}>
                             <button
                               type="button"
                               className="header__mega-link"
@@ -158,13 +158,13 @@ export function Header({ navMenu }: HeaderProps) {
                                 closeMenu();
                               }}
                             >
-                              {entry}
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
+                          {entry}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
 
                   {activeItem.quickLinks?.length ? (
                     <div className="header__mega-section header__mega-section--quick">
@@ -189,7 +189,7 @@ export function Header({ navMenu }: HeaderProps) {
                   ) : null}
 
                   {activeItem.highlight && (
-                    <aside className="header__mega-highlight">
+                <aside className="header__mega-highlight">
                       {activeItem.highlight.eyebrow && (
                         <p className="header__mega-eyebrow">{activeItem.highlight.eyebrow}</p>
                       )}
@@ -222,17 +222,17 @@ export function Header({ navMenu }: HeaderProps) {
                               }}
                             >
                               {activeItem.highlight.noteCta}
-                            </button>
+                  </button>
                           )}
                         </p>
                       )}
-                    </aside>
-                  )}
-                </div>
-              </div>
+                </aside>
+              )}
+            </div>
+          </div>
             );
           })()}
-        </div>
+      </div>
       </header>
     </>
   );

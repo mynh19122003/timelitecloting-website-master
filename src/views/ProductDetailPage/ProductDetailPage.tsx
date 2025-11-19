@@ -70,18 +70,17 @@ export const ProductDetailPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const previousProductIdRef = useRef<string | undefined>(undefined);
   const buildFallbacks = (initial: string): string[] => {
+    const normalized = normalizePossibleMediaUrl(initial) || initial || "";
     const variants: string[] = [];
-    const add = (u: string) => {
+    const add = (u?: string) => {
       if (u && !variants.includes(u)) variants.push(u);
     };
-    add(initial);
-    if (initial.includes(":3001/")) add(initial.replace(":3001/", ":3002/"));
-    if (initial.includes(":3002/")) add(initial.replace(":3002/", ":3001/"));
-    if (/\.webp$/i.test(initial)) {
-      add(initial.replace(/\.webp$/i, ".jpg"));
-      add(initial.replace(/\.webp$/i, ".png"));
+    add(normalized);
+    if (/\.webp$/i.test(normalized)) {
+      add(normalized.replace(/\.webp$/i, ".jpg"));
+      add(normalized.replace(/\.webp$/i, ".png"));
     }
-    return variants;
+    return variants.length ? variants : ["/images/image_1.png"];
   };
   const [mainImgIndex, setMainImgIndex] = useState(0);
 
@@ -294,11 +293,13 @@ export const ProductDetailPage = () => {
                       className={styles.thumbnailImage}
                       onError={(e) => {
                         const el = e.currentTarget as HTMLImageElement;
-                        const current = el.src;
-                        if (current.includes(":3001/")) {
-                          el.src = current.replace(":3001/", ":3002/");
-                        } else if (/\.webp$/i.test(current)) {
-                          el.src = current.replace(/\.webp$/i, ".jpg");
+                        if (el.dataset.failedOnce === "1") {
+                          el.src = "/images/image_1.png";
+                          return;
+                        }
+                        el.dataset.failedOnce = "1";
+                        if (/\.webp$/i.test(el.src)) {
+                          el.src = el.src.replace(/\.webp$/i, ".jpg");
                         } else {
                           el.src = "/images/image_1.png";
                         }

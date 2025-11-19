@@ -249,35 +249,20 @@ export class ApiService {
   // User Authentication
   static async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
-      // Try Node.js backend first (via Gateway port 3002)
+      // Try Node.js backend first (qua Gateway / domain API chính)
       const response = await httpClient.post<ApiResponse<LoginResponse>>(API_CONFIG.ENDPOINTS.LOGIN, credentials);
       const loginData = response.data || (response as LoginResponse);
       httpClient.saveToken(loginData.token);
       return loginData;
-    } catch {
-      // If Gateway (port 3002) fails, try direct Node.js backend (port 3001)
-      const isNetworkError = error instanceof ApiError && error.status === 0;
-      if (isNetworkError && API_CONFIG.BASE_URL === 'http://localhost:3002') {
-        try {
-          console.warn('[ApiService] Gateway (port 3002) không khả dụng, thử Node.js backend trực tiếp (port 3001)...');
-          const directBackendClient = new HttpClient('http://localhost:3001');
-          const response = await directBackendClient.post<ApiResponse<LoginResponse>>('/api/node/users/login', credentials);
-          const loginData = response.data || (response as LoginResponse);
-          httpClient.saveToken(loginData.token);
-          return loginData;
-        } catch {
-          // Fall through to PHP fallback
-        }
-      }
-      
-      // Fallback to PHP backend
+    } catch (error) {
+      // Fallback sang PHP backend nếu Node.js lỗi
       try {
         const response = await httpClient.post<ApiResponse<LoginResponse>>(API_CONFIG.ENDPOINTS.PHP.LOGIN, credentials);
         const loginData = response.data || (response as LoginResponse);
         httpClient.saveToken(loginData.token);
         return loginData;
       } catch {
-        // If all fail, throw the original error with helpful message
+        // Nếu tất cả đều lỗi, ném error gốc
         throw error;
       }
     }
@@ -334,32 +319,18 @@ export class ApiService {
     });
 
     try {
-      // Try Gateway (port 3002) first
+      // Gọi profile qua Node.js backend (qua domain API chính)
       const res = await httpClient.get<ApiResponse<User>>(API_CONFIG.ENDPOINTS.PROFILE, true);
       const data = (res.data ?? res) as User;
       return mapUser(data);
     } catch (error) {
-      // If Gateway (port 3002) fails, try direct Node.js backend (port 3001)
-      const isNetworkError = error instanceof ApiError && error.status === 0;
-      if (isNetworkError && API_CONFIG.BASE_URL === 'http://localhost:3002') {
-        try {
-          console.warn('[ApiService] Gateway (port 3002) không khả dụng, thử Node.js backend trực tiếp (port 3001)...');
-          const directBackendClient = new HttpClient('http://localhost:3001');
-          const res = await directBackendClient.get<ApiResponse<User>>('/api/node/users/profile', true);
-          const data = (res.data ?? res) as User;
-          return mapUser(data);
-      } catch {
-          // Fall through to PHP fallback
-        }
-      }
-      
-      // Fallback to PHP backend
+      // Fallback sang PHP backend nếu Node.js lỗi
       try {
         const res = await httpClient.get<ApiResponse<User>>(API_CONFIG.ENDPOINTS.PHP.PROFILE, true);
         const data = (res.data ?? res) as User;
         return mapUser(data);
       } catch {
-        throw error; // Throw original error if all fail
+        throw error; // Giữ nguyên error gốc nếu tất cả đều lỗi
       }
     }
   }
@@ -560,28 +531,12 @@ export class ApiService {
     console.log('[ApiService] createOrder called with data:', JSON.stringify(orderData, null, 2));
     
     try {
-      // Try Gateway (port 3002) first
-      console.log('[ApiService] Trying Gateway (port 3002):', API_CONFIG.ENDPOINTS.ORDERS);
+      console.log('[ApiService] Trying primary API endpoint:', API_CONFIG.ENDPOINTS.ORDERS);
       const response = await httpClient.post<unknown>(API_CONFIG.ENDPOINTS.ORDERS, orderData);
-      console.log('[ApiService] Gateway response:', response);
+      console.log('[ApiService] Primary API response:', response);
       return response;
     } catch (error) {
-      console.error('[ApiService] Gateway failed:', (error as Error).message);
-      
-      // If Gateway (port 3002) fails, try direct Node.js backend (port 3001)
-      const isNetworkError = error instanceof ApiError && error.status === 0;
-      if (isNetworkError && API_CONFIG.BASE_URL === 'http://localhost:3002') {
-        try {
-          console.warn('[ApiService] Gateway (port 3002) không khả dụng, thử Node.js backend trực tiếp (port 3001)...');
-          const directBackendClient = new HttpClient('http://localhost:3001');
-          const response = await directBackendClient.post<unknown>('/api/node/orders', orderData);
-          console.log('[ApiService] Direct Node.js backend response:', response);
-          return response;
-        } catch {
-          console.error('[ApiService] Direct Node.js backend failed:', (directError as Error).message);
-          // Fall through to PHP fallback
-        }
-      }
+      console.error('[ApiService] Primary API failed:', (error as Error).message);
       
       // Fallback to PHP backend
       try {
@@ -589,7 +544,7 @@ export class ApiService {
         const phpResponse = await httpClient.post<unknown>(API_CONFIG.ENDPOINTS.PHP.ORDERS, orderData);
         console.log('[ApiService] PHP backend response:', phpResponse);
         return phpResponse;
-      } catch {
+      } catch (phpError) {
         console.error('[ApiService] PHP backend also failed:', (phpError as Error).message);
         throw phpError;
       }
@@ -725,27 +680,10 @@ export class ApiService {
     };
 
     try {
-      // Try Gateway (port 3002) first
       const response = await httpClient.get<ApiResponse<unknown>>(API_CONFIG.ENDPOINTS.ORDER_HISTORY);
       console.log('[ApiService] getOrderHistory - Raw response:', response);
       return parseOrders(response);
     } catch (error) {
-      // If Gateway (port 3002) fails, try direct Node.js backend (port 3001)
-      const isNetworkError = error instanceof ApiError && error.status === 0;
-      if (isNetworkError && API_CONFIG.BASE_URL === 'http://localhost:3002') {
-        try {
-          console.warn('[ApiService] Gateway (port 3002) không khả dụng, thử Node.js backend trực tiếp (port 3001)...');
-          const directBackendClient = new HttpClient('http://localhost:3001');
-          const response = await directBackendClient.get<ApiResponse<unknown>>('/api/node/orders/history');
-          console.log('[ApiService] getOrderHistory - Direct backend response:', response);
-          return parseOrders(response);
-        } catch {
-          console.warn('[ApiService] Direct Node.js backend cũng thất bại, thử PHP backend...');
-          // Fall through to PHP fallback
-        }
-      }
-      
-      // Fallback to PHP backend
       try {
         const response = await httpClient.get<ApiResponse<unknown>>(API_CONFIG.ENDPOINTS.PHP.ORDER_HISTORY);
         console.log('[ApiService] getOrderHistory - PHP backend response:', response);
@@ -759,22 +697,8 @@ export class ApiService {
 
   static async getOrder(id: number): Promise<unknown> {
     try {
-      // Try Gateway (port 3002) first
       return await httpClient.get(`${API_CONFIG.ENDPOINTS.ORDERS}/${id}`);
     } catch (error) {
-      // If Gateway (port 3002) fails, try direct Node.js backend (port 3001)
-      const isNetworkError = error instanceof ApiError && error.status === 0;
-      if (isNetworkError && API_CONFIG.BASE_URL === 'http://localhost:3002') {
-        try {
-          console.warn('[ApiService] Gateway (port 3002) không khả dụng, thử Node.js backend trực tiếp (port 3001)...');
-          const directBackendClient = new HttpClient('http://localhost:3001');
-          return await directBackendClient.get(`/api/node/orders/${id}`);
-        } catch {
-          // Fall through to PHP fallback
-        }
-      }
-      
-      // Fallback to PHP backend
       try {
         return await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.ORDERS}/${id}`);
       } catch {

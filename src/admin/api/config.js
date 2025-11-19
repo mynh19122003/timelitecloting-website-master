@@ -1,65 +1,33 @@
 // Resolve API base URL with sensible defaults for Docker/local dev
 // Supports both Next.js (process.env.NEXT_PUBLIC_*) and Vite (import.meta.env.VITE_*)
+const PROD_API_ORIGIN = 'https://api.timeliteclothing.com'
+const PROD_ADMIN_BASE = `${PROD_API_ORIGIN}/admin`
+const PROD_PUBLIC_BASE = `${PROD_API_ORIGIN}/api`
+
 export const getApiBaseUrl = () => {
-  // Check for Next.js env vars first, then Vite
+  // Ưu tiên env (absolute URL), fallback về domain production theo mặc định
   const isNext = typeof process !== 'undefined' && process.env
   const isVite = typeof import.meta !== 'undefined' && import.meta.env
-  
-  // Default to /api/admin to avoid conflict with Next.js app routes
-  const adminBase = (isNext && process.env.NEXT_PUBLIC_ADMIN_BASE) 
-    || (isVite && import.meta?.env?.VITE_ADMIN_BASE) 
-    || '/api/admin'
-  const adminBaseTrimmed = String(adminBase).trim()
-  
-  const isDev = (isNext && process.env.NODE_ENV === 'development')
-    || (isVite && import.meta?.env?.DEV)
-    || (typeof window !== 'undefined' && window.location.hostname === 'localhost')
 
-  // Dev: dùng absolute URL tới gateway (port 3002) thay vì trỏ trực tiếp :3001
-  // Browser sẽ resolve relative URL thành window.location.origin (port 3000) nếu chạy dev server, nên dùng http://localhost:3002
-  if (isDev) {
-    // Nếu đã có absolute URL trong env, dùng nó
-    const fromEnvRaw = (isNext && process.env.NEXT_PUBLIC_API_URL)
-      || (isVite && import.meta?.env?.VITE_API_URL)
-      || ''
-    const fromEnv = typeof fromEnvRaw === 'string' ? fromEnvRaw.trim() : ''
-    if (fromEnv) {
-      try {
-        // Parse URL để kiểm tra và sửa port nếu thiếu
-        const url = new URL(fromEnv)
-        // Chuẩn hoá về gateway (port 3002) khi trỏ localhost không có port
-        if (url.hostname === 'localhost' && url.port === '') url.port = '3002'
-        let base = url.toString().endsWith('/') ? url.toString().slice(0, -1) : url.toString()
-        // Đảm bảo có /admin trong path
-        if (!base.includes('/admin')) {
-          base = `${base}/admin`
-        }
-        return base
-      } catch (_) {
-        // Nếu parse URL thất bại, fallthrough to default
-      }
-    }
-    // Default: use local admin server for development
-    return 'http://localhost:3001/admin'
-  }
-
-  // Prefer explicit absolute backend host and append admin base if missing
   const fromEnvRaw = (isNext && process.env.NEXT_PUBLIC_API_URL)
     || (isVite && import.meta?.env?.VITE_API_URL)
     || ''
   const fromEnv = typeof fromEnvRaw === 'string' ? fromEnvRaw.trim() : ''
   if (fromEnv) {
     try {
-      const base = fromEnv.endsWith('/') ? fromEnv.slice(0, -1) : fromEnv
-      const needsAdmin = adminBaseTrimmed && adminBaseTrimmed !== '/' && !base.endsWith(adminBaseTrimmed)
-      return needsAdmin ? `${base}${adminBaseTrimmed.startsWith('/') ? adminBaseTrimmed : `/${adminBaseTrimmed}`}` : base
+      const url = new URL(fromEnv)
+      let base = url.toString().endsWith('/') ? url.toString().slice(0, -1) : url.toString()
+      if (!base.includes('/admin')) {
+        base = `${base}/admin`
+      }
+      return base
     } catch (_) {
       return fromEnv
     }
   }
 
-  // Development fallback
-  return 'http://localhost:3001/admin'
+  // Mặc định production
+  return PROD_ADMIN_BASE
 }
 
 // Resolve Public API base URL (catalog/orders), default to /api in dev
@@ -72,12 +40,6 @@ export const getPublicApiBaseUrl = () => {
     || (isVite && import.meta?.env?.VITE_PUBLIC_BASE)
     || '/api'
   const publicBaseTrimmed = String(publicBase).trim()
-  
-  const isDev = (isNext && process.env.NODE_ENV === 'development')
-    || (isVite && import.meta?.env?.DEV)
-    || (typeof window !== 'undefined' && window.location.hostname === 'localhost')
-
-  if (isDev) return publicBaseTrimmed
 
   const fromEnvRaw = (isNext && process.env.NEXT_PUBLIC_PUBLIC_API_URL)
     || (isVite && import.meta?.env?.VITE_PUBLIC_API_URL)
@@ -85,8 +47,10 @@ export const getPublicApiBaseUrl = () => {
   const fromEnv = typeof fromEnvRaw === 'string' ? fromEnvRaw.trim() : ''
   if (fromEnv) return fromEnv.endsWith('/') ? fromEnv.slice(0, -1) : fromEnv
 
-  // Development fallback
-  return 'http://localhost:3000/api'
+  // Fallback luôn dùng domain production
+  return publicBaseTrimmed.startsWith('http')
+    ? (publicBaseTrimmed.endsWith('/') ? publicBaseTrimmed.slice(0, -1) : publicBaseTrimmed)
+    : PROD_PUBLIC_BASE
 }
 
 

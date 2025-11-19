@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack && next export",
-    "build:static": "next build --turbopack && next export",
+    "build": "next build",
+    "build:static": "next build",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "node ./scripts/postinstall-lightningcss-shim.mjs"
