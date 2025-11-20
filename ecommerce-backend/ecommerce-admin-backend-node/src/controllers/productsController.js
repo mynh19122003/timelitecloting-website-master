@@ -84,16 +84,7 @@ module.exports = new ProductsController();
 
 
 
-      if (err.message === 'ERR_PRODUCT_NOT_FOUND') {
-        return res.status(404).json({ error: 'ERR_PRODUCT_NOT_FOUND', message: 'Product not found' });
-      }
-      console.error('delete product failed:', err);
-      return res.status(500).json({ error: 'ERR_DELETE_PRODUCT_FAILED', message: 'Failed to delete product' });
-    }
-  }
-}
 
-module.exports = new ProductsController();
 
 
 

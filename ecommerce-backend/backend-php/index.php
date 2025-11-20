@@ -193,9 +193,22 @@ if ($apiIndex !== false && count($pathParts) > $apiIndex + 1) {
 
             case 'products':
                 $controller = new \App\Controllers\ProductController();
-                // Check if action is a numeric ID (e.g., /api/products/1)
-                if ($action && is_numeric($action)) {
-                    $_GET['id'] = $action;
+                
+                // Debug logging
+                error_log('[DEBUG] action value: "' . $action . '"');
+                error_log('[DEBUG] action length: ' . strlen($action));
+                error_log('[DEBUG] is_numeric: ' . (is_numeric($action) ? 'true' : 'false'));
+                error_log('[DEBUG] strpos result: ' . var_export(strpos($action, 'PID'), true));
+                error_log('[DEBUG] strpos === 0: ' . var_export(strpos($action, 'PID') === 0, true));
+                
+                // Check if action is a numeric ID or PID string (e.g., /api/products/1 or /api/products/PID10050)
+                if ($action && (is_numeric($action) || strpos($action, 'PID') === 0)) {
+                    error_log('[DEBUG] MATCHED PID CONDITION!');
+                    if (is_numeric($action)) {
+                        $_GET['id'] = $action;
+                    } else {
+                        $_GET['product_id'] = $action;
+                    }
                     if ($requestMethod === 'GET') {
                         $controller->getProductById();
                     } else {

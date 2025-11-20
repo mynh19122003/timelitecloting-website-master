@@ -201,7 +201,7 @@ class Product
                     is_new,
                     created_at
                 FROM products 
-                WHERE slug = ?
+                WHERE products_id = ?
             ');
             $stmt->execute([$slug]);
 
@@ -269,27 +269,6 @@ class Product
             );
             return $stmt->execute([$quantity, $productId]);
         } catch (PDOException $e) {
-            throw new \Exception('ERR_UPDATE_STOCK_FAILED');
-        }
-    }
-
-    // JSON parsing no longer required with minimal schema
-}
-
-            throw new \Exception('ERR_UPDATE_STOCK_FAILED');
-        }
-    }
-
-    // JSON parsing no longer required with minimal schema
-}
-
-            throw new \Exception('ERR_UPDATE_STOCK_FAILED');
-        }
-    }
-
-    // JSON parsing no longer required with minimal schema
-}
-
             throw new \Exception('ERR_UPDATE_STOCK_FAILED');
         }
     }

@@ -80,7 +80,7 @@ class HttpClient {
       // ignore errors when checking localStorage for API disable flag
     }
     const url = `${this.baseURL}${endpoint}`;
-    
+
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
@@ -109,14 +109,14 @@ class HttpClient {
     const timeout = API_CONFIG.TIMEOUT || 10000;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
-    
+
     try {
       const response = await fetch(url, {
         ...config,
         signal: controller.signal
       });
       clearTimeout(timeoutId);
-      
+
       let data: unknown;
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
@@ -156,12 +156,12 @@ class HttpClient {
       return data as T;
     } catch {
       clearTimeout(timeoutId);
-      
+
       if (error instanceof ApiError) {
         // Already logged, just throw
         throw error;
       }
-      
+
       // Handle timeout
       if (error instanceof Error && error.name === 'AbortError') {
         const timeoutError = new ApiError(
@@ -172,13 +172,13 @@ class HttpClient {
         logger.logNetworkError(url, timeoutError);
         throw timeoutError;
       }
-      
+
       // Network or other errors - provide helpful message
       const isNetworkError = error instanceof TypeError && error.message.includes('fetch');
-      const errorMessage = isNetworkError 
+      const errorMessage = isNetworkError
         ? 'Không thể kết nối đến backend server. Vui lòng đảm bảo backend đang chạy:\n1. cd ecommerce-backend\n2. docker-compose up -d\nHoặc kiểm tra NEXT_PUBLIC_API_URL trong .env.local'
         : 'Network error. Please check your connection.';
-      
+
       const networkError = new ApiError(errorMessage, 0);
       logger.logNetworkError(url, networkError);
       throw networkError;
@@ -459,20 +459,21 @@ export class ApiService {
         return cached;
       }
     }
-    
+
     const pidMatch = /^pid(\d+)$/i.test(idStr);
     if (pidMatch) {
       const numericIdMatch = idStr.match(/^pid(\d+)$/i)?.[1];
       if (numericIdMatch) {
-        const numericId = parseInt(numericIdMatch, 10);
+        // Use full PID string as requested by user
+        // const numericId = parseInt(numericIdMatch, 10);
         try {
-          const result = await httpClient.get(`${API_CONFIG.ENDPOINTS.PRODUCT_DETAIL}/${numericId}`);
+          const result = await httpClient.get(`${API_CONFIG.ENDPOINTS.PRODUCT_DETAIL}/${idStr}`);
           if (useCache) {
             apiCache.set(cacheKey, result, 5 * 60 * 1000);
           }
           return result;
         } catch {
-          const result = await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.PRODUCT_DETAIL}/${numericId}`);
+          const result = await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.PRODUCT_DETAIL}/${idStr}`);
           if (useCache) {
             apiCache.set(cacheKey, result, 5 * 60 * 1000);
           }
@@ -480,7 +481,7 @@ export class ApiService {
         }
       }
     }
-    
+
     const isNumeric = typeof idOrSlug === 'number' || (typeof idOrSlug === 'string' && /^\d+$/.test(idStr));
     if (isNumeric) {
       try {
@@ -497,7 +498,7 @@ export class ApiService {
         return result;
       }
     }
-    
+
     const slug = idStr;
     const result = await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.PRODUCT_DETAIL}?product_id=${encodeURIComponent(slug)}`);
     if (useCache) {
@@ -529,7 +530,7 @@ export class ApiService {
     notes?: string;
   }): Promise<unknown> {
     console.log('[ApiService] createOrder called with data:', JSON.stringify(orderData, null, 2));
-    
+
     try {
       console.log('[ApiService] Trying primary API endpoint:', API_CONFIG.ENDPOINTS.ORDERS);
       const response = await httpClient.post<unknown>(API_CONFIG.ENDPOINTS.ORDERS, orderData);
@@ -537,7 +538,7 @@ export class ApiService {
       return response;
     } catch (error) {
       console.error('[ApiService] Primary API failed:', (error as Error).message);
-      
+
       // Fallback to PHP backend
       try {
         console.log('[ApiService] Falling back to PHP backend:', API_CONFIG.ENDPOINTS.PHP.ORDERS);
@@ -576,7 +577,7 @@ export class ApiService {
     // Helper function to parse and transform orders
     const parseOrders = (response: unknown): ReturnType<typeof ApiService.getOrderHistory> extends Promise<infer R> ? R : never => {
       let orders: unknown[] = [];
-      
+
       // Handle API response format: { success: true, data: { orders: [...], pagination: {...} } }
       if (response && typeof response === 'object') {
         // Check if response has data property
@@ -599,7 +600,7 @@ export class ApiService {
           orders = response;
         }
       }
-      
+
       // Transform backend order format to frontend format
       return orders.map((order) => {
         // Prefer structured items if present
@@ -639,7 +640,7 @@ export class ApiService {
                 };
               });
             }
-          } catch {}
+          } catch { }
         } else if (order && typeof order === 'object' && 'products_name' in order && (order as { products_name?: unknown }).products_name) {
           // Backward compatibility: parse string
           const rawNames = String((order as { products_name: unknown }).products_name);

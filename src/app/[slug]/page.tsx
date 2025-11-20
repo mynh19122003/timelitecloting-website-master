@@ -7,6 +7,10 @@ type SlugPageProps = {
   }>;
 };
 
+export async function generateStaticParams() {
+  return [{ slug: 'ao-dai' }];
+}
+
 export default function SlugPage({ params }: SlugPageProps) {
   const { slug } = use(params);
 

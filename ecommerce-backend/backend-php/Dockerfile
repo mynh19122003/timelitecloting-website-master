@@ -40,6 +40,10 @@ RUN adduser -S www -u 1001
 
 # Change ownership
 RUN chown -R www:www /var/www/html
+
+# Copy custom php-fpm config
+COPY www.conf /usr/local/etc/php-fpm.d/www.conf
+
 USER www
 
 # Expose port
