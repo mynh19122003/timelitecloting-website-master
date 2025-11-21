@@ -2,24 +2,24 @@
 import { Link } from "react-router-dom";
 import { FiTrash2 } from "react-icons/fi";
 import { useCart } from "../../context/CartContext";
+import { useI18n } from "../../context/I18nContext";
+import { formatCurrency } from "../../utils/currency";
 import styles from "./CartPage.module.css";
-
-const formatCurrency = (value: number) =>
-  `$${value.toLocaleString("en-US", { minimumFractionDigits: 0 })}`;
 
 export const CartPage = () => {
   const { items, removeFromCart, updateQuantity, total } = useCart();
+  const { t } = useI18n();
 
   return (
     <div className={styles.page}>
       <section className={styles.section}>
         <div className={styles.headerRow}>
           <div>
-            <span className={styles.eyebrow}>Cart</span>
-            <h1 className={styles.title}>Your Timelite selection</h1>
+            <span className={styles.eyebrow}>{t("cart.title")}</span>
+            <h1 className={styles.title}>{t("cart.title")}</h1>
           </div>
           <Link to="/shop" className={styles.linkUnderline}>
-            Continue shopping
+            {t("cart.continue.shopping")}
           </Link>
         </div>
 
@@ -27,9 +27,9 @@ export const CartPage = () => {
           <div className={styles.cartPanel}>
             {items.length === 0 ? (
               <div className={styles.emptyState}>
-                <p className={styles.emptyText}>Your cart is empty.</p>
+                <p className={styles.emptyText}>{t("cart.empty")}</p>
                 <Link to="/shop" className={styles.emptyButton}>
-                  Explore collections
+                  {t("cart.explore.collections")}
                 </Link>
               </div>
             ) : (
@@ -43,10 +43,10 @@ export const CartPage = () => {
                   <div className={styles.itemInfo}>
                     <p className={styles.itemName}>{item.name}</p>
                     <p className={styles.itemMeta}>
-                      Color: {item.color} | Size: {item.size}
+                      {t("product.color")}: {item.color} | {t("product.size")}: {item.size}
                     </p>
                     <div className={styles.quantityRow}>
-                      <label className={styles.quantityLabel}>Qty</label>
+                      <label className={styles.quantityLabel}>{t("cart.quantity")}</label>
                       <input
                         type="number"
                         min={1}
@@ -67,7 +67,7 @@ export const CartPage = () => {
                       className={styles.removeButton}
                     >
                       <FiTrash2 className={styles.trashIcon} />
-                      Remove
+                      {t("cart.remove")}
                     </button>
                   </div>
                 </div>
@@ -76,25 +76,25 @@ export const CartPage = () => {
           </div>
 
           <div className={styles.summaryPanel}>
-            <h2 className={styles.summaryTitle}>Order summary</h2>
+            <h2 className={styles.summaryTitle}>{t("checkout.order.summary")}</h2>
             <div className={styles.summaryList}>
               <div className={styles.summaryRow}>
-                <span>Subtotal</span>
+                <span>{t("cart.subtotal")}</span>
                 <span>{formatCurrency(total)}</span>
               </div>
               <div className={styles.summaryRow}>
-                <span>Shipping</span>
-                <span>Complimentary</span>
+                <span>{t("cart.shipping")}</span>
+                <span>{t("cart.complimentary")}</span>
               </div>
               <div className={styles.summaryRow}>
-                <span>Concierge service</span>
-                <span>Included</span>
+                <span>{t("cart.concierge.service")}</span>
+                <span>{t("cart.included")}</span>
               </div>
             </div>
 
             <div className={styles.summaryTotal}>
               <div className={styles.totalRow}>
-                <span>Total</span>
+                <span>{t("cart.total")}</span>
                 <span>{formatCurrency(total)}</span>
               </div>
             </div>
@@ -105,11 +105,11 @@ export const CartPage = () => {
                 items.length === 0 ? styles.checkoutButtonDisabled : ""
               }`.trim()}
             >
-              Proceed to checkout
+              {t("cart.proceed.checkout")}
             </Link>
 
             <p className={styles.legalText}>
-              By continuing you agree to Timelite concierge policies and couture care guidelines.
+              {t("cart.legal.text")}
             </p>
           </div>
         </div>

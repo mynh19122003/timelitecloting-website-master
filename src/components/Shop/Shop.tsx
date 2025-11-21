@@ -5,6 +5,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { FiChevronDown, FiGrid, FiList, FiSliders } from "react-icons/fi";
 import { Header } from "../Header/header";
 import { Footer } from "../Footer/Footer";
+import { useI18n } from "../../context/I18nContext";
 import { defaultCategorySlug, shopCatalog, shopNavMenu, toCategorySlug } from "./shop.data";
 import ProductCard, { productCardMocks } from "../Productcard/Productcard";
 
@@ -15,6 +16,7 @@ type ShopPageProps = {
 const navMenu = shopNavMenu;
 
 export default function ShopPage({ category }: ShopPageProps) {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const slug = useMemo(() => {
@@ -87,10 +89,10 @@ export default function ShopPage({ category }: ShopPageProps) {
           </div>
           <div className="catalog__view">
             <div className="catalog__view-toggle" role="group" aria-label="View options">
-              <button type="button" className="catalog__view-button is-active" aria-label="Grid view">
+              <button type="button" className="catalog__view-button is-active" aria-label={t("profile.grid.view")}>
                 <FiGrid size={16} />
               </button>
-              <button type="button" className="catalog__view-button" aria-label="List view">
+              <button type="button" className="catalog__view-button" aria-label={t("profile.list.view")}>
                 <FiList size={16} />
               </button>
             </div>

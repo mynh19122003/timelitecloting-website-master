@@ -2,6 +2,8 @@ import { useState, useEffect, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useToast } from "../../context/ToastContext";
+import { useI18n } from "../../context/I18nContext";
+import { formatCurrency } from "../../utils/currency";
 import { ApiService } from "../../services/api";
 import { getUserData } from "../../utils/auth";
 // We no longer rely on static numeric productId map.
@@ -39,8 +41,6 @@ const Input = ({ label, type = "text", className, name, value, onChange, require
   </label>
 );
 
-const formatCurrency = (value: number) =>
-  `$${value.toLocaleString("en-US", { minimumFractionDigits: 0 })}`;
 
 interface FormData {
   firstName: string;
@@ -59,6 +59,7 @@ interface FormData {
 export const CheckoutPage = () => {
   const { items, total, clearCart } = useCart();
   const { showToast } = useToast();
+  const { t } = useI18n();
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState<FormData>({
@@ -162,7 +163,7 @@ export const CheckoutPage = () => {
     if (error) setError(null);
   };
 
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value as FormData['paymentMethod'] }));
     if (error) setError(null);
@@ -173,7 +174,7 @@ export const CheckoutPage = () => {
     
     // Validate cart has items
     if (items.length === 0) {
-      setError('Your cart is empty. Please add items before checking out.');
+      setError(t("checkout.cart.empty"));
       return;
     }
 
@@ -183,7 +184,7 @@ export const CheckoutPage = () => {
     try {
       // Validate required fields
       if (!formData.firstName.trim() || !formData.lastName.trim()) {
-        setError('Please enter your full name.');
+        setError(t("checkout.name.required"));
         setIsSubmitting(false);
         return;
       }
@@ -191,7 +192,7 @@ export const CheckoutPage = () => {
       // Email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
-        setError('Please enter a valid email address.');
+        setError(t("checkout.email.invalid"));
         setIsSubmitting(false);
         return;
       }
@@ -199,20 +200,20 @@ export const CheckoutPage = () => {
       // Phone validation (US format)
       const phoneRegex = /^[\d\s()+-]{10,}$/;
       if (!phoneRegex.test(formData.phone)) {
-        setError('Please enter a valid phone number (at least 10 digits).');
+        setError(t("checkout.phone.invalid"));
         setIsSubmitting(false);
         return;
       }
       
       // Address validation
       if (!formData.streetAddress.trim() || formData.streetAddress.length < 5) {
-        setError('Please enter a valid street address.');
+        setError(t("checkout.address.invalid"));
         setIsSubmitting(false);
         return;
       }
       
       if (!formData.city.trim() || formData.city.length < 2) {
-        setError('Please enter a valid city name.');
+        setError(t("checkout.city.invalid"));
         setIsSubmitting(false);
         return;
       }
@@ -220,7 +221,7 @@ export const CheckoutPage = () => {
       // State validation (2 letter US state code)
       const stateRegex = /^[A-Z]{2}$/i;
       if (!stateRegex.test(formData.state)) {
-        setError('Please enter a valid 2-letter state code (e.g., CA, NY, TX).');
+        setError(t("checkout.state.invalid"));
         setIsSubmitting(false);
         return;
       }
@@ -228,7 +229,7 @@ export const CheckoutPage = () => {
       // ZIP code validation (5 digits or 5+4 format)
       const zipRegex = /^\d{5}(-\d{4})?$/;
       if (!zipRegex.test(formData.zipCode)) {
-        setError('Please enter a valid ZIP code (e.g., 12345 or 12345-6789).');
+        setError(t("checkout.zip.invalid"));
         setIsSubmitting(false);
         return;
       }
@@ -236,14 +237,106 @@ export const CheckoutPage = () => {
       // Prepare order data for backend
       const fullAddress = `${formData.streetAddress}, ${formData.city}, ${formData.state} ${formData.zipCode}`.trim();
       
+      // 🔍 DEBUG: Log raw cart items first
+      console.log('🛒 ========== CART ITEMS DEBUG ==========');
+      console.log('Total items in cart:', items.length);
+      items.forEach((item, index) => {
+        console.log(`\n📦 Cart Item #${index + 1}:`, {
+          id: item.id,
+          productId: item.productId,
+          pid: item.pid,
+          name: item.name,
+          quantity: item.quantity,
+          color: item.color,
+          size: item.size,
+          price: item.price,
+          fullItem: item
+        });
+      });
+      console.log('=========================================\n');
+      
       // Build items with products_id (PID) or product_slug fallback
       type OrderItemPayload = {
         quantity: number;
         color: string;
         size: string;
-        products_id?: string | number;
+        products_id?: string;
+        product_id?: number;
         product_slug?: string;
       };
+
+      const mappedItems = items.map<OrderItemPayload>((item, index) => {
+        console.log(`\n🔄 Mapping item #${index + 1}:`, {
+          itemId: item.id,
+          productId: item.productId,
+          pid: item.pid,
+          quantity: item.quantity,
+          color: item.color,
+          size: item.size,
+          name: item.name
+        });
+
+        // Validate required fields
+        if (!item.quantity || item.quantity <= 0) {
+          throw new Error(`Item #${index + 1} (${item.name}) has invalid quantity: ${item.quantity}`);
+        }
+
+        if (!item.color || !item.size) {
+          throw new Error(`Item #${index + 1} (${item.name}) is missing color or size`);
+        }
+
+        const base: OrderItemPayload = {
+          quantity: item.quantity,
+          color: item.color,
+          size: item.size
+        };
+        
+        // Priority 1: Use pid (products_id) from cart item if available
+        if (item.pid && item.pid.trim() !== '') {
+          const result = { products_id: String(item.pid), ...base };
+          console.log(`  ✅ Using products_id: ${item.pid}`, result);
+          return result;
+        }
+        
+        // Priority 2: Try to parse productId as number (product_id)
+        if (item.productId) {
+          const numericId = parseInt(item.productId, 10);
+          if (!isNaN(numericId) && numericId > 0) {
+            const result = { product_id: numericId, ...base };
+            console.log(`  ✅ Using product_id: ${numericId}`, result);
+            return result;
+          }
+          
+          // Priority 3: Fallback: use product_slug so backend can resolve
+          if (item.productId.trim() !== '') {
+            const result = { product_slug: item.productId, ...base };
+            console.log(`  ✅ Using product_slug: ${item.productId}`, result);
+            return result;
+          }
+        }
+        
+        // If we get here, the item has no valid identifier
+        const errorMsg = `Item #${index + 1} (${item.name}) has no valid product identifier. productId: "${item.productId}", pid: "${item.pid}"`;
+        console.error(`  ❌ ${errorMsg}`);
+        throw new Error(errorMsg);
+      });
+
+      console.log('\n📋 Final mapped items:', JSON.stringify(mappedItems, null, 2));
+      
+      // Final validation: ensure all items have at least one identifier
+      mappedItems.forEach((item, index) => {
+        const hasProductId = !!item.product_id;
+        const hasProductsId = !!item.products_id;
+        const hasProductSlug = !!item.product_slug;
+        
+        if (!hasProductId && !hasProductsId && !hasProductSlug) {
+          throw new Error(`Mapped item #${index + 1} is missing all product identifiers: ${JSON.stringify(item)}`);
+        }
+        
+        if (!item.quantity || item.quantity <= 0) {
+          throw new Error(`Mapped item #${index + 1} has invalid quantity: ${item.quantity}`);
+        }
+      });
 
       const orderData = {
         firstname: formData.firstName,
@@ -251,39 +344,26 @@ export const CheckoutPage = () => {
         address: fullAddress,
         phonenumber: formData.phone,
         payment_method: formData.paymentMethod,
-        items: items.map<OrderItemPayload>(item => {
-          const base: OrderItemPayload = {
-            quantity: item.quantity,
-            color: item.color,
-            size: item.size
-          };
-          
-          // Use pid (products_id) from cart item if available
-          if (item.pid) {
-            return { products_id: item.pid, ...base };
-          }
-          
-          // Fallback: use product_slug so backend can resolve
-          return { product_slug: item.productId, ...base };
-        }),
+        items: mappedItems,
         total_amount: total,
         notes: formData.notes || ''
       };
 
       // 🔍 DEBUG: Log complete order data being sent to API
-      console.log('📦 Order Data to be sent:');
+      console.log('\n📦 ========== ORDER DATA TO BE SENT ==========');
       console.log(JSON.stringify(orderData, null, 2));
-      console.log('======================');
+      console.log('=============================================\n');
 
       // Create order via API
-      const response = await ApiService.createOrder(orderData);
+      const response = await ApiService.createOrder(orderData) as { order_id?: string; id?: string | number };
       
       // 🔍 DEBUG: Log API response
       console.log('✅ API Response:', response);
       
       // Show success toast
+      const orderId = response.order_id || response.id || 'placed';
       showToast(
-        `Order #${response.order_id || response.id || 'placed'} created successfully! Our concierge team will contact you within 24 hours.`,
+        t("checkout.order.success").replace("{orderId}", String(orderId)),
         'success'
       );
       
@@ -294,13 +374,29 @@ export const CheckoutPage = () => {
       navigate('/profile?tab=orders');
       
     } catch (err: unknown) {
-      console.error('Order creation failed:', err);
-      const message =
-        err instanceof Error
-          ? err.message
-          : typeof err === 'object' && err !== null && 'message' in err
-          ? String((err as { message?: unknown }).message)
-          : 'Failed to place order. Please try again or contact support.';
+      console.error('❌ Order creation failed:', err);
+      console.error('Error type:', err instanceof Error ? err.constructor.name : typeof err);
+      console.error('Error details:', {
+        name: err instanceof Error ? err.name : undefined,
+        message: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+        fullError: err
+      });
+      
+      // Extract error message from various error formats
+      let message = t("checkout.order.failed");
+      
+      if (err instanceof Error) {
+        message = err.message || message;
+      } else if (typeof err === 'object' && err !== null) {
+        // Check for ApiError format
+        if ('message' in err) {
+          message = String((err as { message?: unknown }).message) || message;
+        } else if ('error' in err) {
+          message = String((err as { error?: unknown }).error) || message;
+        }
+      }
+      
       setError(message);
       setIsSubmitting(false);
     }
@@ -311,16 +407,15 @@ export const CheckoutPage = () => {
       <section className={styles.section}>
         <div className={styles.headerRow}>
           <div>
-            <span className={styles.eyebrow}>Checkout</span>
-            <h1 className={styles.heading}>Concierge checkout details</h1>
+            <span className={styles.eyebrow}>{t("checkout.eyebrow")}</span>
+            <h1 className={styles.heading}>{t("checkout.heading")}</h1>
             <p className={styles.description}>
-              Our concierge team will reach out within 24 hours to confirm your fitting schedule,
-              delivery preferences, and styling support anywhere in the United States.
+              {t("checkout.description")}
             </p>
           </div>
 
           <Link to="/cart" className={styles.linkUnderline}>
-            Return to cart
+            {t("checkout.return.to.cart")}
           </Link>
         </div>
 
@@ -346,46 +441,46 @@ export const CheckoutPage = () => {
             borderRadius: '4px',
             color: '#1e5a8e'
           }}>
-            Loading your profile information...
+            {t("checkout.loading.profile")}
           </div>
         )}
 
         <div className={styles.grid}>
           <form className={styles.form} onSubmit={handleSubmit}>
             <div>
-              <h2 className={styles.sectionTitle}>Client information</h2>
+              <h2 className={styles.sectionTitle}>{t("checkout.client.info")}</h2>
               <div className={styles.fieldGrid}>
                 <Input 
-                  label="First name" 
+                  label={t("checkout.first.name")} 
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleInputChange}
                   required
                   minLength={2}
                   maxLength={50}
-                  placeholder="John"
+                  placeholder={t("checkout.first.name")}
                 />
                 <Input 
-                  label="Last name"
+                  label={t("checkout.last.name")}
                   name="lastName" 
                   value={formData.lastName}
                   onChange={handleInputChange}
                   required
                   minLength={2}
                   maxLength={50}
-                  placeholder="Doe"
+                  placeholder={t("checkout.last.name")}
                 />
                 <Input 
-                  label="Email" 
+                  label={t("checkout.email")} 
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  placeholder="john.doe@example.com"
+                  placeholder={t("checkout.email")}
                 />
                 <Input 
-                  label="Phone"
+                  label={t("checkout.phone")}
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
@@ -394,7 +489,7 @@ export const CheckoutPage = () => {
                   placeholder="(555) 123-4567"
                 />
                 <Input 
-                  label="Company (optional)"
+                  label={t("checkout.company")}
                   name="company"
                   value={formData.company}
                   onChange={handleInputChange}
@@ -403,29 +498,29 @@ export const CheckoutPage = () => {
             </div>
 
             <div>
-              <h2 className={styles.sectionTitle}>Shipping address (U.S.)</h2>
+              <h2 className={styles.sectionTitle}>{t("checkout.shipping.address")}</h2>
               <div className={styles.fieldGrid}>
                 <Input 
-                  label="Street address" 
+                  label={t("checkout.address")} 
                   className={styles.fullWidth}
                   name="streetAddress"
                   value={formData.streetAddress}
                   onChange={handleInputChange}
                   required
                   minLength={5}
-                  placeholder="123 Main Street"
+                  placeholder={t("checkout.address")}
                 />
                 <Input 
-                  label="City"
+                  label={t("checkout.city")}
                   name="city"
                   value={formData.city}
                   onChange={handleInputChange}
                   required
                   minLength={2}
-                  placeholder="Los Angeles"
+                  placeholder={t("checkout.city")}
                 />
                 <Input 
-                  label="State"
+                  label={t("checkout.state")}
                   name="state"
                   value={formData.state}
                   onChange={handleInputChange}
@@ -436,7 +531,7 @@ export const CheckoutPage = () => {
                   placeholder="CA"
                 />
                 <Input 
-                  label="ZIP code"
+                  label={t("checkout.zip")}
                   name="zipCode"
                   value={formData.zipCode}
                   onChange={handleInputChange}
@@ -448,21 +543,21 @@ export const CheckoutPage = () => {
             </div>
 
             <div>
-              <h2 className={styles.sectionTitle}>Notes for your stylist</h2>
+              <h2 className={styles.sectionTitle}>{t("checkout.notes.stylist")}</h2>
               <div className={styles.notesWrapper}>
                 <textarea
                   rows={6}
                   name="notes"
                   value={formData.notes}
                   onChange={handleInputChange}
-                  placeholder="Share your event date, venue, moodboard inspiration, or special requests."
+                  placeholder={t("checkout.notes.placeholder")}
                   className={styles.textArea}
                 />
               </div>
             </div>
 
             <div>
-              <h2 className={styles.sectionTitle}>Payment method</h2>
+              <h2 className={styles.sectionTitle}>{t("checkout.payment.method")}</h2>
               <div className={styles.paymentMethods}>
                 <label className={`${styles.paymentOption} ${formData.paymentMethod === 'bank_transfer' ? styles.paymentOptionActive : ''}`}>
                   <input
@@ -482,8 +577,8 @@ export const CheckoutPage = () => {
                       </svg>
                     </div>
                     <div>
-                      <p className={styles.paymentTitle}>Bank Transfer</p>
-                      <p className={styles.paymentDesc}>Secure bank transfer payment</p>
+                      <p className={styles.paymentTitle}>{t("checkout.payment.bank")}</p>
+                      <p className={styles.paymentDesc}>{t("checkout.payment.bank")}</p>
                     </div>
                   </div>
                 </label>
@@ -505,8 +600,8 @@ export const CheckoutPage = () => {
                       </svg>
                     </div>
                     <div>
-                      <p className={styles.paymentTitle}>Cash on Delivery</p>
-                      <p className={styles.paymentDesc}>Pay when you receive</p>
+                      <p className={styles.paymentTitle}>{t("checkout.payment.cod")}</p>
+                      <p className={styles.paymentDesc}>{t("checkout.payment.cod")}</p>
                     </div>
                   </div>
                 </label>
@@ -518,20 +613,19 @@ export const CheckoutPage = () => {
               className={styles.submitButton}
               disabled={isSubmitting || items.length === 0}
             >
-              {isSubmitting ? 'Placing order...' : 'Place order'}
+              {isSubmitting ? t("common.loading") : t("checkout.place.order")}
             </button>
             <p className={styles.notice}>
-              Submitting this form authorizes Timelite to confirm your order, coordinate fittings, and send
-              updates about production milestones.
+              {t("checkout.submit.notice")}
             </p>
           </form>
 
           <div className={styles.summaryPanel}>
-            <h2 className={styles.summaryHeading}>Your order</h2>
+            <h2 className={styles.summaryHeading}>{t("checkout.order.summary")}</h2>
             <div className={styles.summaryList}>
               {items.length === 0 ? (
                 <p className={styles.summaryEmpty}>
-                  You have not added any items yet. <Link to="/shop">Discover the shop.</Link>
+                  {t("checkout.empty.cart")}<Link to="/shop">{t("checkout.discover.shop")}</Link>
                 </p>
               ) : (
                 items.map((item) => (
@@ -539,7 +633,7 @@ export const CheckoutPage = () => {
                     <div>
                       <p className={styles.summaryProductName}>{item.name}</p>
                       <p className={styles.summaryMeta}>
-                        {item.color} | {item.size} | Qty {item.quantity}
+                        {item.color} | {item.size} | {t("checkout.qty")} {item.quantity}
                       </p>
                     </div>
                     <p className={styles.summaryPrice}>
@@ -552,31 +646,30 @@ export const CheckoutPage = () => {
 
             <div className={styles.summaryTotals}>
               <div className={styles.summaryRow}>
-                <span>Subtotal</span>
+                <span>{t("cart.subtotal")}</span>
                 <span>{formatCurrency(total)}</span>
               </div>
               <div className={styles.summaryRow}>
-                <span>Shipping</span>
-                <span>Complimentary</span>
+                <span>{t("cart.shipping")}</span>
+                <span>{t("cart.complimentary")}</span>
               </div>
               <div className={styles.summaryRow}>
-                <span>Stylist service</span>
-                <span>Included</span>
+                <span>{t("cart.concierge.service")}</span>
+                <span>{t("cart.included")}</span>
               </div>
             </div>
 
             <div className={styles.totalWrapper}>
               <div className={styles.totalRow}>
-                <span>Total</span>
+                <span>{t("cart.total")}</span>
                 <span>{formatCurrency(total)}</span>
               </div>
             </div>
 
             <div className={styles.perkCard}>
-              <p className={styles.perkTitle}>Concierge perk</p>
+              <p className={styles.perkTitle}>{t("checkout.concierge.perk")}</p>
               <p className={styles.perkDescription}>
-                Every order unlocks 24/7 access to our stylist team, including one complimentary virtual
-                styling session to prepare for your occasion.
+                {t("checkout.concierge.perk.description")}
               </p>
             </div>
           </div>

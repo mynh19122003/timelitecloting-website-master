@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { getApiUrl } from "../../config/api";
+import { useI18n } from "../../context/I18nContext";
 import styles from "./VerifyEmailPage.module.css";
 
 export const VerifyEmailPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const token = searchParams.get('token');
 
   const [isVerifying, setIsVerifying] = useState(true);
@@ -14,7 +16,7 @@ export const VerifyEmailPage = () => {
 
   useEffect(() => {
     if (!token) {
-      setError('Invalid verification link.');
+      setError(t("error.verification.invalid"));
       setIsVerifying(false);
       return;
     }
@@ -33,7 +35,7 @@ export const VerifyEmailPage = () => {
         const data = await response.json();
 
         if (!response.ok) {
-          setError(data.message || 'Email verification failed.');
+          setError(data.message || t("verify.email.failed.message"));
           setIsVerifying(false);
           return;
         }
@@ -48,7 +50,7 @@ export const VerifyEmailPage = () => {
         }, 3000);
       } catch (err: unknown) {
         console.error('Verify email error:', err);
-        setError('Network error. Please check your connection and try again.');
+        setError(t("verify.email.network.error"));
         setIsVerifying(false);
       }
     };
@@ -60,33 +62,33 @@ export const VerifyEmailPage = () => {
     <div className={styles.page}>
       <section className={styles.section}>
         <div className={styles.card}>
-          <h1 className={styles.heading}>Email Verification</h1>
+          <h1 className={styles.heading}>{t("verify.email.title")}</h1>
 
           {isVerifying && (
             <div className={styles.loading}>
               <div className={styles.spinner}></div>
-              <p>Verifying your email...</p>
+              <p>{t("verify.email.verifying")}</p>
             </div>
           )}
 
           {error && (
             <div className={styles.error}>
-              <p className={styles.errorTitle}>Verification Failed</p>
+              <p className={styles.errorTitle}>{t("verify.email.failed")}</p>
               <p className={styles.errorText}>{error}</p>
               <Link to="/login" className={styles.button}>
-                Return to login
+                {t("verify.email.return.login")}
               </Link>
             </div>
           )}
 
           {success && (
             <div className={styles.success}>
-              <p className={styles.successTitle}>Email Verified!</p>
+              <p className={styles.successTitle}>{t("verify.email.success")}</p>
               <p className={styles.successText}>
-                Your email has been successfully verified. You will be redirected to the login page in a moment.
+                {t("verify.email.success.message")}
               </p>
               <Link to="/login" className={styles.button}>
-                Go to login now
+                {t("verify.email.go.login")}
               </Link>
             </div>
           )}

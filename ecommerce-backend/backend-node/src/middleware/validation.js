@@ -38,7 +38,7 @@ const orderSchema = Joi.object({
   phonenumber: Joi.string().max(32).required(),
   payment_method: Joi.string().max(32).required(),
   // Optional
-  total_amount: Joi.number().positive().max(1000000).optional(),
+  total_amount: Joi.number().positive().optional(),
   notes: Joi.string().max(2000).allow('').optional()
 });
 

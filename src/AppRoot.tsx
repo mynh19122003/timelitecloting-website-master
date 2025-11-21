@@ -5,6 +5,7 @@ import { BrowserRouter, Navigate, Route, Routes, Outlet } from "react-router-dom
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
+import { I18nProvider } from "./context/I18nContext";
 import { Layout } from "./components/layout/Layout";
 import { ToastContainer } from "./components/ui/Toast";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -32,7 +33,7 @@ const PageLoader = () => (
   <div className="flex min-h-screen items-center justify-center">
     <div className="text-center">
       <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-      <p className="mt-4 text-sm text-gray-600">Loading...</p>
+      <p className="mt-4 text-sm text-gray-600">Đang tải...</p>
     </div>
   </div>
 );
@@ -56,6 +57,7 @@ export default function AppRoot() {
 
   return (
     <ErrorBoundary>
+      <I18nProvider>
       <AuthProvider>
         <ToastProvider>
           <CartProvider>
@@ -91,6 +93,7 @@ export default function AppRoot() {
           </CartProvider>
         </ToastProvider>
       </AuthProvider>
+      </I18nProvider>
     </ErrorBoundary>
   );
 }

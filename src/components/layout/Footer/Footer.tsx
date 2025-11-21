@@ -2,9 +2,11 @@
 
 import { FiFacebook, FiInstagram, FiMapPin, FiMail, FiPhone } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import { useI18n } from "../../../context/I18nContext";
 import styles from "./Footer.module.css";
 
 export const Footer = () => {
+  const { t } = useI18n();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -17,10 +19,10 @@ export const Footer = () => {
             shipping or visit our U.S. showrooms for personalized styling.
           </p>
           <div className={styles.socialRow}>
-            <a href="https://www.instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram">
+            <a href="https://www.instagram.com" target="_blank" rel="noreferrer" aria-label={t("profile.instagram")}>
               <FiInstagram />
             </a>
-            <a href="https://www.facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook">
+            <a href="https://www.facebook.com" target="_blank" rel="noreferrer" aria-label={t("profile.facebook")}>
               <FiFacebook />
             </a>
           </div>

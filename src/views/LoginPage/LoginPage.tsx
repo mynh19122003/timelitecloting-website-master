@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
+import { useI18n } from "../../context/I18nContext";
 import styles from "./LoginPage.module.css";
 
 type FormState = {
@@ -21,6 +22,7 @@ export const LoginPage = () => {
   const navigate = useNavigate();
   const { login, isLoading, error, clearError } = useAuth();
   const { showToast } = useToast();
+  const { t } = useI18n();
   const [form, setForm] = useState<FormState>({
     email: "",
     password: "",
@@ -59,14 +61,14 @@ export const LoginPage = () => {
   const validate = () => {
     const nextErrors: FormErrors = {};
     if (!form.email.trim()) {
-      nextErrors.email = "Please enter your email or phone number.";
+      nextErrors.email = t("auth.login.email.required");
     } else if (!emailPattern.test(form.email.trim())) {
-      nextErrors.email = "Email format looks invalid.";
+      nextErrors.email = t("auth.login.email.invalid");
     }
     if (!form.password) {
-      nextErrors.password = "Please add your password.";
+      nextErrors.password = t("auth.login.password.required");
     } else if (form.password.length < 8) {
-      nextErrors.password = "Password must be at least 8 characters.";
+      nextErrors.password = t("auth.login.password.min");
     }
     return nextErrors;
   };
@@ -89,7 +91,7 @@ export const LoginPage = () => {
     try {
       await login(form.email.trim(), form.password);
       // Login successful, show toast and navigate to profile
-      showToast("Login successful! Welcome back.", "success");
+      showToast(t("auth.login.success"), "success");
       navigate("/profile", { replace: true });
     } catch (error) {
       // Error is handled by AuthContext and displayed via error state
@@ -102,8 +104,8 @@ export const LoginPage = () => {
   return (
     <section className={styles.root}>
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
-        <h1 className={styles.heading}>Log in to Exclusive</h1>
-        <p className={styles.subheading}>Enter your details below</p>
+        <h1 className={styles.heading}>{t("auth.login.title")}</h1>
+        <p className={styles.subheading}>{t("auth.login.subtitle")}</p>
 
         {(errors.form || error) && (
           <div className={styles.formError}>
@@ -112,10 +114,10 @@ export const LoginPage = () => {
         )}
 
         <label className={styles.field}>
-          <span>Email or Phone Number</span>
+          <span>{t("auth.login.email.label")}</span>
           <input
             type="email"
-            placeholder="your-email@example.com"
+            placeholder={t("auth.login.email.placeholder")}
             value={form.email}
             onChange={(event) => handleChange("email", event.target.value)}
             className={errors.email ? styles.inputError : undefined}
@@ -124,10 +126,10 @@ export const LoginPage = () => {
         </label>
 
         <label className={styles.field}>
-          <span>Password</span>
+          <span>{t("auth.login.password.label")}</span>
           <input
             type="password"
-            placeholder="********"
+            placeholder={t("auth.login.password.placeholder")}
             value={form.password}
             onChange={(event) => handleChange("password", event.target.value)}
             className={errors.password ? styles.inputError : undefined}
@@ -143,17 +145,17 @@ export const LoginPage = () => {
             className={styles.loginButton}
             disabled={isSubmitting || isLoading}
           >
-            {(isSubmitting || isLoading) ? "Signing in..." : "Log In"}
+            {(isSubmitting || isLoading) ? t("auth.login.button.loading") : t("auth.login.button")}
           </button>
           <Link to="/forgot-password" className={styles.forgotLink}>
-            Forget Password?
+            {t("auth.login.forgot")}
           </Link>
         </div>
 
         <p className={styles.footerText}>
-          New to Timelite?{" "}
+          {t("auth.login.footer")}
           <Link to="/register" className={styles.link}>
-            Create an account
+            {t("auth.login.create.account")}
           </Link>
         </p>
       </form>

@@ -42,11 +42,29 @@ class Logger {
                          level === LogLevel.WARN ? 'warn' : 
                          level === LogLevel.DEBUG ? 'debug' : 'log';
     
-    console[consoleMethod](`[${level}] ${message}`, data || '');
+    // Safely serialize data for logging
+    const logData = data !== undefined && data !== null 
+      ? (typeof data === 'object' ? JSON.stringify(data, null, 2) : data)
+      : '';
+    
+    console[consoleMethod](`[${level}] ${message}`, logData);
 
     // In development, show detailed log entry
     if (this.isDevelopment) {
-      console[consoleMethod]('Log Entry:', logEntry);
+      // Safely serialize logEntry for console
+      try {
+        const serializedEntry = JSON.stringify(logEntry, null, 2);
+        console[consoleMethod]('Log Entry:', serializedEntry);
+      } catch (e) {
+        // Fallback if serialization fails
+        console[consoleMethod]('Log Entry:', {
+          level: logEntry.level,
+          message: logEntry.message,
+          timestamp: logEntry.timestamp,
+          url: logEntry.url,
+          userAgent: logEntry.userAgent
+        });
+      }
     }
 
     // In production, you can send to error tracking service
@@ -77,9 +95,23 @@ class Logger {
 
   // Specialized error logging methods
   logApiError(endpoint: string, status: number, error: any, requestData?: any) {
+    // Safely convert error to Error instance
+    let errorInstance: Error;
+    if (error instanceof Error) {
+      errorInstance = error;
+    } else if (error && typeof error === 'object') {
+      // Try to extract message from error object
+      const errorMsg = (error as { message?: string; error?: string }).message 
+        || (error as { error?: string }).error 
+        || JSON.stringify(error);
+      errorInstance = new Error(errorMsg);
+    } else {
+      errorInstance = new Error(String(error || 'Unknown error'));
+    }
+    
     this.error(
       `API Error: ${endpoint}`,
-      error instanceof Error ? error : new Error(String(error)),
+      errorInstance,
       {
         endpoint,
         status,

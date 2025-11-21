@@ -142,7 +142,7 @@ app.use('*', (req, res) => {
   });
   res.status(404).json({
     error: 'ERR_NOT_FOUND',
-    message: 'Endpoint not found'
+    message: 'Không tìm thấy endpoint'
   });
 });
 
@@ -161,7 +161,7 @@ app.use((error, req, res, next) => {
   // Send error response
   res.status(status).json({
     error: error.code || error.error || 'ERR_INTERNAL_SERVER_ERROR',
-    message: error.message || 'Internal server error',
+    message: error.message || 'Lỗi máy chủ nội bộ',
     ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
   });
 });

@@ -190,8 +190,13 @@ const Orders = () => {
     return orders.filter((order) => matchesStatus(order) && matchesSearch(order) && matchesLocation(order))
   }, [orders, activeFilter, searchTerm, selectedState])
 
-  const formatCurrency = (value) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
+  const formatCurrency = (value) => {
+    const roundedValue = Math.round(value);
+    return `${roundedValue.toLocaleString("vi-VN", { 
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0 
+    })} VNĐ`;
+  }
 
   const getStatusTone = (status) => statusToneMap[status.toLowerCase()] || 'muted'
 

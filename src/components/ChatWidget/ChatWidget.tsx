@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { FiMessageCircle, FiX } from 'react-icons/fi';
 import { FaWhatsapp, FaFacebookMessenger } from 'react-icons/fa';
+import { useI18n } from '../../context/I18nContext';
 import styles from './ChatWidget.module.css';
 
 export const ChatWidget = () => {
+  const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleWidget = () => {
@@ -36,7 +38,7 @@ export const ChatWidget = () => {
             <button
               className={`${styles.chatOption} ${styles.whatsapp}`}
               onClick={openWhatsApp}
-              aria-label="Chat on WhatsApp"
+              aria-label={t("profile.chat.whatsapp")}
             >
               <FaWhatsapp className={styles.optionIcon} />
               <span>WhatsApp</span>
@@ -45,7 +47,7 @@ export const ChatWidget = () => {
             <button
               className={`${styles.chatOption} ${styles.messenger}`}
               onClick={openMessenger}
-              aria-label="Chat on Messenger"
+              aria-label={t("profile.chat.messenger")}
             >
               <FaFacebookMessenger className={styles.optionIcon} />
               <span>Messenger</span>
@@ -59,7 +61,7 @@ export const ChatWidget = () => {
         <button
           className={`${styles.mainButton} ${isOpen ? styles.active : ''}`}
           onClick={toggleWidget}
-          aria-label={isOpen ? 'Close chat options' : 'Open chat options'}
+          aria-label={isOpen ? t("profile.close.chat") : t("profile.open.chat")}
         >
           {isOpen ? (
             <FiX className={styles.mainIcon} />

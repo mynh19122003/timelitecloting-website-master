@@ -6,6 +6,8 @@ import { FiHeart, FiShoppingCart } from "react-icons/fi";
 import { useState } from "react";
 import { Product, categoryLabels } from "../../../data/products";
 import { useCart } from "../../../context/CartContext";
+import { useI18n } from "../../../context/I18nContext";
+import { formatCurrency } from "../../../utils/currency";
 import { normalizePossibleMediaUrl } from "../../../config/api";
 import styles from "./ProductCard.module.css";
 
@@ -15,6 +17,7 @@ type ProductCardProps = {
 
 export const ProductCard = ({ product }: ProductCardProps) => {
   const { addToCart } = useCart();
+  const { t } = useI18n();
   const [selectedColor] = useState(product.colors[0]);
   const [selectedSize] = useState(product.sizes[0]);
   const [imageSrc, setImageSrc] = useState(() => 
@@ -49,10 +52,10 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         />
 
         <div className={styles.badges}>
-          {product.isNew && <span className={styles.badgeNew}>New</span>}
+          {product.isNew && <span className={styles.badgeNew}>{t("product.new")}</span>}
           {product.originalPrice && (
             <span className={styles.badgeDiscount}>
-              Save{" "}
+              {t("product.save")}{" "}
               {Math.round(
                 ((product.originalPrice - product.price) / product.originalPrice) * 100,
               )}
@@ -61,7 +64,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           )}
         </div>
 
-        <button aria-label="Add to wishlist" className={styles.wishlist}>
+        <button aria-label={t("profile.add.to.wishlist")} className={styles.wishlist}>
           <FiHeart className={styles.wishlistIcon} />
         </button>
       </div>
@@ -81,11 +84,11 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           <div>
             <div className={styles.priceGroup}>
               <span className={styles.price}>
-                ${product.price.toLocaleString("en-US")}
+                {formatCurrency(product.price)}
               </span>
               {product.originalPrice && (
                 <span className={styles.originalPrice}>
-                  ${product.originalPrice.toLocaleString("en-US")}
+                  {formatCurrency(product.originalPrice)}
                 </span>
               )}
             </div>
@@ -96,11 +99,11 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
           <div className={styles.actions}>
             <Link to={`/product/${product.pid || product.id}`} className={styles.detailsButton}>
-              Details
+              {t("product.details")}
             </Link>
             <button onClick={handleQuickAdd} className={styles.addButton}>
               <FiShoppingCart className={styles.cartIcon} />
-              <span className={styles.addButtonText}>Add</span>
+              <span className={styles.addButtonText}>{t("product.add")}</span>
             </button>
           </div>
         </div>

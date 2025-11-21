@@ -8,6 +8,7 @@ import {
   type Product as UiProduct,
 } from "../../data/products";
 import { ProductCard } from "../../components/ui/ProductCard";
+import { useI18n } from "../../context/I18nContext";
 import styles from "./ProductsPage.module.css";
 import ApiService from "../../services/api";
 import { getAdminMediaUrl, normalizePossibleMediaUrl, toProductsPid } from "../../config/api";
@@ -49,6 +50,7 @@ type ApiProduct = {
 };
 
 export const ProductsPage = () => {
+  const { t } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
@@ -278,10 +280,10 @@ export const ProductsPage = () => {
           </div>
           <div className={styles.view}>
             <div className={styles.viewToggle} role="group" aria-label="View options">
-              <button type="button" className={`${styles.viewButton} ${styles.viewButtonActive}`} aria-label="Grid view">
+              <button type="button" className={`${styles.viewButton} ${styles.viewButtonActive}`} aria-label={t("profile.grid.view")}>
                 <FiGrid size={16} />
               </button>
-              <button type="button" className={styles.viewButton} aria-label="List view">
+              <button type="button" className={styles.viewButton} aria-label={t("profile.list.view")}>
                 <FiList size={16} />
               </button>
             </div>

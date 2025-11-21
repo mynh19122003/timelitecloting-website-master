@@ -27,6 +27,8 @@ import {
 } from "react-icons/fi";
 import { orderStatusLabels, OrderStatus } from "../../data/orders";
 import { useAuth } from "../../context/AuthContext";
+import { useI18n } from "../../context/I18nContext";
+import { formatCurrency } from "../../utils/currency";
 import { ApiService, ApiError } from "../../services/api";
 import CountryPhoneInput from "react-country-phone-input";
 import "react-country-phone-input/lib/style.css";
@@ -64,9 +66,6 @@ type PasswordErrors = Partial<Record<keyof PasswordForm, string>>;
 
 type ProfileTabKey = "profile" | "orders";
 
-const formatCurrency = (value: number) =>
-  `$${value.toLocaleString("en-US", { minimumFractionDigits: 0 })}`;
-
 const formatDate = (value: string) =>
   new Date(value).toLocaleDateString("en-US", {
     year: "numeric",
@@ -82,31 +81,7 @@ const statusClassMap: Record<OrderStatus, string> = {
   cancelled: "statusCancelled",
 };
 
-const validateProfile = (profile: Profile): ProfileErrors => {
-  const nextErrors: ProfileErrors = {};
-  if (!profile.email.trim()) {
-    nextErrors.email = "Please enter an email.";
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email)) {
-    nextErrors.email = "Please enter a valid email address.";
-  }
-  return nextErrors;
-};
-
-const validatePassword = (passwordForm: PasswordForm): PasswordErrors => {
-  const nextErrors: PasswordErrors = {};
-  if (!passwordForm.currentPassword.trim()) {
-    nextErrors.currentPassword = "Current password is required.";
-  }
-  if (!passwordForm.newPassword.trim()) {
-    nextErrors.newPassword = "New password is required.";
-  } else if (passwordForm.newPassword.length < 6) {
-    nextErrors.newPassword = "Password must be at least 6 characters.";
-  }
-  if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    nextErrors.confirmPassword = "Passwords do not match.";
-  }
-  return nextErrors;
-};
+// Validation functions will be moved inside component to use translations
 
 type ProfileTabProps = {
   profile: Profile;
@@ -143,6 +118,8 @@ const ProfileTab = ({
   isChangingPassword,
   setIsChangingPassword,
 }: ProfileTabProps) => {
+  const { t } = useI18n();
+  
   const handleNotificationToggle = (key: keyof Profile["notificationPreferences"]) => {
     handleInputChange("notificationPreferences", {
       ...formState.notificationPreferences,
@@ -156,7 +133,7 @@ const ProfileTab = ({
         <div className={styles.mainInfo}>
           <div className={styles.avatarContainer}>
             <img src={profile.avatar} alt={profile.name || "Guest"} className={styles.avatar} />
-            <button className={styles.avatarUploadButton} type="button" title="Change avatar">
+            <button className={styles.avatarUploadButton} type="button" title={t("profile.change.avatar")}>
               <FiEdit2 />
             </button>
           </div>
@@ -193,12 +170,12 @@ const ProfileTab = ({
                     value={formState.name}
                     onChange={(event) => handleInputChange("name", event.target.value)}
                     className={`${styles.formInput} ${errors.name ? styles.formInputError : ""}`.trim()}
-                      placeholder="Enter your full name"
+                      placeholder={t("profile.enter.full.name")}
                   />
                   {errors.name && <p className={styles.errorText}>{errors.name}</p>}
                 </label>
                   <label className={styles.formField}>
-                    <span>Date of Birth</span>
+                    <span>{t("profile.date.of.birth")}</span>
                     <div className={styles.inputWithIcon}>
                       <FiCalendar className={styles.inputIcon} />
                       <input
@@ -211,16 +188,16 @@ const ProfileTab = ({
                     </div>
                   </label>
                   <label className={styles.formField}>
-                    <span>Gender</span>
+                    <span>{t("profile.gender")}</span>
                     <select
                       value={formState.gender}
                       onChange={(event) => handleInputChange("gender", event.target.value)}
                       className={styles.formSelect}
                     >
-                      <option value="">Select gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="other">Other</option>
+                      <option value="">{t("profile.select.gender")}</option>
+                      <option value="male">{t("profile.gender.male")}</option>
+                      <option value="female">{t("profile.gender.female")}</option>
+                      <option value="other">{t("profile.gender.other")}</option>
                     </select>
                   </label>
                 </div>
@@ -230,11 +207,11 @@ const ProfileTab = ({
               <div className={styles.formSection}>
                 <div className={styles.sectionHeader}>
                   <FiMail className={styles.sectionIcon} />
-                  <h3 className={styles.sectionTitle}>Contact Information</h3>
+                  <h3 className={styles.sectionTitle}>{t("profile.contact.info")}</h3>
                 </div>
                 <div className={styles.formGrid}>
                 <label className={styles.formField}>
-                  <span>Email</span>
+                  <span>{t("profile.email")}</span>
                     <div className={styles.inputWithIcon}>
                       <FiMail className={styles.inputIcon} />
                   <input
@@ -248,14 +225,14 @@ const ProfileTab = ({
                   {errors.email && <p className={styles.errorText}>{errors.email}</p>}
                 </label>
                 <label className={styles.formField}>
-                  <span>Phone number</span>
+                  <span>{t("profile.phone.number")}</span>
                   <div className={styles.phoneInputWrapper}>
                     <CountryPhoneInput
                       value={formState.phone}
                       onChange={(value: string) => {
                         handleInputChange("phone", value);
                       }}
-                      placeholder="Enter phone number"
+                      placeholder={t("profile.enter.phone")}
                       enableSearch={true}
                     />
                   </div>
@@ -268,11 +245,11 @@ const ProfileTab = ({
               <div className={styles.formSection}>
                 <div className={styles.sectionHeader}>
                   <FiHome className={styles.sectionIcon} />
-                  <h3 className={styles.sectionTitle}>Address Information</h3>
+                  <h3 className={styles.sectionTitle}>{t("profile.address.info")}</h3>
                 </div>
                 <div className={styles.formGrid}>
                   <label className={`${styles.formField} ${styles.formFieldFull}`}>
-                    <span>Street Address</span>
+                    <span>{t("profile.street.address")}</span>
                     <div className={styles.inputWithIcon}>
                       <FiMapPin className={styles.inputIcon} />
                       <input
@@ -280,52 +257,52 @@ const ProfileTab = ({
                         value={formState.street}
                         onChange={(event) => handleInputChange("street", event.target.value)}
                         className={styles.formInput}
-                        placeholder="Enter your street address"
+                        placeholder={t("profile.enter.street")}
                       />
                     </div>
                     {errors.street && <p className={styles.errorText}>{errors.street}</p>}
                   </label>
                 <label className={styles.formField}>
-                    <span>City</span>
+                    <span>{t("profile.city")}</span>
                     <input
                       type="text"
                       value={formState.city}
                       onChange={(event) => handleInputChange("city", event.target.value)}
                       className={styles.formInput}
-                      placeholder="Enter your city"
+                      placeholder={t("profile.enter.city")}
                     />
                     {errors.city && <p className={styles.errorText}>{errors.city}</p>}
                   </label>
                   <label className={styles.formField}>
-                    <span>State/Province</span>
+                    <span>{t("profile.state.province")}</span>
                     <input
                       type="text"
                       value={formState.state}
                       onChange={(event) => handleInputChange("state", event.target.value)}
                       className={styles.formInput}
-                      placeholder="Enter state or province"
+                      placeholder={t("profile.enter.state")}
                     />
                     {errors.state && <p className={styles.errorText}>{errors.state}</p>}
                   </label>
                   <label className={styles.formField}>
-                    <span>Zip/Postal Code</span>
+                    <span>{t("profile.zip.postal")}</span>
                     <input
                       type="text"
                       value={formState.zipCode}
                       onChange={(event) => handleInputChange("zipCode", event.target.value)}
                       className={styles.formInput}
-                      placeholder="Enter zip code"
+                      placeholder={t("profile.enter.zip")}
                     />
                     {errors.zipCode && <p className={styles.errorText}>{errors.zipCode}</p>}
                   </label>
                   <label className={styles.formField}>
-                    <span>Country</span>
+                    <span>{t("profile.country")}</span>
                     <input
                       type="text"
                       value={formState.country}
                       onChange={(event) => handleInputChange("country", event.target.value)}
                       className={styles.formInput}
-                      placeholder="Enter your country"
+                      placeholder={t("profile.enter.country")}
                     />
                     {errors.country && <p className={styles.errorText}>{errors.country}</p>}
                 </label>
@@ -336,7 +313,7 @@ const ProfileTab = ({
               <div className={styles.formSection}>
                 <div className={styles.sectionHeader}>
                   <FiBell className={styles.sectionIcon} />
-                  <h3 className={styles.sectionTitle}>Notification Preferences</h3>
+                  <h3 className={styles.sectionTitle}>{t("profile.notification.preferences")}</h3>
                 </div>
                 <div className={styles.preferencesGrid}>
                   <label className={styles.preferenceItem}>
@@ -436,7 +413,7 @@ const ProfileTab = ({
               <div className={styles.infoSection}>
                 <div className={styles.sectionHeader}>
                   <FiMail className={styles.sectionIcon} />
-                  <h3 className={styles.sectionTitle}>Contact Information</h3>
+                  <h3 className={styles.sectionTitle}>{t("profile.contact.info")}</h3>
                 </div>
                 <div className={styles.detailGrid}>
               <div className={styles.detailItem}>
@@ -462,7 +439,7 @@ const ProfileTab = ({
               <div className={styles.infoSection}>
                 <div className={styles.sectionHeader}>
                   <FiHome className={styles.sectionIcon} />
-                  <h3 className={styles.sectionTitle}>Address Information</h3>
+                  <h3 className={styles.sectionTitle}>{t("profile.address.info")}</h3>
                 </div>
                 <div className={styles.detailGrid}>
                   {(profile.street || profile.city || profile.state || profile.zipCode || profile.country) && (
@@ -488,7 +465,7 @@ const ProfileTab = ({
                 <div className={styles.infoSection}>
                   <div className={styles.sectionHeader}>
                     <FiBell className={styles.sectionIcon} />
-                    <h3 className={styles.sectionTitle}>Notification Preferences</h3>
+                    <h3 className={styles.sectionTitle}>{t("profile.notification.preferences")}</h3>
                   </div>
                   <div className={styles.preferencesList}>
                     {profile.notificationPreferences.email && (
@@ -526,26 +503,26 @@ const ProfileTab = ({
               <form className={styles.passwordForm} onSubmit={handlePasswordSubmit} noValidate>
                 <div className={styles.formGrid}>
                   <label className={styles.formField}>
-                    <span>Current password</span>
+                    <span>{t("profile.password.current")}</span>
                     <input
                       type="password"
                       value={passwordForm.currentPassword}
                       onChange={(event) => handlePasswordChange("currentPassword", event.target.value)}
                       className={`${styles.formInput} ${passwordErrors.currentPassword ? styles.formInputError : ""}`.trim()}
-                      placeholder="Enter current password"
+                      placeholder={t("profile.enter.current.password")}
                     />
                     {passwordErrors.currentPassword && (
                       <p className={styles.errorText}>{passwordErrors.currentPassword}</p>
                     )}
                   </label>
                   <label className={styles.formField}>
-                    <span>New password</span>
+                    <span>{t("profile.password.new")}</span>
                     <input
                       type="password"
                       value={passwordForm.newPassword}
                       onChange={(event) => handlePasswordChange("newPassword", event.target.value)}
                       className={`${styles.formInput} ${passwordErrors.newPassword ? styles.formInputError : ""}`.trim()}
-                      placeholder="Enter new password"
+                      placeholder={t("profile.enter.new.password")}
                     />
                     {passwordErrors.newPassword && (
                       <p className={styles.errorText}>{passwordErrors.newPassword}</p>
@@ -558,7 +535,7 @@ const ProfileTab = ({
                       value={passwordForm.confirmPassword}
                       onChange={(event) => handlePasswordChange("confirmPassword", event.target.value)}
                       className={`${styles.formInput} ${passwordErrors.confirmPassword ? styles.formInputError : ""}`.trim()}
-                      placeholder="Confirm new password"
+                      placeholder={t("profile.confirm.new.password")}
                     />
                     {passwordErrors.confirmPassword && (
                       <p className={styles.errorText}>{passwordErrors.confirmPassword}</p>
@@ -669,6 +646,7 @@ const OrderHistoryTab = ({
   orderHistory: OrderHistoryItem[]; 
   isLoadingOrders: boolean;
 }) => {
+  const { t } = useI18n();
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
 
@@ -804,7 +782,7 @@ const OrderHistoryTab = ({
                       <p className={styles.orderItemPrice}>
                         {formatCurrency(item.price * item.quantity)}
                       </p>
-                      <p className={styles.orderItemQuantity}>Qty {item.quantity}</p>
+                      <p className={styles.orderItemQuantity}>{t("profile.order.qty")} {item.quantity}</p>
                     </div>
                   </li>
                 ))}
@@ -813,7 +791,7 @@ const OrderHistoryTab = ({
               <footer className={styles.orderFooter}>
                 <div className={styles.orderFooterLeft}>
                   <p className={styles.orderFooterText}>
-                    Subtotal {formatCurrency(order.subtotal)} - {shippingLabel}
+                    {t("profile.order.subtotal")} {formatCurrency(order.subtotal)} - {shippingLabel}
                   </p>
                 </div>
                 <div className={styles.orderFooterRight}>
@@ -825,7 +803,7 @@ const OrderHistoryTab = ({
               </footer>
               {isCancelled && (
                 <p className={styles.orderNote}>
-                  This order was cancelled before fulfillment. Reach out to concierge support for help.
+                  {t("profile.order.cancelled")}
                 </p>
               )}
             </article>
@@ -841,6 +819,7 @@ export const ProfilePage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout, refreshUser } = useAuth();
+  const { t } = useI18n();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isEditing, setEditing] = useState(false);
   const [formState, setFormState] = useState<Profile | null>(null);
@@ -857,6 +836,33 @@ export const ProfilePage = () => {
   });
   const [passwordErrors, setPasswordErrors] = useState<PasswordErrors>({});
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // Validation functions with translations
+  const validateProfile = (profile: Profile): ProfileErrors => {
+    const nextErrors: ProfileErrors = {};
+    if (!profile.email.trim()) {
+      nextErrors.email = t("error.email.required");
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email)) {
+      nextErrors.email = t("error.email.invalid");
+    }
+    return nextErrors;
+  };
+
+  const validatePassword = (passwordForm: PasswordForm): PasswordErrors => {
+    const nextErrors: PasswordErrors = {};
+    if (!passwordForm.currentPassword.trim()) {
+      nextErrors.currentPassword = t("error.password.current.required");
+    }
+    if (!passwordForm.newPassword.trim()) {
+      nextErrors.newPassword = t("error.password.new.required");
+    } else if (passwordForm.newPassword.length < 6) {
+      nextErrors.newPassword = t("error.password.min");
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      nextErrors.confirmPassword = t("auth.register.confirm.match");
+    }
+    return nextErrors;
+  };
 
   // Load profile from API with token
   useEffect(() => {
@@ -902,7 +908,7 @@ export const ProfilePage = () => {
         setFormState(userProfile);
       } catch (error) {
         console.error('[ProfilePage] Failed to load profile:', error);
-        setMessage("Failed to load profile. Please try again.");
+        setMessage(t("error.load.profile"));
         
         // If 401, user needs to login again
         if (error instanceof ApiError && error.status === 401) {
@@ -1024,7 +1030,7 @@ export const ProfilePage = () => {
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword,
       });
-      setMessage("Password changed successfully!");
+      setMessage(t("profile.password.success"));
       setPasswordForm({
         currentPassword: "",
         newPassword: "",
@@ -1035,9 +1041,9 @@ export const ProfilePage = () => {
     } catch (error) {
       console.error('Failed to change password:', error);
       if (error instanceof ApiError) {
-        setPasswordErrors({ currentPassword: "Current password is incorrect." });
+        setPasswordErrors({ currentPassword: t("error.password.current.required") });
       } else {
-        setMessage("Failed to change password. Please try again.");
+        setMessage(t("error.change.password"));
       }
     }
   };
@@ -1088,14 +1094,14 @@ export const ProfilePage = () => {
       
       setProfile(updatedProfile);
       setFormState(updatedProfile);
-      setMessage("Profile updated successfully!");
+      setMessage(t("profile.update.success"));
       setEditing(false);
 
       // Refresh user data in auth context (in background)
       refreshUser().catch(err => console.error('Failed to refresh user:', err));
     } catch (error) {
       console.error('Failed to update profile:', error);
-      setMessage("Failed to update profile. Please try again.");
+      setMessage(t("error.update.profile"));
     }
   };
 

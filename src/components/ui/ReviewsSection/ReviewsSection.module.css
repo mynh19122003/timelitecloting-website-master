@@ -1,0 +1,106 @@
+.reviewsSection {
+  @apply mx-auto mt-16 max-w-6xl px-4;
+}
+
+.header {
+  @apply mb-8;
+}
+
+.title {
+  @apply font-serif text-2xl text-dark mb-2;
+}
+
+.summary {
+  @apply text-sm text-dark/60;
+}
+
+.ratingSummary {
+  @apply mb-8 p-6 rounded-3xl border border-cream/80 bg-cream/40;
+}
+
+.ratingDisplay {
+  @apply flex items-center gap-4;
+}
+
+.ratingValue {
+  @apply text-4xl font-semibold text-primary;
+}
+
+.starsContainer {
+  @apply flex items-center gap-1;
+}
+
+.star {
+  @apply h-5 w-5 text-gold;
+  fill: none;
+  stroke: currentColor;
+}
+
+.starFilled {
+  fill: currentColor;
+}
+
+.reviewsList {
+  @apply space-y-6;
+}
+
+.reviewCard {
+  @apply p-6 rounded-2xl border border-cream/60 bg-white;
+}
+
+.reviewHeader {
+  @apply mb-4;
+}
+
+.reviewerInfo {
+  @apply flex items-center gap-3 mb-2;
+}
+
+.reviewerName {
+  @apply font-semibold text-dark;
+}
+
+.verifiedBadge {
+  @apply text-xs uppercase tracking-[0.2em] text-primary px-2 py-1 rounded-full border border-primary/30 bg-primary/10;
+}
+
+.reviewMeta {
+  @apply flex items-center gap-4 mt-2;
+}
+
+.reviewRating {
+  @apply flex items-center gap-1;
+}
+
+.reviewDate {
+  @apply text-xs text-dark/50;
+}
+
+.reviewComment {
+  @apply text-sm leading-relaxed text-dark/70 mb-3;
+}
+
+.reviewFooter {
+  @apply mt-4 pt-4 border-t border-cream/40;
+}
+
+.helpfulText {
+  @apply text-xs text-dark/50;
+}
+
+.emptyState {
+  @apply py-12 text-center;
+}
+
+.emptyText {
+  @apply text-sm text-dark/60;
+}
+
+.loading {
+  @apply text-sm text-dark/60 py-8;
+}
+
+.error {
+  @apply text-sm text-red-500 py-8;
+}
+

@@ -1,0 +1,2 @@
+export { ProductSlider } from "./ProductSlider";
+

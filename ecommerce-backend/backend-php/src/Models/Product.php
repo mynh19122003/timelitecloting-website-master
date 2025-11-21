@@ -177,6 +177,7 @@ class Product
     public function findByProductId(string $slug): array
     {
         try {
+            // Use exact match for products_id (case-sensitive for exact PID matching)
             $stmt = $this->db->prepare('
                 SELECT 
                     id,
@@ -202,6 +203,7 @@ class Product
                     created_at
                 FROM products 
                 WHERE products_id = ?
+                LIMIT 1
             ');
             $stmt->execute([$slug]);
 

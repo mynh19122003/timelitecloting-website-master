@@ -24,7 +24,9 @@ class Order
         float $totalPrice,
         string $paymentMethod,
         string $paymentStatus,
-        string $status = 'pending'
+        string $status = 'pending',
+        ?string $productsName = null,
+        ?string $productsItems = null
     ): int
     {
         try {
@@ -38,10 +40,12 @@ class Order
                     total_price,
                     payment_method,
                     payment_status,
-                    status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                    status,
+                    products_name,
+                    products_items
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
             );
-            $stmt->execute([$userId, $userName, $userAddress, $userPhone, $productsPrice, $totalPrice, $paymentMethod, $paymentStatus, $status]);
+            $stmt->execute([$userId, $userName, $userAddress, $userPhone, $productsPrice, $totalPrice, $paymentMethod, $paymentStatus, $status, $productsName, $productsItems]);
             
             $orderId = (int) $this->db->lastInsertId();
 

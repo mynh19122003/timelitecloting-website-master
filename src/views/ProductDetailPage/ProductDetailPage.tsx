@@ -11,14 +11,15 @@ import {
 import { categoryLabels, normalizeCategory, type Category, type Product as UiProduct } from "../../data/products";
 import { useCart } from "../../context/CartContext";
 import { useToast } from "../../context/ToastContext";
+import { useI18n } from "../../context/I18nContext";
+import { formatCurrency } from "../../utils/currency";
 import { ProductCard } from "../../components/ui/ProductCard";
+import { ProductSlider } from "../../components/ui/ProductSlider/ProductSlider";
 import { ValueProps } from "../../components/ui/ValueProps";
+import { ReviewsSection } from "../../components/ui/ReviewsSection/ReviewsSection";
 import styles from "./ProductDetailPage.module.css";
 import ApiService from "../../services/api";
 import { getAdminMediaUrlByAny, normalizePossibleMediaUrl, toProductsPid } from "../../config/api";
-
-const formatCurrency = (value: number) =>
-  `$${value.toLocaleString("en-US", { minimumFractionDigits: 0 })}`;
 
 type ApiProduct = {
   id?: number | string;
@@ -61,6 +62,7 @@ export const ProductDetailPage = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { showToast } = useToast();
+  const { t } = useI18n();
   const [product, setProduct] = useState<UiProduct | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<UiProduct[]>([]);
   const [selectedImage, setSelectedImage] = useState("");
@@ -68,6 +70,7 @@ export const ProductDetailPage = () => {
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadingRelated, setLoadingRelated] = useState<boolean>(false);
   const previousProductIdRef = useRef<string | undefined>(undefined);
   const buildFallbacks = (initial: string): string[] => {
     const normalized = normalizePossibleMediaUrl(initial) || initial || "";
@@ -168,17 +171,30 @@ export const ProductDetailPage = () => {
             return prevSize;
           });
         }
-        // Load related
-        return ApiService.getProducts({ limit: 10, category: mapped.category });
-      })
-      .then((listRes) => {
-        if (!listRes || !isMounted) return;
-        const list = (listRes as { products?: ApiProduct[] } | ApiProduct[]).products ?? listRes;
-        const related = list
-          .map((p) => mapProduct(p))
-          .filter((p: UiProduct) => p.id !== id)
-          .slice(0, 3);
-        setRelatedProducts(related);
+        
+        // Load related products separately - load 15 products for slider
+        if (isMounted) {
+          setLoadingRelated(true);
+          ApiService.getRelatedProducts(mapped.category, id, 15)
+            .then((relatedList) => {
+              if (!isMounted) return;
+              const related = (Array.isArray(relatedList) ? relatedList : [])
+                .map((p) => mapProduct(p as ApiProduct))
+                .filter((p: UiProduct) => p.id !== id);
+              setRelatedProducts(related);
+            })
+            .catch((relatedError) => {
+              console.error('[ProductDetailPage] Error loading related products:', relatedError);
+              if (isMounted) {
+                setRelatedProducts([]);
+              }
+            })
+            .finally(() => {
+              if (isMounted) {
+                setLoadingRelated(false);
+              }
+            });
+        }
       })
       .catch((error: unknown) => {
         // Log error to console
@@ -229,8 +245,8 @@ export const ProductDetailPage = () => {
   if (loading || !product) {
     return (
       <div className={styles.emptyState}>
-        <p className={styles.eyebrow}>Product</p>
-        <h1 className={styles.emptyTitle}>Loading...</h1>
+        <p className={styles.eyebrow}>{t("common.product")}</p>
+        <h1 className={styles.emptyTitle}>{t("common.loading")}</h1>
       </div>
     );
   }
@@ -254,7 +270,7 @@ export const ProductDetailPage = () => {
       <div className={styles.backLinkWrapper}>
         <Link to="/shop" className={styles.backLink}>
           <FiChevronLeft className={styles.iconSmall} />
-          Back to shop
+          {t("common.back.to.shop")}
         </Link>
       </div>
 
@@ -328,14 +344,14 @@ export const ProductDetailPage = () => {
                 )}
                 <p className={styles.rating}>
                   <FiStar className={styles.iconInlineGold} />
-                  {product.rating.toFixed(1)} ({product.reviews} reviews)
+                  {product.rating.toFixed(1)} ({product.reviews} {t("common.reviews")})
                 </p>
               </div>
             </div>
 
             <div className={styles.options}>
               <div className={styles.optionGroup}>
-                <p className={styles.optionLabel}>Colors</p>
+                <p className={styles.optionLabel}>{t("product.color")}</p>
                 <div className={styles.optionList}>
                   {product.colors.map((color) => {
                     const className = `${styles.colorButton} ${
@@ -355,7 +371,7 @@ export const ProductDetailPage = () => {
               </div>
 
               <div className={styles.optionGroup}>
-                <p className={styles.optionLabel}>Sizes</p>
+                <p className={styles.optionLabel}>{t("product.size")}</p>
                 <div className={styles.optionList}>
                   {product.sizes.map((size) => {
                     const isActive = selectedSize === size;
@@ -376,14 +392,14 @@ export const ProductDetailPage = () => {
                     );
                   })}
                 </div>
-                <p className={styles.note}>
-                  Complimentary alterations within 14 days for U.S. deliveries.
+                <p className={styles.availableSizes}>
+                  {t("product.available.sizes")}: {product.sizes.join(", ")}
                 </p>
               </div>
 
               <div className={styles.ctaRow}>
                 <label className={styles.quantityControl}>
-                  Qty
+                  {t("product.quantity")}
                   <input
                     type="number"
                     min={1}
@@ -396,11 +412,11 @@ export const ProductDetailPage = () => {
                 </label>
 
                 <button onClick={handleAddToCart} className={styles.addToCart}>
-                  Add to Cart
+                  {t("product.add.to.cart")}
                 </button>
 
                 <Link to="/contact" className={styles.fittingLink}>
-                  Book fitting
+                  {t("product.book.fitting")}
                 </Link>
               </div>
             </div>
@@ -409,34 +425,32 @@ export const ProductDetailPage = () => {
               <div className={styles.policyItem}>
                 <FiPackage className={styles.policyIcon} />
                 <p>
-                  Complimentary express shipping within the United States on orders above $1,500. Each piece
-                  arrives with a garment bag and steaming kit.
+                  {t("product.shipping.info")} {t("product.shipping.arrives")}
                 </p>
               </div>
               <div className={styles.policyItem}>
                 <FiRotateCcw className={styles.policyIcon} />
                 <p>
-                  Alterations or remake available within 14 days of delivery. Returns accepted for store
-                  credit on unworn garments.
+                  {t("product.alterations")}
                 </p>
               </div>
             </div>
 
             <div className={styles.detailsSection}>
-              <h2 className={styles.detailsHeading}>Detailed description</h2>
+              <h2 className={styles.detailsHeading}>{t("product.detailed.description")}</h2>
               <p className={styles.detailsText}>{product.description}</p>
               <ul className={styles.detailsList}>
                 <li>
                   <FiCheck className={styles.checkIcon} />
-                  Fabrication: 100% mulberry silk handcrafted in Vietnam.
+                  {t("product.fabrication")}
                 </li>
                 <li>
                   <FiCheck className={styles.checkIcon} />
-                  Complimentary virtual fitting with a Timelite stylist.
+                  {t("product.complimentary.fitting")}
                 </li>
                 <li>
                   <FiCheck className={styles.checkIcon} />
-                  Made to order. Production window 14 to 18 days.
+                  {t("product.made.to.order")}
                 </li>
               </ul>
             </div>
@@ -445,12 +459,12 @@ export const ProductDetailPage = () => {
       </section>
 
       <section className={styles.compareSection}>
-        <h2 className={styles.compareHeading}>Compare the collection</h2>
+        <h2 className={styles.compareHeading}>{t("product.compare.collection")}</h2>
         <div className={styles.tableWrapper}>
           <table className={styles.table}>
             <thead>
               <tr className={styles.tableHeadRow}>
-                <th className={styles.tableHeadCell}>Model</th>
+                <th className={styles.tableHeadCell}>{t("common.model")}</th>
                 {comparisonSet.map((item) => (
                   <th key={item.id} className={styles.tableHeadCell}>
                     {item.name}
@@ -460,7 +474,7 @@ export const ProductDetailPage = () => {
             </thead>
             <tbody className={styles.tableBody}>
               <tr className={styles.tableRow}>
-                <td className={styles.tableCell}>Price</td>
+                <td className={styles.tableCell}>{t("product.price")}</td>
                 {comparisonSet.map((item) => (
                   <td key={item.id} className={styles.tableCell}>
                     {formatCurrency(item.price)}
@@ -468,7 +482,7 @@ export const ProductDetailPage = () => {
                 ))}
               </tr>
               <tr className={styles.tableRow}>
-                <td className={styles.tableCell}>Colors</td>
+                <td className={styles.tableCell}>{t("product.colors")}</td>
                 {comparisonSet.map((item) => (
                   <td key={item.id} className={styles.tableCell}>
                     {item.colors.join(", ")}
@@ -476,7 +490,7 @@ export const ProductDetailPage = () => {
                 ))}
               </tr>
               <tr className={styles.tableRow}>
-                <td className={styles.tableCell}>Highlights</td>
+                <td className={styles.tableCell}>{t("product.highlights")}</td>
                 {comparisonSet.map((item) => (
                   <td key={item.id} className={styles.tableCell}>
                     {item.tags.slice(0, 2).join(" | ")}
@@ -488,17 +502,25 @@ export const ProductDetailPage = () => {
         </div>
       </section>
 
+      <ReviewsSection
+        productId={product.id}
+        productRating={product.rating}
+        productReviewsCount={product.reviews}
+      />
+
       <section className={styles.relatedSection}>
         <div className={styles.relatedHeader}>
-          <h2 className={styles.relatedTitle}>Related pieces</h2>
+          <h2 className={styles.relatedTitle}>{t("product.related.pieces")}</h2>
           <Link to="/shop" className={styles.relatedLink}>
-            View all
+            {t("common.view.all")}
           </Link>
         </div>
-        <div className={styles.relatedGrid}>
-          {relatedProducts.map((item) => (
-            <ProductCard key={item.id} product={item} />
-          ))}
+        <div className={styles.relatedSlider}>
+          <ProductSlider 
+            products={relatedProducts} 
+            itemsPerView={5}
+            loading={loadingRelated}
+          />
         </div>
       </section>
 

@@ -9,8 +9,13 @@ import { statusToneMap } from '../../data/orders'
 import { AdminApi } from '../../api'
 import styles from './Orders.module.css'
 
-const formatCurrency = (value) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
+const formatCurrency = (value) => {
+  const roundedValue = Math.round(value);
+  return `${roundedValue.toLocaleString("vi-VN", { 
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0 
+  })} VNĐ`;
+}
 
 const getStatusTone = (status) => statusToneMap[status?.toLowerCase()] || 'muted'
 

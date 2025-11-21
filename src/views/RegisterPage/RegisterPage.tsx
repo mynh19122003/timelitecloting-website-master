@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
+import { useI18n } from "../../context/I18nContext";
 import styles from "./RegisterPage.module.css";
 
 type FormState = {
@@ -23,6 +24,7 @@ export const RegisterPage = () => {
   const navigate = useNavigate();
   const { register, isLoading, error, clearError } = useAuth();
   const { showToast } = useToast();
+  const { t } = useI18n();
   const [form, setForm] = useState<FormState>({
     name: "",
     email: "",
@@ -63,22 +65,22 @@ export const RegisterPage = () => {
   const validate = () => {
     const nextErrors: FormErrors = {};
     if (!form.name.trim()) {
-      nextErrors.name = "Please enter your name.";
+      nextErrors.name = t("auth.register.name.required");
     }
     if (!form.email.trim()) {
-      nextErrors.email = "Please enter your email.";
+      nextErrors.email = t("auth.register.email.required");
     } else if (!emailPattern.test(form.email.trim())) {
-      nextErrors.email = "Email format looks invalid.";
+      nextErrors.email = t("auth.register.email.invalid");
     }
     if (!form.password) {
-      nextErrors.password = "Please add a password.";
+      nextErrors.password = t("auth.register.password.required");
     } else if (form.password.length < 8) {
-      nextErrors.password = "Password must be at least 8 characters.";
+      nextErrors.password = t("auth.register.password.min");
     }
     if (!form.confirmPassword) {
-      nextErrors.confirmPassword = "Please confirm your password.";
+      nextErrors.confirmPassword = t("auth.register.confirm.required");
     } else if (form.confirmPassword !== form.password) {
-      nextErrors.confirmPassword = "Passwords do not match.";
+      nextErrors.confirmPassword = t("auth.register.confirm.match");
     }
     return nextErrors;
   };
@@ -101,7 +103,7 @@ export const RegisterPage = () => {
     try {
       await register(form.email.trim(), form.password, form.name.trim());
       // Registration successful, show toast and navigate to profile
-      showToast("Registration successful! Welcome to Timelite Couture.", "success");
+      showToast(t("auth.register.success"), "success");
       navigate("/profile", { replace: true });
     } catch (error) {
       // Error is handled by AuthContext and displayed via error state
@@ -114,8 +116,8 @@ export const RegisterPage = () => {
   return (
     <section className={styles.root}>
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
-        <h1 className={styles.heading}>Create an account</h1>
-        <p className={styles.subheading}>Enter your details below</p>
+        <h1 className={styles.heading}>{t("auth.register.title")}</h1>
+        <p className={styles.subheading}>{t("auth.register.subtitle")}</p>
 
         {(errors.form || error) && (
           <div className={styles.formError}>
@@ -124,10 +126,10 @@ export const RegisterPage = () => {
         )}
 
         <label className={styles.field}>
-          <span>Name</span>
+          <span>{t("auth.register.name.label")}</span>
           <input
             type="text"
-            placeholder="Linh Tran"
+            placeholder={t("auth.register.name.placeholder")}
             value={form.name}
             onChange={(event) => handleChange("name", event.target.value)}
             className={errors.name ? styles.inputError : undefined}
@@ -136,10 +138,10 @@ export const RegisterPage = () => {
         </label>
 
         <label className={styles.field}>
-          <span>Email</span>
+          <span>{t("auth.register.email.label")}</span>
           <input
             type="email"
-            placeholder="your-email@example.com"
+            placeholder={t("auth.register.email.placeholder")}
             value={form.email}
             onChange={(event) => handleChange("email", event.target.value)}
             className={errors.email ? styles.inputError : undefined}
@@ -148,10 +150,10 @@ export const RegisterPage = () => {
         </label>
 
         <label className={styles.field}>
-          <span>Password</span>
+          <span>{t("auth.register.password.label")}</span>
           <input
             type="password"
-            placeholder="********"
+            placeholder={t("auth.register.password.placeholder")}
             value={form.password}
             onChange={(event) => handleChange("password", event.target.value)}
             className={errors.password ? styles.inputError : undefined}
@@ -162,10 +164,10 @@ export const RegisterPage = () => {
         </label>
 
         <label className={styles.field}>
-          <span>Confirm password</span>
+          <span>{t("auth.register.confirm.label")}</span>
           <input
             type="password"
-            placeholder="********"
+            placeholder={t("auth.register.confirm.placeholder")}
             value={form.confirmPassword}
             onChange={(event) =>
               handleChange("confirmPassword", event.target.value)
@@ -182,13 +184,13 @@ export const RegisterPage = () => {
           className={styles.primaryButton}
           disabled={isSubmitting || isLoading}
         >
-          {(isSubmitting || isLoading) ? "Creating..." : "Create Account"}
+          {(isSubmitting || isLoading) ? t("auth.register.button.loading") : t("auth.register.button")}
         </button>
 
         <p className={styles.footerText}>
-          Already have account?{" "}
+          {t("auth.register.footer")}
           <Link to="/login" className={styles.link}>
-            Log in
+            {t("auth.register.login")}
           </Link>
         </p>
       </form>

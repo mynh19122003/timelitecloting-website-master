@@ -1,7 +1,6 @@
 "use client";
 
 import type { ErrorInfo } from "react";
-import { Link } from "react-router-dom";
 import styles from "./ErrorPage.module.css";
 
 interface ErrorPageProps {
@@ -51,6 +50,13 @@ const errorMessages: Record<number, { title: string; message: string; descriptio
   },
 };
 
+// Static translations (ErrorPage may be rendered outside Router/I18n context)
+const translations = {
+  "error.go.home": "Về trang chủ",
+  "error.reload.page": "Tải lại trang",
+  "error.login": "Đăng nhập",
+};
+
 export const ErrorPage = ({
   code,
   title,
@@ -62,6 +68,14 @@ export const ErrorPage = ({
   errorDetails,
 }: ErrorPageProps) => {
   const errorInfo = errorMessages[code] || { title, message, description };
+
+  const handleHomeClick = () => {
+    window.location.href = "/";
+  };
+
+  const handleLoginClick = () => {
+    window.location.href = "/login";
+  };
 
   return (
     <div className={styles.page}>
@@ -77,22 +91,28 @@ export const ErrorPage = ({
           )}
           <div className={styles.actions}>
             {showHomeButton && (
-              <Link to="/" className={styles.primaryButton}>
-                Về trang chủ
-              </Link>
+              <button
+                onClick={handleHomeClick}
+                className={styles.primaryButton}
+              >
+                {translations["error.go.home"]}
+              </button>
             )}
             {showReloadButton && (
               <button
                 onClick={() => window.location.reload()}
                 className={styles.secondaryButton}
               >
-                Tải lại trang
+                {translations["error.reload.page"]}
               </button>
             )}
             {code === 401 && (
-              <Link to="/login" className={styles.primaryButton}>
-                Đăng nhập
-              </Link>
+              <button
+                onClick={handleLoginClick}
+                className={styles.primaryButton}
+              >
+                {translations["error.login"]}
+              </button>
             )}
           </div>
           {showDetails && errorDetails && (
@@ -103,7 +123,7 @@ export const ErrorPage = ({
               <div className={styles.errorContent}>
                 {errorDetails.error && (
                   <div className={styles.errorSection}>
-                    <h3>Error:</h3>
+                    <h3>Lỗi:</h3>
                     <pre>{errorDetails.error.message}</pre>
                     {errorDetails.error.stack && (
                       <pre className={styles.stackTrace}>
@@ -114,7 +134,7 @@ export const ErrorPage = ({
                 )}
                 {errorDetails.errorInfo && (
                   <div className={styles.errorSection}>
-                    <h3>Error Info:</h3>
+                    <h3>Thông tin lỗi:</h3>
                     <pre>{JSON.stringify(errorDetails.errorInfo, null, 2)}</pre>
                   </div>
                 )}

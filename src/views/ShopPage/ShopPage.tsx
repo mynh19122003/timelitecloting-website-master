@@ -6,6 +6,7 @@ import { FiChevronDown, FiGrid, FiList, FiSliders } from "react-icons/fi";
 import { defaultCategorySlug, shopCatalog, toCategorySlug } from "../../components/Shop/shop.data";
 import { ProductCard } from "../../components/ui/ProductCard/ProductCard";
 import { FilterDropdown } from "../../components/ui/FilterDropdown/FilterDropdown";
+import { useI18n } from "../../context/I18nContext";
 import styles from "./ShopPage.module.css";
 import ApiService from "../../services/api";
 import { getAdminMediaUrl, normalizePossibleMediaUrl, toProductsPid } from "../../config/api";
@@ -60,6 +61,7 @@ type ApiProduct = {
 export const ShopPage = ({ category }: ShopPageProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useI18n();
   const searchParams = useMemo(
     () => new URLSearchParams(location.search),
     [location.search],
@@ -106,7 +108,60 @@ export const ShopPage = ({ category }: ShopPageProps) => {
   }, [category, searchParams]);
 
   const catalog = shopCatalog[slug] ?? shopCatalog[defaultCategorySlug];
-  const readableCategory = catalog.title;
+  
+  // Translate category title and subtitle
+  const getCategoryTranslation = (slugValue: string) => {
+    const translationMap: Record<string, { title: string; subtitle: string }> = {
+      [defaultCategorySlug]: {
+        title: t("shop.all.collections"),
+        subtitle: t("shop.all.collections.subtitle"),
+      },
+      [toCategorySlug("Ao Dai")]: {
+        title: t("shop.ao.dai.title"),
+        subtitle: t("shop.ao.dai.subtitle"),
+      },
+      [toCategorySlug("Suiting")]: {
+        title: t("shop.suiting.title"),
+        subtitle: t("shop.suiting.subtitle"),
+      },
+      [toCategorySlug("Bridal Gowns")]: {
+        title: t("shop.bridal.title"),
+        subtitle: t("shop.bridal.subtitle"),
+      },
+      [toCategorySlug("Evening Couture")]: {
+        title: t("shop.evening.title"),
+        subtitle: t("shop.evening.subtitle"),
+      },
+      [toCategorySlug("Conical Hats")]: {
+        title: t("shop.conical.hats.title"),
+        subtitle: t("shop.conical.hats.subtitle"),
+      },
+      [toCategorySlug("Kidswear")]: {
+        title: t("shop.kidswear.title"),
+        subtitle: t("shop.kidswear.subtitle"),
+      },
+      [toCategorySlug("Gift Procession Sets")]: {
+        title: t("shop.gift.procession.title"),
+        subtitle: t("shop.gift.procession.subtitle"),
+      },
+    };
+    return translationMap[slugValue] || { title: catalog.title, subtitle: catalog.subtitle };
+  };
+  
+  const categoryTranslation = getCategoryTranslation(slug);
+  const readableCategory = categoryTranslation.title;
+  const categorySubtitle = categoryTranslation.subtitle;
+  
+  // Translate chips
+  const translateChip = (chip: string): string => {
+    const chipMap: Record<string, string> = {
+      "Highlights": t("shop.highlights"),
+      "Best sellers": t("shop.best.sellers"),
+      "New arrivals": t("shop.new.arrivals"),
+      "Limited edition": t("shop.limited.edition"),
+    };
+    return chipMap[chip] || chip;
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -478,7 +533,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
       <section className={styles.catalog}>
         <nav className={styles.breadcrumb} aria-label="Breadcrumb">
           <button type="button" onClick={() => navigate("/")}>
-            Home
+            {t("shop.home")}
           </button>
           <span aria-hidden="true">/</span>
           <button type="button" onClick={() => navigate(`/shop?category=${slug}`)}>
@@ -493,7 +548,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
         </nav>
         <header className={styles.heading}>
           <h1>{readableCategory}</h1>
-          <p>{catalog.subtitle}</p>
+          <p>{categorySubtitle}</p>
         </header>
         <div className={styles.chips} role="tablist" aria-label="Sub categories">
           {catalog.chips.map((chip) => (
@@ -503,7 +558,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
               className={`${styles.chip} ${selectedChip === chip ? styles.chipActive : ""}`}
               onClick={() => handleChipClick(chip)}
             >
-              {chip}
+              {translateChip(chip)}
             </button>
           ))}
         </div>
@@ -515,7 +570,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
               className={`${styles.variantChip} ${!selectedVariant ? styles.variantChipActive : ""}`}
               onClick={() => handleVariantChange(null)}
             >
-              Tất cả
+              {t("common.all")}
             </button>
             {availableVariants.map((variant) => (
               <button
@@ -596,7 +651,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
               <button
                 type="button"
                 className={`${styles.viewButton} ${viewMode === "grid" ? styles.viewButtonActive : ""}`}
-                aria-label="Grid view"
+                aria-label={t("profile.grid.view")}
                 onClick={() => setViewMode("grid")}
               >
                 <FiGrid size={16} />
@@ -604,7 +659,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
               <button
                 type="button"
                 className={`${styles.viewButton} ${viewMode === "list" ? styles.viewButtonActive : ""}`}
-                aria-label="List view"
+                aria-label={t("profile.list.view")}
                 onClick={() => setViewMode("list")}
               >
                 <FiList size={16} />
@@ -619,7 +674,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
                 setSortBy(nextSort);
               }}
             >
-              Sort by <strong>{sortBy === "featured" ? "Featured Items" : sortBy === "price-asc" ? "Price Low to High" : "Price High to Low"}</strong>
+              {t("shop.sort.by")} <strong>{sortBy === "featured" ? t("shop.sort.featured") : sortBy === "price-asc" ? t("shop.sort.price.asc") : t("shop.sort.price.desc")}</strong>
               <FiChevronDown size={14} />
             </button>
           </div>

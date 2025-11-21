@@ -2,12 +2,28 @@
 
 import Link from "next/link";
 import { FiFacebook, FiInstagram, FiLinkedin, FiMail, FiMapPin, FiPhone } from "react-icons/fi";
+import { useI18n } from "../../context/I18nContext";
 import { footerStyles } from "./Footer..styles";
 
-const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "Shop", href: "/suiting" },
-  { label: "Contact", href: "/contact" },
+const contactDetails = [
+  {
+    icon: FiMapPin,
+    label: "236 N Claremont Ave\nSan Jose, CA 95127",
+  },
+  {
+    icon: FiPhone,
+    label: "669.254.7401",
+  },
+  {
+    icon: FiMail,
+    label: "tim19092016@gmail.com",
+  },
+];
+
+const socialLinks = [
+  { icon: FiInstagram, label: "Instagram" },
+  { icon: FiFacebook, label: "Facebook" },
+  { icon: FiLinkedin, label: "LinkedIn" },
 ];
 
 const contactDetails = [
@@ -32,15 +48,22 @@ const socialLinks = [
 ];
 
 export function Footer() {
+  const { t } = useI18n();
+  
+  const navLinks = [
+    { label: t("footer.links.home"), href: "/" },
+    { label: t("footer.links.shop"), href: "/suiting" },
+    { label: t("footer.links.contact"), href: "/contact" },
+  ];
+  
   return (
     <footer className="footer">
       <style jsx global>{footerStyles}</style>
       <div className="footer__content">
         <section className="footer__about">
-          <p className="footer__eyebrow">Timelite Couture</p>
+          <p className="footer__eyebrow">{t("footer.about.eyebrow")}</p>
           <p className="footer__description">
-            Crafted in Saigon, curated for modern women across the United States. Timelite celebrates the artistry of
-            the ao dai with a contemporary point of view.
+            {t("footer.about.description")}
           </p>
           <div className="footer__social" role="list">
             {socialLinks.map(({ icon: Icon, label }) => (
@@ -52,7 +75,7 @@ export function Footer() {
         </section>
 
         <section className="footer__links">
-          <p className="footer__heading">Links</p>
+          <p className="footer__heading">{t("footer.links.heading")}</p>
           <nav aria-label="Footer links">
             {navLinks.map((link) => (
               <Link key={link.label} href={link.href} className="footer__link">
@@ -63,7 +86,7 @@ export function Footer() {
         </section>
 
         <section className="footer__contact">
-          <p className="footer__heading">Contact Us</p>
+          <p className="footer__heading">{t("footer.contact.heading")}</p>
           <div className="footer__contact-items">
             {contactDetails.map(({ icon: Icon, label }) => (
               <p key={label} className="footer__contact-item">
@@ -75,7 +98,7 @@ export function Footer() {
           <p className="footer__note">Tax ID: 95127</p>
         </section>
       </div>
-      <p className="footer__legal">© 2025 Timelite Couture | All rights reserved</p>
+      <p className="footer__legal">{t("footer.legal")}</p>
     </footer>
   );
 }

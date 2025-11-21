@@ -194,19 +194,16 @@ if ($apiIndex !== false && count($pathParts) > $apiIndex + 1) {
             case 'products':
                 $controller = new \App\Controllers\ProductController();
                 
-                // Debug logging
-                error_log('[DEBUG] action value: "' . $action . '"');
-                error_log('[DEBUG] action length: ' . strlen($action));
-                error_log('[DEBUG] is_numeric: ' . (is_numeric($action) ? 'true' : 'false'));
-                error_log('[DEBUG] strpos result: ' . var_export(strpos($action, 'PID'), true));
-                error_log('[DEBUG] strpos === 0: ' . var_export(strpos($action, 'PID') === 0, true));
-                
                 // Check if action is a numeric ID or PID string (e.g., /api/products/1 or /api/products/PID10050)
-                if ($action && (is_numeric($action) || strpos($action, 'PID') === 0)) {
-                    error_log('[DEBUG] MATCHED PID CONDITION!');
-                    if (is_numeric($action)) {
+                // Use case-insensitive check for PID
+                $isNumericId = $action && is_numeric($action);
+                $isPidString = $action && (stripos($action, 'PID') === 0 || preg_match('/^PID\d+/i', $action));
+                
+                if ($isNumericId || $isPidString) {
+                    if ($isNumericId) {
                         $_GET['id'] = $action;
                     } else {
+                        // Set product_id for PID strings (case-insensitive)
                         $_GET['product_id'] = $action;
                     }
                     if ($requestMethod === 'GET') {
@@ -223,6 +220,7 @@ if ($apiIndex !== false && count($pathParts) > $apiIndex + 1) {
                         sendErrorResponse(405, 'ERR_METHOD_NOT_ALLOWED', 'Method not allowed');
                     }
                 } else {
+                    // Only call getProducts if no specific product ID was provided
                     if ($requestMethod === 'GET') {
                         $controller->getProducts();
                     } else {
@@ -277,10 +275,19 @@ if ($apiIndex !== false && count($pathParts) > $apiIndex + 1) {
 
 function sendErrorResponse(int $statusCode, string $error, string $message): void
 {
+    // Translate common error messages to Vietnamese
+    $translations = [
+        'Endpoint not found' => 'Không tìm thấy endpoint',
+        'Method not allowed' => 'Phương thức không được phép',
+        'Internal server error' => 'Lỗi máy chủ nội bộ',
+    ];
+    
+    $translatedMessage = $translations[$message] ?? $message;
+    
     http_response_code($statusCode);
     echo json_encode([
         'error' => $error,
-        'message' => $message
+        'message' => $translatedMessage
     ]);
     exit;
 }

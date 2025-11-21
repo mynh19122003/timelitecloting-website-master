@@ -114,7 +114,7 @@ class OrderService
             $productsName = implode(', ', $nameParts);
             $productsItems = json_encode($processedItems, JSON_UNESCAPED_UNICODE);
 
-            // Create order with new structure
+            // Create order with new structure (including products_name and products_items)
             $orderId = $this->orderModel->create(
                 $userId,
                 $userName,
@@ -124,12 +124,10 @@ class OrderService
                 $totalPrice,
                 $paymentMethod,
                 $paymentStatus,
-                'pending'
+                'pending',
+                $productsName,
+                $productsItems
             );
-
-            // Persist products_name and products_items
-            $upd = $this->db->prepare('UPDATE orders SET products_name = ?, products_items = ? WHERE id = ?');
-            $upd->execute([$productsName, $productsItems, $orderId]);
 
             // Update stock
             foreach ($processedItems as $item) {

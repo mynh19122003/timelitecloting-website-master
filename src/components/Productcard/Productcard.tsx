@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { FiChevronLeft, FiChevronRight, FiStar } from "react-icons/fi";
+import { useI18n } from "../../context/I18nContext";
 import type { ProductCardData } from "../../data/product-card";
 import { sampleProductCard } from "../../data/product-card";
 import { productCardStyles } from "./Productcard.styles";
@@ -13,6 +14,7 @@ type ProductCardProps = {
 };
 
 export default function ProductCard({ product = sampleProductCard }: ProductCardProps) {
+  const { t } = useI18n();
   const [index, setIndex] = useState(0);
   const clampedIndex = useMemo(() => Math.min(product.images.length - 1, Math.max(0, index)), [index, product.images]);
   const hasMultipleImages = product.images.length > 1;
@@ -35,7 +37,7 @@ export default function ProductCard({ product = sampleProductCard }: ProductCard
       <style>{productCardStyles}</style>
       <div className="product-card__gallery">
         {hasMultipleImages ? (
-          <button type="button" className="product-card__arrow" aria-label="Previous image" onClick={() => goTo("prev")}>
+          <button type="button" className="product-card__arrow" aria-label={t("profile.previous.image")} onClick={() => goTo("prev")}>
             <FiChevronLeft size={20} />
           </button>
         ) : null}
@@ -45,7 +47,7 @@ export default function ProductCard({ product = sampleProductCard }: ProductCard
           className="product-card__image"
         />
         {hasMultipleImages ? (
-          <button type="button" className="product-card__arrow" aria-label="Next image" onClick={() => goTo("next")}>
+          <button type="button" className="product-card__arrow" aria-label={t("profile.next.image")} onClick={() => goTo("next")}>
             <FiChevronRight size={20} />
           </button>
         ) : null}

@@ -98,11 +98,31 @@ class HttpClient {
     }
 
     if (!silent) {
+      let parsedBody: unknown = undefined;
+      try {
+        if (options.body) {
+          parsedBody = JSON.parse(options.body as string);
+          // Special logging for order creation requests
+          if (typeof parsedBody === 'object' && parsedBody !== null && 'items' in parsedBody) {
+            console.log('[HttpClient] 🛒 ORDER REQUEST DETECTED:');
+            console.log('[HttpClient] Full request body:', JSON.stringify(parsedBody, null, 2));
+            const items = (parsedBody as { items?: unknown[] }).items || [];
+            console.log('[HttpClient] Items count:', items.length);
+            items.forEach((item: unknown, index: number) => {
+              console.log(`[HttpClient]   Item #${index + 1}:`, JSON.stringify(item, null, 2));
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('[HttpClient] Could not parse request body as JSON:', e);
+        parsedBody = options.body;
+      }
+      
       console.log('[HttpClient] REQUEST:', {
         url,
         method: options.method || 'GET',
         hasToken: !!token,
-        body: options.body ? JSON.parse(options.body as string) : undefined
+        body: parsedBody
       });
     }
 
@@ -146,16 +166,70 @@ class HttpClient {
           requestBody: options.body ? JSON.parse(options.body as string) : undefined,
         });
 
+        // Extract error message from various response formats
+        let errorMessage = 'An error occurred';
+        if (data && typeof data === 'object') {
+          // Check for validation error messages
+          if ('message' in data && typeof data.message === 'string') {
+            errorMessage = data.message;
+          } else if ('error' in data) {
+            if (typeof data.error === 'string') {
+              errorMessage = data.error;
+            } else if (data.error && typeof data.error === 'object' && 'message' in data.error) {
+              errorMessage = String(data.error.message);
+            }
+          }
+          // Check for validation errors array
+          if ('errors' in data && Array.isArray(data.errors) && data.errors.length > 0) {
+            errorMessage = data.errors.map((e: unknown) => 
+              typeof e === 'string' ? e : (e && typeof e === 'object' && 'message' in e ? String(e.message) : '')
+            ).filter(Boolean).join(', ');
+          }
+        }
+
         throw new ApiError(
-          data.message || data.error || 'An error occurred',
+          errorMessage,
           response.status,
-          data.error
+          data && typeof data === 'object' && 'error' in data ? String(data.error) : undefined
         );
       }
 
       return data as T;
-    } catch {
+    } catch (error: unknown) {
       clearTimeout(timeoutId);
+
+      // Log error details for debugging
+      const errorInfo: {
+        url: string;
+        errorType: string;
+        errorMessage: string;
+        errorName: string;
+        errorStack?: string;
+        errorObject?: unknown;
+      } = {
+        url,
+        errorType: error instanceof Error ? error.constructor.name : typeof error,
+        errorMessage: error instanceof Error ? error.message : (error && typeof error === 'object' 
+          ? JSON.stringify(error) 
+          : String(error || 'Unknown error')),
+        errorName: error instanceof Error ? error.name : 'Unknown',
+      };
+      
+      if (error instanceof Error && error.stack) {
+        errorInfo.errorStack = error.stack;
+      }
+      
+      if (error && typeof error === 'object') {
+        try {
+          errorInfo.errorObject = JSON.parse(JSON.stringify(error));
+        } catch {
+          errorInfo.errorObject = error;
+        }
+      } else {
+        errorInfo.errorObject = error;
+      }
+      
+      console.error('[HttpClient] Request error caught:', errorInfo);
 
       if (error instanceof ApiError) {
         // Already logged, just throw
@@ -177,7 +251,7 @@ class HttpClient {
       const isNetworkError = error instanceof TypeError && error.message.includes('fetch');
       const errorMessage = isNetworkError
         ? 'Không thể kết nối đến backend server. Vui lòng đảm bảo backend đang chạy:\n1. cd ecommerce-backend\n2. docker-compose up -d\nHoặc kiểm tra NEXT_PUBLIC_API_URL trong .env.local'
-        : 'Network error. Please check your connection.';
+        : (error instanceof Error ? error.message : 'Network error. Please check your connection.');
 
       const networkError = new ApiError(errorMessage, 0);
       logger.logNetworkError(url, networkError);
@@ -511,6 +585,128 @@ export class ApiService {
     return this.getProduct(slug);
   }
 
+  // Get related products by category (excluding current product)
+  static async getRelatedProducts(
+    category: string,
+    excludeProductId?: string | number,
+    limit: number = 3
+  ): Promise<unknown[]> {
+    try {
+      // Convert category slug to API label if needed
+      // API expects labels like "Accessories", "Ao Dai Couture", etc.
+      // Frontend uses slugs like "conical-hats", "ao-dai", etc.
+      let apiCategory = category;
+      const categoryLabelMap: Record<string, string> = {
+        'ao-dai': 'Ao Dai Couture',
+        'vest': 'Tailored Suiting',
+        'wedding': 'Bridal Gowns',
+        'evening': 'Evening Dresses',
+        'conical-hats': 'Accessories', // Database uses "Accessories" not "Conical Hats"
+        'kidswear': 'Kidswear',
+        'gift-procession-sets': 'Gift Procession Sets',
+      };
+      
+      // If category is a slug, convert to label
+      const lowerCategory = category.toLowerCase();
+      if (categoryLabelMap[lowerCategory]) {
+        apiCategory = categoryLabelMap[lowerCategory];
+      }
+      
+      // Build query params - request more to account for filtering
+      const requestLimit = excludeProductId ? Math.max(limit * 2, 20) : limit;
+      const queryParams = new URLSearchParams();
+      queryParams.append('category', apiCategory);
+      queryParams.append('limit', String(requestLimit));
+      
+      const endpoint = `${API_CONFIG.ENDPOINTS.PRODUCTS}?${queryParams.toString()}`;
+      
+      const res = await httpClient.get<ApiResponse<unknown>>(endpoint, true);
+      const data = (res as ApiResponse<unknown>).data ?? res;
+      const products = (data as { products?: unknown[] }).products ?? [];
+      
+      // Filter out current product if excludeProductId is provided
+      let filtered = products;
+      if (excludeProductId) {
+        const excludeIdStr = String(excludeProductId);
+        filtered = products.filter((p: unknown) => {
+          const product = p as {
+            id?: number | string;
+            product_id?: string;
+            slug?: string;
+            products_id?: string | number;
+          };
+          const productId = String(
+            product.id ?? 
+            product.product_id ?? 
+            product.slug ?? 
+            product.products_id ?? 
+            ''
+          );
+          return productId !== excludeIdStr;
+        });
+      }
+      
+      // Return limited results
+      return filtered.slice(0, limit);
+    } catch (error) {
+      console.error('[ApiService] Error getting related products:', error);
+      // Fallback to PHP backend
+      try {
+        // Use same category conversion for fallback
+        let apiCategory = category;
+        const categoryLabelMap: Record<string, string> = {
+          'ao-dai': 'Ao Dai Couture',
+          'vest': 'Tailored Suiting',
+          'wedding': 'Bridal Gowns',
+          'evening': 'Evening Dresses',
+          'conical-hats': 'Accessories', // Database uses "Accessories" not "Conical Hats"
+          'kidswear': 'Kidswear',
+          'gift-procession-sets': 'Gift Procession Sets',
+        };
+        
+        const lowerCategory = category.toLowerCase();
+        if (categoryLabelMap[lowerCategory]) {
+          apiCategory = categoryLabelMap[lowerCategory];
+        }
+        
+        const queryParams = new URLSearchParams();
+        queryParams.append('category', apiCategory);
+        queryParams.append('limit', String(Math.max(limit * 2, 10)));
+        
+        const endpoint = `${API_CONFIG.ENDPOINTS.PHP.PRODUCTS}?${queryParams.toString()}`;
+        const res = await httpClient.get<ApiResponse<unknown>>(endpoint, true);
+        const data = (res as ApiResponse<unknown>).data ?? res;
+        const products = (data as { products?: unknown[] }).products ?? [];
+        
+        let filtered = products;
+        if (excludeProductId) {
+          const excludeIdStr = String(excludeProductId);
+          filtered = products.filter((p: unknown) => {
+            const product = p as {
+              id?: number | string;
+              product_id?: string;
+              slug?: string;
+              products_id?: string | number;
+            };
+            const productId = String(
+              product.id ?? 
+              product.product_id ?? 
+              product.slug ?? 
+              product.products_id ?? 
+              ''
+            );
+            return productId !== excludeIdStr;
+          });
+        }
+        
+        return filtered.slice(0, limit);
+      } catch (fallbackError) {
+        console.error('[ApiService] Fallback also failed:', fallbackError);
+        return [];
+      }
+    }
+  }
+
   // Orders
   static async createOrder(orderData: {
     firstname: string;
@@ -530,23 +726,58 @@ export class ApiService {
     notes?: string;
   }): Promise<unknown> {
     console.log('[ApiService] createOrder called with data:', JSON.stringify(orderData, null, 2));
+    console.log('[ApiService] API Base URL:', API_CONFIG.BASE_URL);
+    console.log('[ApiService] Primary endpoint:', API_CONFIG.ENDPOINTS.ORDERS);
+    console.log('[ApiService] PHP fallback endpoint:', API_CONFIG.ENDPOINTS.PHP.ORDERS);
 
     try {
-      console.log('[ApiService] Trying primary API endpoint:', API_CONFIG.ENDPOINTS.ORDERS);
+      console.log('[ApiService] Trying primary API endpoint:', `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ORDERS}`);
       const response = await httpClient.post<unknown>(API_CONFIG.ENDPOINTS.ORDERS, orderData);
-      console.log('[ApiService] Primary API response:', response);
+      console.log('[ApiService] ✅ Primary API response:', response);
       return response;
-    } catch (error) {
-      console.error('[ApiService] Primary API failed:', (error as Error).message);
+    } catch (error: unknown) {
+      // Extract error message properly
+      let errorMessage = 'Unknown error';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (error && typeof error === 'object') {
+        // Check for ApiError format
+        if ('message' in error) {
+          errorMessage = String((error as { message?: unknown }).message);
+        } else if ('error' in error) {
+          errorMessage = String((error as { error?: unknown }).error);
+        } else {
+          errorMessage = JSON.stringify(error);
+        }
+      } else {
+        errorMessage = String(error || 'Unknown error');
+      }
+      
+      const errorDetails = error instanceof Error ? {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      } : (error && typeof error === 'object' ? error : { error });
+      
+      console.error('[ApiService] ❌ Primary API failed:', errorMessage);
+      console.error('[ApiService] Primary API error details:', errorDetails);
 
       // Fallback to PHP backend
       try {
-        console.log('[ApiService] Falling back to PHP backend:', API_CONFIG.ENDPOINTS.PHP.ORDERS);
+        console.log('[ApiService] Falling back to PHP backend:', `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PHP.ORDERS}`);
         const phpResponse = await httpClient.post<unknown>(API_CONFIG.ENDPOINTS.PHP.ORDERS, orderData);
-        console.log('[ApiService] PHP backend response:', phpResponse);
+        console.log('[ApiService] ✅ PHP backend response:', phpResponse);
         return phpResponse;
-      } catch (phpError) {
-        console.error('[ApiService] PHP backend also failed:', (phpError as Error).message);
+      } catch (phpError: unknown) {
+        const phpErrorMessage = phpError instanceof Error ? phpError.message : String(phpError);
+        const phpErrorDetails = phpError instanceof Error ? {
+          name: phpError.name,
+          message: phpError.message,
+          stack: phpError.stack
+        } : { error: phpError };
+        
+        console.error('[ApiService] ❌ PHP backend also failed:', phpErrorMessage);
+        console.error('[ApiService] PHP backend error details:', phpErrorDetails);
         throw phpError;
       }
     }

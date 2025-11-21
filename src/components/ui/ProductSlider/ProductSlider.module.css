@@ -1,0 +1,81 @@
+.sliderContainer {
+  @apply relative;
+}
+
+.sliderWrapper {
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.sliderWrapper::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.sliderTrack {
+  @apply flex gap-8;
+}
+
+.sliderItem {
+  @apply flex-shrink-0;
+  width: calc((100% - (4 * 2rem)) / 5); /* 5 items with gap-8 (2rem) */
+  min-width: 240px; /* Minimum width for smaller screens */
+}
+
+@media (max-width: 1280px) {
+  .sliderItem {
+    width: calc((100% - (3 * 2rem)) / 4); /* 4 items on large screens */
+  }
+}
+
+@media (max-width: 1024px) {
+  .sliderItem {
+    width: calc((100% - (2 * 2rem)) / 3); /* 3 items on medium screens */
+  }
+}
+
+@media (max-width: 768px) {
+  .sliderItem {
+    width: calc((100% - (1 * 2rem)) / 2); /* 2 items on small screens */
+  }
+}
+
+@media (max-width: 640px) {
+  .sliderItem {
+    width: 100%; /* 1 item on mobile */
+  }
+}
+
+.navButton {
+  @apply absolute top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white border border-dark/10 text-dark/60 shadow-lg transition-all hover:bg-primary hover:text-white hover:border-primary;
+}
+
+.navButtonLeft {
+  @apply left-0 -translate-x-4;
+}
+
+.navButtonRight {
+  @apply right-0 translate-x-4;
+}
+
+@media (max-width: 768px) {
+  .navButton {
+    @apply h-10 w-10;
+  }
+  
+  .navButtonLeft {
+    @apply -translate-x-2;
+  }
+  
+  .navButtonRight {
+    @apply translate-x-2;
+  }
+}
+
+.loading,
+.empty {
+  @apply py-12 text-center text-sm text-dark/60;
+}
+

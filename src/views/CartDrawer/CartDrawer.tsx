@@ -6,6 +6,8 @@ import { MouseEvent, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FiTrash2, FiX } from "react-icons/fi";
 import { useCart } from "../../context/CartContext";
+import { useI18n } from "../../context/I18nContext";
+import { formatCurrency } from "../../utils/currency";
 import styles from "./CartDrawer.module.css";
 
 type CartDrawerProps = {
@@ -13,11 +15,9 @@ type CartDrawerProps = {
   onClose: () => void;
 };
 
-const formatCurrency = (value: number) =>
-  `$${value.toLocaleString("en-US", { minimumFractionDigits: 0 })}`;
-
 export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
   const { items, removeFromCart, updateQuantity, total } = useCart();
+  const { t } = useI18n();
 
   useEffect(() => {
     if (!isOpen) {
@@ -58,12 +58,12 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
         aria-label="Shopping cart"
       >
         <div className={styles.header}>
-          <h2 className={styles.title}>Shopping Cart</h2>
+          <h2 className={styles.title}>{t("cart.title")}</h2>
           <button
             type="button"
             onClick={onClose}
             className={styles.closeButton}
-            aria-label="Close cart drawer"
+            aria-label={t("profile.close.cart")}
           >
             <FiX className={styles.icon} />
           </button>
@@ -72,13 +72,13 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
         <div className={styles.body}>
           {items.length === 0 ? (
             <div className={styles.emptyState}>
-              <p className={styles.emptyText}>Your cart is empty.</p>
+              <p className={styles.emptyText}>{t("cart.empty")}</p>
               <button
                 type="button"
                 onClick={onClose}
                 className={styles.emptyButton}
               >
-                Continue shopping
+                {t("cart.continue.shopping")}
               </button>
             </div>
           ) : (
@@ -100,7 +100,7 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                         className={styles.quantityLabel}
                         htmlFor={`cart-drawer-qty-${item.id}`}
                       >
-                        Qty
+                        {t("cart.quantity")}
                       </label>
                       <input
                         id={`cart-drawer-qty-${item.id}`}
@@ -130,7 +130,7 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
 
         <div className={styles.footer}>
           <div className={styles.totalRow}>
-            <span>Subtotal</span>
+            <span>{t("cart.subtotal")}</span>
             <span>{formatCurrency(total)}</span>
           </div>
 
@@ -140,7 +140,7 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
               className={styles.primaryButton}
               onClick={onClose}
             >
-              View cart
+              {t("cart.title")}
             </Link>
 
             <Link
@@ -151,7 +151,7 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
               onClick={items.length === 0 ? undefined : onClose}
               aria-disabled={items.length === 0}
             >
-              Checkout
+              {t("checkout.title")}
             </Link>
           </div>
         </div>

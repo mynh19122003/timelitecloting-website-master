@@ -18,14 +18,14 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Timelite Couture | Ao Dai Couture for Modern Clients",
+  title: "Timelite Couture | Áo Dài Cao Cấp Cho Khách Hàng Hiện Đại",
   description:
-    "Luxury Vietnamese ao dai and bridal couture, handcrafted in Saigon and created for modern clients across the United States.",
+    "Áo dài và trang phục cưới cao cấp Việt Nam, được chế tác thủ công tại Sài Gòn và tạo ra cho khách hàng hiện đại trên toàn nước Mỹ.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="vi">
       <head>
         <meta charSet="utf-8" />
       </head>

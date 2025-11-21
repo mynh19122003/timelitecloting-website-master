@@ -197,7 +197,7 @@ app.use('*', (req, res) => {
     url: req.originalUrl || req.url,
     ip: req.ip || req.connection?.remoteAddress,
   });
-  res.status(404).json({ error: 'ERR_NOT_FOUND', message: 'Endpoint not found' });
+  res.status(404).json({ error: 'ERR_NOT_FOUND', message: 'Không tìm thấy endpoint' });
 });
 
 app.use((err, req, res, next) => {
@@ -211,7 +211,7 @@ app.use((err, req, res, next) => {
 
   res.status(status).json({
     error: err.code || err.error || 'ERR_INTERNAL_SERVER_ERROR',
-    message: err.message || 'Internal server error',
+    message: err.message || 'Lỗi máy chủ nội bộ',
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 });

@@ -10,6 +10,7 @@ import {
   getAuthStatus,
   subscribeToAuthChanges,
 } from "../../../utils/auth";
+import { useI18n } from "../../../context/I18nContext";
 import { headerStyles } from "../../Header/header.styles";
 import type { ShopNavItem } from "../../Shop/shop.data";
 import { getNavItemPath, shopNavMenu } from "../../Shop/shop.data";
@@ -20,6 +21,7 @@ export const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { itemCount, openCart } = useCart();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const navRowRef = useRef<HTMLDivElement>(null);
 
@@ -87,6 +89,213 @@ export const Navbar = () => {
     setActiveIndex(null);
   };
 
+  const translateNavLabel = (label: string): string => {
+    const labelMap: Record<string, string> = {
+      "Shop All": t("nav.shop.all"),
+      "Ao Dai": t("nav.ao.dai"),
+      "Suiting": t("nav.suiting"),
+      "Bridal": t("nav.bridal"),
+      "Evening": t("nav.evening"),
+      "Conical Hats": t("nav.conical.hats"),
+      "Kidswear": t("nav.kidswear"),
+      "Gift Procession Sets": t("nav.gift.procession"),
+    };
+    return labelMap[label] || label;
+  };
+
+  const translateColumnHeading = (heading: string): string => {
+    const headingMap: Record<string, string> = {
+      "Silhouettes": t("nav.column.silhouettes"),
+      "Occasions": t("nav.column.occasions"),
+      "Categories": t("nav.column.categories"),
+      "By moment": t("nav.column.by.moment"),
+      "Details": t("nav.column.details"),
+      "Editions": t("nav.column.editions"),
+      "Straps": t("nav.column.straps"),
+      "Pair With": t("nav.column.pair.with"),
+      "By Age": t("nav.column.by.age"),
+      "Storylines": t("nav.column.storylines"),
+      "Gifting": t("nav.column.gifting"),
+      "Sets": t("nav.column.sets"),
+      "Textures": t("nav.column.textures"),
+      "Services": t("nav.column.services"),
+    };
+    return headingMap[heading] || heading;
+  };
+
+  const translateLink = (link: string, categoryLabel: string): string => {
+    const category = categoryLabel.toLowerCase();
+    
+    // Ao Dai links
+    if (category.includes("ao dai")) {
+      const map: Record<string, string> = {
+        "Classic": t("nav.ao.dai.classic"),
+        "Modern cut": t("nav.ao.dai.modern.cut"),
+        "Minimal": t("nav.ao.dai.minimal"),
+        "Layered": t("nav.ao.dai.layered"),
+        "Daily wear": t("nav.ao.dai.daily.wear"),
+        "Engagement": t("nav.ao.dai.engagement"),
+        "Ceremony": t("nav.ao.dai.ceremony"),
+        "New Ao Dai": t("nav.ao.dai.new"),
+        "Best sellers": t("nav.ao.dai.best.sellers"),
+        "View all Ao Dai": t("nav.ao.dai.view.all"),
+      };
+      return map[link] || link;
+    }
+    
+    // Suiting links
+    if (category.includes("suiting")) {
+      const map: Record<string, string> = {
+        "Full suits": t("nav.suiting.full.suits"),
+        "Vests": t("nav.suiting.vests"),
+        "Separates": t("nav.suiting.separates"),
+        "Office": t("nav.suiting.office"),
+        "Ceremony": t("nav.suiting.ceremony"),
+        "Black tie": t("nav.suiting.black.tie"),
+        "Statement blazers": t("nav.suiting.statement.blazers"),
+        "Essential suiting": t("nav.suiting.essential"),
+        "View all suiting": t("nav.suiting.view.all"),
+      };
+      return map[link] || link;
+    }
+    
+    // Bridal links
+    if (category.includes("bridal")) {
+      const map: Record<string, string> = {
+        "Ceremony gowns": t("nav.bridal.ceremony.gowns"),
+        "Reception dresses": t("nav.bridal.reception.dresses"),
+        "Engagement looks": t("nav.bridal.engagement.looks"),
+        "Lace": t("nav.bridal.lace"),
+        "Beading": t("nav.bridal.beading"),
+        "Minimal satin": t("nav.bridal.minimal.satin"),
+        "New bridal": t("nav.bridal.new"),
+        "Timelite brides": t("nav.bridal.timelite.brides"),
+        "View all bridal": t("nav.bridal.view.all"),
+      };
+      return map[link] || link;
+    }
+    
+    // Evening links
+    if (category.includes("evening")) {
+      const map: Record<string, string> = {
+        "Column": t("nav.evening.column"),
+        "Mermaid": t("nav.evening.mermaid"),
+        "A‑line": t("nav.evening.a.line"),
+        "Mini": t("nav.evening.mini"),
+        "Gala": t("nav.evening.gala"),
+        "Cocktail": t("nav.evening.cocktail"),
+        "Black tie": t("nav.evening.black.tie"),
+        "New evening": t("nav.evening.new"),
+        "Embellished gowns": t("nav.evening.embellished"),
+        "View all evening": t("nav.evening.view.all"),
+      };
+      return map[link] || link;
+    }
+    
+    // Conical Hats links
+    if (category.includes("conical") || category.includes("hats")) {
+      const map: Record<string, string> = {
+        "Mother of Pearl": t("nav.hats.mother.of.pearl"),
+        "Hand-Painted": t("nav.hats.hand.painted"),
+        "Lacquered": t("nav.hats.lacquered"),
+        "Velvet Ribbon": t("nav.hats.velvet.ribbon"),
+        "Pearl Garland": t("nav.hats.pearl.garland"),
+        "Silk Twist": t("nav.hats.silk.twist"),
+        "Heritage Ao Dai": t("nav.hats.heritage.ao.dai"),
+        "Modern Suit": t("nav.hats.modern.suit"),
+        "Editorial Looks": t("nav.hats.editorial.looks"),
+        "Custom Engraving": t("nav.hats.custom.engraving"),
+        "Collector Sets": t("nav.hats.collector.sets"),
+      };
+      return map[link] || link;
+    }
+    
+    // Kidswear links
+    if (category.includes("kidswear")) {
+      const map: Record<string, string> = {
+        "Infant": t("nav.kidswear.infant"),
+        "Toddler": t("nav.kidswear.toddler"),
+        "Little Muse (6-10)": t("nav.kidswear.little.muse"),
+        "Young Muse (11-14)": t("nav.kidswear.young.muse"),
+        "Festive Bloom": t("nav.kidswear.festive.bloom"),
+        "Mini Maestro": t("nav.kidswear.mini.maestro"),
+        "Garden Party": t("nav.kidswear.garden.party"),
+        "Keepsake Boxes": t("nav.kidswear.keepsake.boxes"),
+        "Accessories": t("nav.kidswear.accessories"),
+        "Sibling Sets": t("nav.kidswear.sibling.sets"),
+      };
+      return map[link] || link;
+    }
+    
+    // Gift Procession Sets links
+    if (category.includes("gift") || category.includes("procession")) {
+      const map: Record<string, string> = {
+        "Eight Tray": t("nav.gift.eight.tray"),
+        "Ten Tray": t("nav.gift.ten.tray"),
+        "Twelve Tray": t("nav.gift.twelve.tray"),
+        "Velvet": t("nav.gift.velvet"),
+        "Mother of Pearl": t("nav.gift.mother.of.pearl"),
+        "Bamboo Inlay": t("nav.gift.bamboo.inlay"),
+        "Styling Crew": t("nav.gift.styling.crew"),
+        "Custom Engraving": t("nav.gift.custom.engraving"),
+        "Venue Logistics": t("nav.gift.venue.logistics"),
+      };
+      return map[link] || link;
+    }
+    
+    return link;
+  };
+
+  const translateHighlight = (text: string, categoryLabel: string, type: "eyebrow" | "title" | "description" | "cta"): string => {
+    const category = categoryLabel.toLowerCase();
+    
+    // Ao Dai highlight
+    if (category.includes("ao dai")) {
+      if (type === "eyebrow" && text === "Signature drop") return t("nav.ao.dai.signature.drop");
+      if (type === "title" && text === "Timelite Ao Dai Capsule") return t("nav.ao.dai.capsule.title");
+      if (type === "description" && text.includes("Curated looks")) return t("nav.ao.dai.capsule.description");
+      if (type === "cta" && text === "Shop Ao Dai capsule") return t("nav.ao.dai.capsule.cta");
+    }
+    
+    // Suiting highlight
+    if (category.includes("suiting")) {
+      if (type === "title" && text === "Tailored for movement") return t("nav.suiting.tailored.title");
+      if (type === "description" && text.includes("Lightweight structures")) return t("nav.suiting.tailored.description");
+    }
+    
+    // Bridal highlight
+    if (category.includes("bridal")) {
+      if (type === "eyebrow" && text === "Bridal studio") return t("nav.bridal.studio");
+      if (type === "title" && text === "Book a fitting") return t("nav.bridal.book.fitting");
+      if (type === "description" && text.includes("Explore silhouettes")) return t("nav.bridal.fitting.description");
+      if (type === "cta" && text === "Explore bridal") return t("nav.bridal.explore");
+    }
+    
+    // Evening highlight
+    if (category.includes("evening")) {
+      if (type === "title" && text === "Evening edit") return t("nav.evening.edit.title");
+      if (type === "description" && text.includes("Statement pieces")) return t("nav.evening.edit.description");
+    }
+    
+    // Kidswear highlight
+    if (category.includes("kidswear")) {
+      if (type === "eyebrow" && text === "Mini Atelier") return t("nav.kidswear.mini.atelier");
+      if (type === "title" && text === "Custom Sibling Sets") return t("nav.kidswear.custom.sibling.title");
+      if (type === "description" && text.includes("Coordinated looks")) return t("nav.kidswear.custom.sibling.description");
+      if (type === "cta" && text === "Plan styling") return t("nav.kidswear.plan.styling");
+    }
+    
+    // Gift Procession Sets highlight
+    if (category.includes("gift") || category.includes("procession")) {
+      if (type === "eyebrow" && text === "Concierge Team") return t("nav.gift.concierge.team");
+      if (type === "title" && text === "Complete Planning") return t("nav.gift.complete.planning.title");
+      if (type === "description" && text.includes("Full procession")) return t("nav.gift.complete.planning.description");
+      if (type === "cta" && text === "Meet the team") return t("nav.gift.meet.team");
+    }
+    
+    return text;
+  };
+
   return (
     <>
       <style>{headerStyles}</style>
@@ -97,7 +306,7 @@ export const Navbar = () => {
               <img
                 className="header__brand-logo"
                 src="/Image/Logo.png"
-                alt="Timelite logo"
+                alt={t("header.logo.alt")}
               />
             </span>
             <span className="header__brand-name" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
@@ -108,20 +317,20 @@ export const Navbar = () => {
             <FiSearch size={16} />
             <input
               type="search"
-              aria-label="Search products"
-              placeholder="What are you looking for?"
+              aria-label={t("profile.search.products")}
+              placeholder={t("header.search.placeholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </form>
           <div className="header__actions">
-            <button className="header__action" aria-label="Order tracking" onClick={() => navigate("/profile?tab=orders")}>
+            <button className="header__action" aria-label={t("header.order.tracking")} onClick={() => navigate("/profile?tab=orders")}>
               <PiPackageLight size={18} />
             </button>
-            <button className="header__profile" aria-label="Account" onClick={handleAccountClick}>
+            <button className="header__profile" aria-label={t("header.account")} onClick={handleAccountClick}>
               <PiUserCircleLight size={18} />
             </button>
-            <button className="header__icon" aria-label="Shopping bag" onClick={openCart}>
+            <button className="header__icon" aria-label={t("header.shopping.bag")} onClick={openCart}>
               <PiShoppingBagLight size={18} />
               {itemCount > 0 && (
                 <span style={{
@@ -146,7 +355,7 @@ export const Navbar = () => {
             {isAuthenticated && (
               <button
                 className="header__action"
-                aria-label="Logout"
+                aria-label={t("auth.logout") || "Đăng xuất"}
                 onClick={handleLogout}
                 style={{ 
                   fontSize: "0.7rem", 
@@ -187,7 +396,7 @@ export const Navbar = () => {
                     aria-controls={hasDropdown ? `mega-${index}` : undefined}
                   onClick={() => navigateToItem(item)}
                   >
-                    {item.label}
+                    {translateNavLabel(item.label)}
                   </button>
                 </div>
               );
@@ -218,7 +427,7 @@ export const Navbar = () => {
                 <div className="header__mega-grid">
                   {activeItem.columns?.map((column) => (
                     <div className="header__mega-section" key={column.heading}>
-                      <p className="header__mega-heading">{column.heading}</p>
+                      <p className="header__mega-heading">{translateColumnHeading(column.heading)}</p>
                       <ul>
                         {column.links.map((entry) => (
                           <li key={entry}>
@@ -227,7 +436,7 @@ export const Navbar = () => {
                               className="header__mega-link"
                               onClick={() => navigateToItem(activeItem)}
                             >
-                              {entry}
+                              {translateLink(entry, activeItem.label)}
                             </button>
                           </li>
                         ))}
@@ -237,7 +446,7 @@ export const Navbar = () => {
 
                   {activeItem.quickLinks?.length ? (
                     <div className="header__mega-section header__mega-section--quick">
-                      <p className="header__mega-heading">Quick links</p>
+                      <p className="header__mega-heading">{t("nav.quick.links")}</p>
                       <ul>
                         {activeItem.quickLinks.map((link) => (
                           <li key={link}>
@@ -246,7 +455,7 @@ export const Navbar = () => {
                               className="header__mega-link header__mega-link--quick"
                               onClick={() => navigateToItem(activeItem)}
                             >
-                              {link}
+                              {translateLink(link, activeItem.label)}
                             </button>
                           </li>
                         ))}
@@ -257,11 +466,11 @@ export const Navbar = () => {
                   {activeItem.highlight && (
                     <aside className="header__mega-highlight">
                       {activeItem.highlight.eyebrow && (
-                        <p className="header__mega-eyebrow">{activeItem.highlight.eyebrow}</p>
+                        <p className="header__mega-eyebrow">{translateHighlight(activeItem.highlight.eyebrow, activeItem.label, "eyebrow")}</p>
                       )}
-                      <p className="header__mega-highlight-title">{activeItem.highlight.title}</p>
+                      <p className="header__mega-highlight-title">{translateHighlight(activeItem.highlight.title, activeItem.label, "title")}</p>
                       {activeItem.highlight.description && (
-                        <p className="header__mega-description">{activeItem.highlight.description}</p>
+                        <p className="header__mega-description">{translateHighlight(activeItem.highlight.description, activeItem.label, "description")}</p>
                       )}
                       {activeItem.highlight.cta && (
                         <button
@@ -269,7 +478,7 @@ export const Navbar = () => {
                           className="header__mega-cta"
                           onClick={() => navigateToItem(activeItem)}
                         >
-                          {activeItem.highlight.cta}
+                          {translateHighlight(activeItem.highlight.cta, activeItem.label, "cta")}
                         </button>
                       )}
                       {activeItem.highlight.note && (

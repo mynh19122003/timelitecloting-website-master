@@ -1,18 +1,20 @@
 import { FiMail, FiMapPin, FiPhone } from "react-icons/fi";
 import { ValueProps } from "../../components/ui/ValueProps";
+import { useI18n } from "../../context/I18nContext";
 import styles from "./ContactPage.module.css";
 
 export const ContactPage = () => {
+  const { t } = useI18n();
+  
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
         <div className={styles.heroOverlay} />
         <div className={styles.heroContent}>
-          <span className={styles.eyebrow}>Contact</span>
-          <h1 className={styles.heroTitle}>Connect with the Timelite concierge</h1>
+          <span className={styles.eyebrow}>{t("contact.eyebrow")}</span>
+          <h1 className={styles.heroTitle}>{t("contact.title")}</h1>
           <p className={styles.heroText}>
-            Our stylist team is ready to support measurements, curate moodboards, and arrange virtual
-            fittings for clients throughout the United States.
+            {t("contact.description")}
           </p>
         </div>
       </section>
@@ -21,7 +23,7 @@ export const ContactPage = () => {
         <div className={styles.grid}>
           <div className={styles.column}>
             <div>
-              <h2 className={styles.sectionTitle}>Boutique</h2>
+              <h2 className={styles.sectionTitle}>{t("contact.boutique")}</h2>
               <div className={styles.locationList}>
                 <div className={styles.locationItem}>
                   <FiMapPin className={styles.locationIcon} />
@@ -32,14 +34,14 @@ export const ContactPage = () => {
                       <br />
                       San Jose, CA 95127
                     </p>
-                    <p className={styles.schedule}>By appointment only</p>
+                    <p className={styles.schedule}>{t("contact.by.appointment")}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className={styles.conciergeSection}>
-              <h3 className={styles.sectionTitle}>Concierge</h3>
+              <h3 className={styles.sectionTitle}>{t("contact.concierge")}</h3>
               <div className={styles.contactInfo}>
                 <p className={styles.contactItem}>
                   <FiPhone className={styles.locationIcon} />
@@ -50,17 +52,17 @@ export const ContactPage = () => {
                   <a href="mailto:tim19092016@gmail.com">tim19092016@gmail.com</a>
                 </p>
                 <p className={styles.schedule}>
-                  Mon - Sat: 9:00 AM - 6:00 PM (PST)
+                  {t("contact.hours")}
                 </p>
               </div>
             </div>
 
             <div className={styles.serviceCard}>
-              <p className={styles.serviceTitle}>Styling services</p>
+              <p className={styles.serviceTitle}>{t("contact.styling.services")}</p>
               <ul className={styles.serviceList}>
-                <li>- Virtual fittings via Zoom</li>
-                <li>- Personalized lookbook and color palette</li>
-                <li>- Concierge support before and after your event</li>
+                <li>- {t("contact.virtual.fittings")}</li>
+                <li>- {t("contact.personalized.lookbook")}</li>
+                <li>- {t("contact.concierge.support")}</li>
               </ul>
             </div>
           </div>
@@ -68,33 +70,33 @@ export const ContactPage = () => {
           <div className={styles.formCard}>
             <form className={styles.form}>
               <div>
-                <label className={styles.label}>Name</label>
-                <input type="text" className={styles.input} placeholder="Your name" />
+                <label className={styles.label}>{t("contact.name")}</label>
+                <input type="text" className={styles.input} placeholder={t("contact.name.placeholder")} />
               </div>
               <div className={styles.twoCol}>
                 <div>
-                  <label className={styles.label}>Email</label>
-                  <input type="email" className={styles.input} placeholder="you@email.com" />
+                  <label className={styles.label}>{t("contact.email")}</label>
+                  <input type="email" className={styles.input} placeholder={t("contact.email.placeholder")} />
                 </div>
                 <div>
-                  <label className={styles.label}>Phone</label>
-                  <input type="tel" className={styles.input} placeholder="+1 (212) ..." />
+                  <label className={styles.label}>{t("contact.phone")}</label>
+                  <input type="tel" className={styles.input} placeholder={t("contact.phone.placeholder")} />
                 </div>
               </div>
               <div>
-                <label className={styles.label}>Event date (optional)</label>
+                <label className={styles.label}>{t("contact.event.date")}</label>
                 <input type="date" className={styles.input} />
               </div>
               <div>
-                <label className={styles.label}>Message</label>
+                <label className={styles.label}>{t("contact.message")}</label>
                 <textarea
                   rows={5}
                   className={styles.textArea}
-                  placeholder="Tell us about your occasion, style preferences, or sizing questions."
+                  placeholder={t("contact.message.placeholder")}
                 />
               </div>
               <button type="submit" className={styles.submitButton}>
-                Submit request
+                {t("contact.submit.request")}
               </button>
             </form>
           </div>

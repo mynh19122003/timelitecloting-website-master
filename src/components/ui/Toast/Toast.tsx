@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo, FiX } from 'react-icons/fi';
 import { Toast as ToastType, useToast } from '../../../context/ToastContext';
+import { useI18n } from '../../../context/I18nContext';
 import styles from './Toast.module.css';
 
 interface ToastProps {
@@ -26,6 +27,7 @@ const getIcon = (type: ToastType['type']) => {
 
 export const Toast: React.FC<ToastProps> = ({ toast }) => {
   const { removeToast } = useToast();
+  const { t } = useI18n();
 
   useEffect(() => {
     // Backup auto-remove in case context timer fails
@@ -45,7 +47,7 @@ export const Toast: React.FC<ToastProps> = ({ toast }) => {
       <button
         onClick={() => removeToast(toast.id)}
         className={styles.closeButton}
-        aria-label="Close notification"
+        aria-label={t("profile.close.notification")}
       >
         <FiX className={styles.closeIcon} />
       </button>
