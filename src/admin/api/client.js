@@ -13,6 +13,15 @@ const apiBaseUrl = getApiBaseUrl()
 if (isDev) {
   // eslint-disable-next-line no-console
   console.info('[Admin API] Base URL:', apiBaseUrl)
+  // eslint-disable-next-line no-console
+  console.info('[Admin API] Config check:', {
+    isNext,
+    isVite,
+    NODE_ENV: isNext ? process.env.NODE_ENV : undefined,
+    VITE_DEV: isVite ? import.meta?.env?.DEV : undefined,
+    NEXT_PUBLIC_API_URL: isNext ? process.env.NEXT_PUBLIC_API_URL : undefined,
+    VITE_API_URL: isVite ? import.meta?.env?.VITE_API_URL : undefined
+  })
 }
 
 const shouldAutoNavigateOnAuthError = !isDev

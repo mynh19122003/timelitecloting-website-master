@@ -62,6 +62,17 @@ class ProductController
         }
     }
 
+    public function getTags(): void
+    {
+        try {
+            $tags = $this->productModel->getAllTags();
+            $this->sendSuccessResponse(200, 'Tags retrieved successfully', ['tags' => $tags]);
+        } catch (\Exception $e) {
+            error_log('Get tags error: ' . $e->getMessage());
+            $this->sendErrorResponse(500, 'ERR_GET_TAGS_FAILED', 'Failed to get tags');
+        }
+    }
+
     private function sendSuccessResponse(int $statusCode, string $message, array $data = []): void
     {
         http_response_code($statusCode);

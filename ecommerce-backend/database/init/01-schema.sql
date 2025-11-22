@@ -125,8 +125,11 @@ CREATE TABLE chat_sessions (
   INDEX idx_last_activity (last_activity)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Bảng quản lý phiên chat Socket.IO';
 
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Bảng quản lý phiên chat Socket.IO';
-
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Bảng quản lý phiên chat Socket.IO';
-
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Bảng quản lý phiên chat Socket.IO';
+-- Product variants table
+DROP TABLE IF EXISTS product_variants;
+CREATE TABLE product_variants (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    variant_name VARCHAR(128) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_variant_name (variant_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

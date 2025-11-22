@@ -4,13 +4,15 @@ import { FiUploadCloud } from 'react-icons/fi'
 import styles from '../../styles/AddPage.module.css'
 import Button from '../../components/Button/Button'
 import { defaultProductImage, statusLabelMap, statusToneMap } from './productData'
-import { createProduct, getProduct } from '../../services/productsService'
+import { createProduct, getProduct, updateProduct, getTags, getCategories } from '../../services/productsService'
+import { listVariants, createVariant } from '../../services/variantsService'
 
 const emptyForm = {
   name: '',
   description: '',
   inventory: '',
   color: '',
+  variant: '',
   type: '',
   price: '',
   status: 'published',
@@ -29,15 +31,17 @@ const emptyForm = {
   sizes: []
 }
 
-const CATEGORIES = [
+// Default categories as fallback
+const DEFAULT_CATEGORIES = [
   'Ao Dai',
+  'Suiting',
   'Bridal Gowns',
-  'Tailored Suiting',
-  'Evening Dresses',
-  'Long Dress',
-  'Wedding Gown',
-  'Evening Dress',
-  'Evening Suit'
+  'Bridal',
+  'Evening Couture',
+  'Conical Hats',
+  'Accessories',
+  'Kidswear',
+  'Gift Procession Sets'
 ]
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL']
@@ -49,7 +53,39 @@ const AddProduct = () => {
   const [formData, setFormData] = useState(emptyForm)
   const [formError, setFormError] = useState('')
   const [missingFields, setMissingFields] = useState([])
+  const [variantsList, setVariantsList] = useState([])
+  const [tagsList, setTagsList] = useState([])
+  const [categoriesList, setCategoriesList] = useState(DEFAULT_CATEGORIES)
+  const [selectedTags, setSelectedTags] = useState([])
+  const [showNewVariantInput, setShowNewVariantInput] = useState(false)
+  const [newVariantName, setNewVariantName] = useState('')
   const isEditMode = !!id
+
+  useEffect(() => {
+    const fetchVariants = async () => {
+      const list = await listVariants()
+      setVariantsList(list)
+    }
+    fetchVariants()
+  }, [])
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      const tags = await getTags()
+      setTagsList(tags)
+    }
+    fetchTags()
+  }, [])
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const categories = await getCategories()
+      if (categories && categories.length > 0) {
+        setCategoriesList(categories)
+      }
+    }
+    fetchCategories()
+  }, [])
 
   useEffect(() => {
     if (isEditMode && id) {
@@ -64,17 +100,33 @@ const AddProduct = () => {
           }
           const productToEdit = await getProduct(productId)
           if (productToEdit) {
+            // Parse tags if they exist
+            let parsedTags = []
+            try {
+              if (productToEdit.tags) {
+                if (typeof productToEdit.tags === 'string') {
+                  parsedTags = JSON.parse(productToEdit.tags)
+                } else if (Array.isArray(productToEdit.tags)) {
+                  parsedTags = productToEdit.tags
+                }
+              }
+            } catch (_) {
+              parsedTags = []
+            }
+            
+            setSelectedTags(Array.isArray(parsedTags) ? parsedTags : [])
             setFormData({
               name: productToEdit.name,
               description: 'This is a placeholder description for the product.',
               inventory: productToEdit.stock.onHand.toString(),
               color: productToEdit.color || '',
-              type: productToEdit.category,
+              variant: productToEdit.variant || '',
+              type: productToEdit.category || '',
               price: productToEdit.pricing.listPrice.replace(/[^0-9.]/g, ''),
               status: productToEdit.status.label.toLowerCase(),
               imagePreview: productToEdit.image,
               rating: productToEdit.rating.toString(),
-              tags: '',
+              tags: Array.isArray(parsedTags) && parsedTags.length > 0 ? JSON.stringify(parsedTags) : '',
               discountPrice: '',
               addTax: false,
               hasVariations: false,
@@ -122,6 +174,25 @@ const AddProduct = () => {
         : [...currentSizes, size]
       return { ...prev, sizes: newSizes }
     })
+  }
+
+  const handleTagSelect = (event) => {
+    const selectedTag = event.target.value
+    if (!selectedTag) return
+
+    if (!selectedTags.includes(selectedTag)) {
+      const newTags = [...selectedTags, selectedTag]
+      setSelectedTags(newTags)
+      setFormData((prev) => ({ ...prev, tags: JSON.stringify(newTags) }))
+    }
+    // Reset select to empty
+    event.target.value = ''
+  }
+
+  const handleTagRemove = (tagToRemove) => {
+    const newTags = selectedTags.filter((tag) => tag !== tagToRemove)
+    setSelectedTags(newTags)
+    setFormData((prev) => ({ ...prev, tags: newTags.length > 0 ? JSON.stringify(newTags) : '' }))
   }
 
   const handleImageBrowse = () => fileInputRef.current?.click()
@@ -181,22 +252,46 @@ const AddProduct = () => {
 
     try {
       setFormError('')
+      
+      // Handle new variant creation if applicable
+      let finalVariant = formData.variant
+      if (showNewVariantInput && newVariantName.trim()) {
+        try {
+          const created = await createVariant(newVariantName.trim())
+          if (created) {
+            finalVariant = created.variant_name
+            setVariantsList((prev) => [...prev, created].sort((a, b) => a.variant_name.localeCompare(b.variant_name)))
+          }
+        } catch (error) {
+          console.error('Failed to create variant:', error)
+          // Continue with empty or existing variant?
+          // Maybe show error? For now just log.
+        }
+      }
+
       if (isEditMode) {
-        // Editing not wired to API list yet; fallback to client-side update
-        navigate('/admin/products', { replace: true, state: { newProduct: { ...productData, id } } })
+        // Update product via backend API
+        const updatePayload = { 
+          ...formData, 
+          variant: finalVariant,
+          inventory: inventoryValue,
+          price: normalizedPrice
+        }
+        console.log('[AddProduct] Attempting to update product with payload:', updatePayload)
+        
+        const updatedUi = await updateProduct(id, updatePayload)
+        console.log('[AddProduct] Product updated successfully:', updatedUi)
+        
+        // Navigate back to products list with updated data
+        navigate('/admin/products', { replace: true, state: { updatedProduct: updatedUi } })
         return
       }
 
       // Create via backend API
-      console.log('[AddProduct] Attempting to create product with formData:', {
-        name: formData.name,
-        price: formData.price,
-        stock: formData.inventory,
-        category: formData.type,
-        hasImage: Boolean(formData.imagePreview)
-      })
+      const payload = { ...formData, variant: finalVariant }
+      console.log('[AddProduct] Attempting to create product with payload:', payload)
       
-      const createdUi = await createProduct(formData)
+      const createdUi = await createProduct(payload)
       console.log('[AddProduct] Product created successfully:', createdUi)
       
       // Điều hướng lại trang danh sách sản phẩm cùng dữ liệu mới
@@ -338,13 +433,59 @@ const AddProduct = () => {
                   aria-invalid={missingFields.includes('type')}
                 >
                   <option value=''>Select a category</option>
-                  {CATEGORIES.map((cat) => (
+                  {categoriesList.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat}
                     </option>
                   ))}
                 </select>
               </label>
+              <label className={styles.field}>
+                Variant (Collection)
+                {!showNewVariantInput ? (
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <select
+                      name='variant'
+                      value={formData.variant}
+                      onChange={handleInputChange}
+                      style={{ flex: 1 }}
+                    >
+                      <option value=''>Select variant</option>
+                      {variantsList.map((v) => (
+                        <option key={v.id} value={v.variant_name}>
+                          {v.variant_name}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type='button'
+                      onClick={() => setShowNewVariantInput(true)}
+                      style={{ whiteSpace: 'nowrap', padding: '0 8px', border: '1px solid #ccc', borderRadius: '4px', background: '#fff', cursor: 'pointer' }}
+                    >
+                      + New
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      value={newVariantName}
+                      onChange={(e) => setNewVariantName(e.target.value)}
+                      placeholder='Enter new variant'
+                      style={{ flex: 1 }}
+                    />
+                    <button
+                      type='button'
+                      onClick={() => setShowNewVariantInput(false)}
+                      style={{ whiteSpace: 'nowrap', padding: '0 8px', border: '1px solid #ccc', borderRadius: '4px', background: '#fff', cursor: 'pointer' }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </label>
+            </div>
+
+            <div className={styles.fieldRow}>
               <label className={styles.field}>
                 Status
                 <select name='status' value={formData.status} onChange={handleInputChange}>
@@ -497,18 +638,63 @@ const AddProduct = () => {
             <h4>Tags</h4>
             <label className={styles.field}>
               Add tags
-              <input
-                name='tags'
-                value={formData.tags}
-                onChange={handleInputChange}
-                placeholder='Enter tag name'
-              />
+              <select
+                onChange={handleTagSelect}
+                defaultValue=''
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              >
+                <option value=''>Select a tag</option>
+                {tagsList
+                  .filter((tag) => !selectedTags.includes(tag))
+                  .map((tag) => (
+                    <option key={tag} value={tag}>
+                      {tag}
+                    </option>
+                  ))}
+              </select>
             </label>
-            <div className={styles.tagPills}>
-              {['T-Shirt', 'Men Clothes', 'Summer Collection'].map((tag) => (
-                <span key={tag}>{tag}</span>
-              ))}
-            </div>
+            {selectedTags.length > 0 && (
+              <div className={styles.tagPills} style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {selectedTags.map((tag) => (
+                  <span
+                    key={tag}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '4px 8px',
+                      backgroundColor: '#f0f0f0',
+                      borderRadius: '4px',
+                      fontSize: '14px'
+                    }}
+                  >
+                    {tag}
+                    <button
+                      type='button'
+                      onClick={() => handleTagRemove(tag)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '0',
+                        marginLeft: '4px',
+                        fontSize: '16px',
+                        lineHeight: '1',
+                        color: '#666'
+                      }}
+                      aria-label={`Remove ${tag}`}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            {tagsList.length === 0 && (
+              <p style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
+                No tags available. Tags will appear here once products are created.
+              </p>
+            )}
           </div>
 
         </aside>

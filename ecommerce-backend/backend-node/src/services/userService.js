@@ -257,10 +257,14 @@ class UserService {
 
       // 🔍 LOG TOKEN TO CONSOLE (since no email service)
       console.log('\n=== PASSWORD RESET TOKEN ===');
+      // Get frontend URL from environment variable, default to localhost for development
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const resetUrl = `${frontendUrl.replace(/\/+$/, '')}/reset-password?token=${resetToken}`;
+
       console.log(`Email: ${email}`);
       console.log(`Token: ${resetToken}`);
       console.log(`Expires at: ${expiryDate.toISOString()}`);
-      console.log(`Reset URL: http://localhost:3000/reset-password?token=${resetToken}`);
+      console.log(`Reset URL: ${resetUrl}`);
       console.log('============================\n');
 
       return {
@@ -390,11 +394,15 @@ class UserService {
         [verificationToken, user.id]
       );
 
+      // Get frontend URL from environment variable, default to localhost for development
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const verifyUrl = `${frontendUrl.replace(/\/+$/, '')}/verify-email?token=${verificationToken}`;
+
       // 🔍 LOG TOKEN TO CONSOLE (since no email service)
       console.log('\n=== EMAIL VERIFICATION TOKEN ===');
       console.log(`Email: ${email}`);
       console.log(`Token: ${verificationToken}`);
-      console.log(`Verify URL: http://localhost:3000/verify-email?token=${verificationToken}`);
+      console.log(`Verify URL: ${verifyUrl}`);
       console.log('================================\n');
 
       return {

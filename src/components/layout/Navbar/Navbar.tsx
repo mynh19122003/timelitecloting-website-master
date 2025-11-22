@@ -15,6 +15,47 @@ import { headerStyles } from "../../Header/header.styles";
 import type { ShopNavItem } from "../../Shop/shop.data";
 import { getNavItemPath, shopNavMenu } from "../../Shop/shop.data";
 
+type NavLinkParamMap = Record<string, Record<string, Record<string, string> | null>>;
+
+const normalizeNavKey = (value: string): string =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const navLinkParamMap: NavLinkParamMap = {
+  "ao-dai": {
+    "classic": { variant: "Classic" },
+    "modern-cut": { variant: "Modern cut" },
+    "minimal": { variant: "Minimal" },
+    "layered": { variant: "Layered" },
+    "daily-wear": { facet: "Daily wear" },
+    "engagement": { facet: "Engagement" },
+    "ceremony": { facet: "Ceremony" },
+    "new-ao-dai": { chip: "New Ao Dai" },
+    "best-sellers": { chip: "Best sellers" },
+    "view-all-ao-dai": null,
+    "shop-ao-dai-capsule": { facet: "Ao Dai capsule" },
+  },
+  "suiting": {
+    "view-all-suiting": null,
+  },
+  "bridal": {
+    "view-all-bridal": null,
+  },
+  "evening": {
+    "view-all-evening": null,
+  },
+  "kidswear": {
+    "plan-styling": { facet: "Custom Sibling Sets" },
+  },
+  "gift-procession-sets": {
+    "meet-the-team": { facet: "Meet the team" },
+  },
+};
+
 export const Navbar = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(() => getAuthStatus());
@@ -84,9 +125,47 @@ export const Navbar = () => {
     setActiveIndex(null);
   };
 
-  const navigateToItem = (item: ShopNavItem) => {
-    navigate(getNavItemPath(item));
+  const buildShopDestination = (item: ShopNavItem, extraParams?: Record<string, string>): string => {
+    const basePath = getNavItemPath(item);
+    const [pathname, search] = basePath.split("?");
+    const params = new URLSearchParams(search ?? "");
+
+    if (extraParams) {
+      Object.entries(extraParams).forEach(([key, value]) => {
+        if (value) {
+          params.set(key, value);
+        } else {
+          params.delete(key);
+        }
+      });
+    }
+
+    const queryString = params.toString();
+    return `${pathname}${queryString ? `?${queryString}` : ""}`;
+  };
+
+  const navigateToItem = (item: ShopNavItem, extraParams?: Record<string, string>) => {
+    const target = buildShopDestination(item, extraParams);
+    navigate(target);
     setActiveIndex(null);
+  };
+
+  const getNavLinkParams = (itemLabel: string, linkLabel: string): Record<string, string> | undefined => {
+    const itemKey = normalizeNavKey(itemLabel);
+    const linkKey = normalizeNavKey(linkLabel);
+    const config = navLinkParamMap[itemKey]?.[linkKey];
+    if (config === null) {
+      return undefined;
+    }
+    if (config) {
+      return config;
+    }
+    return { facet: linkLabel };
+  };
+
+  const handleNavLinkClick = (item: ShopNavItem, entry: string) => {
+    const params = getNavLinkParams(item.label, entry);
+    navigateToItem(item, params);
   };
 
   const translateNavLabel = (label: string): string => {
@@ -434,7 +513,7 @@ export const Navbar = () => {
                             <button
                               type="button"
                               className="header__mega-link"
-                              onClick={() => navigateToItem(activeItem)}
+                              onClick={() => handleNavLinkClick(activeItem, entry)}
                             >
                               {translateLink(entry, activeItem.label)}
                             </button>
@@ -453,7 +532,7 @@ export const Navbar = () => {
                             <button
                               type="button"
                               className="header__mega-link header__mega-link--quick"
-                              onClick={() => navigateToItem(activeItem)}
+                              onClick={() => handleNavLinkClick(activeItem, link)}
                             >
                               {translateLink(link, activeItem.label)}
                             </button>
@@ -476,7 +555,7 @@ export const Navbar = () => {
                         <button
                           type="button"
                           className="header__mega-cta"
-                          onClick={() => navigateToItem(activeItem)}
+                          onClick={() => handleNavLinkClick(activeItem, activeItem.highlight.cta!)}
                         >
                           {translateHighlight(activeItem.highlight.cta, activeItem.label, "cta")}
                         </button>
@@ -488,7 +567,7 @@ export const Navbar = () => {
                             <button
                               type="button"
                               className="header__mega-note-cta"
-                              onClick={() => navigateToItem(activeItem)}
+                              onClick={() => handleNavLinkClick(activeItem, activeItem.highlight.noteCta!)}
                             >
                               {activeItem.highlight.noteCta}
                             </button>

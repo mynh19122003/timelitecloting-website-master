@@ -39,6 +39,12 @@ class ProductsController {
   async get(req, res) {
     try {
       const { id } = req.params;
+      console.log('[get] Called with id:', id, 'URL:', req.originalUrl || req.url);
+      // Prevent matching "tags" as an ID
+      if (id === 'tags') {
+        console.log('[get] WARNING: /tags was matched by /:id route! This should not happen.');
+        return res.status(404).json({ error: 'ERR_PRODUCT_NOT_FOUND', message: 'Product not found' });
+      }
       const product = await productsService.getByIdOrCode(id);
       return res.json({ success: true, data: product });
     } catch (err) {
@@ -53,14 +59,31 @@ class ProductsController {
   async update(req, res) {
     try {
       const { id } = req.params;
+      console.log('[PRODUCTS][UPDATE] Request for product:', id);
+      console.log('[PRODUCTS][UPDATE] Body keys:', Object.keys(req.body || {}));
+      console.log('[PRODUCTS][UPDATE] Body preview:', {
+        name: req.body?.name,
+        variant: req.body?.variant,
+        category: req.body?.category,
+        hasImageUrl: Boolean(req.body?.image_url),
+        imageUrlType: typeof req.body?.image_url
+      });
+      
       const updated = await productsService.updateProduct(id, req.body || {});
+      console.log('[PRODUCTS][UPDATE] Success');
       return res.json({ success: true, message: 'Product updated', data: updated });
     } catch (err) {
       if (err.message === 'ERR_PRODUCT_NOT_FOUND') {
         return res.status(404).json({ error: 'ERR_PRODUCT_NOT_FOUND', message: 'Product not found' });
       }
-      console.error('update product failed:', err);
-      return res.status(500).json({ error: 'ERR_UPDATE_PRODUCT_FAILED', message: 'Failed to update product' });
+      console.error('[PRODUCTS][UPDATE] Error:', err.message);
+      console.error('[PRODUCTS][UPDATE] Stack:', err.stack);
+      console.error('[PRODUCTS][UPDATE] Full error:', err);
+      return res.status(500).json({ 
+        error: 'ERR_UPDATE_PRODUCT_FAILED', 
+        message: err.message || 'Failed to update product',
+        details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      });
     }
   }
 
@@ -75,6 +98,36 @@ class ProductsController {
       }
       console.error('delete product failed:', err);
       return res.status(500).json({ error: 'ERR_DELETE_PRODUCT_FAILED', message: 'Failed to delete product' });
+    }
+  }
+
+  async getTags(req, res) {
+    try {
+      console.log('[getTags] Called with URL:', req.originalUrl || req.url);
+      const tags = await productsService.getAllTags();
+      console.log('[getTags] Success, returning', tags.length, 'tags');
+      return res.json({ success: true, data: { tags } });
+    } catch (err) {
+      if (err.message === 'ERR_GET_TAGS_FAILED') {
+        return res.status(500).json({ error: 'ERR_GET_TAGS_FAILED', message: 'Failed to get tags' });
+      }
+      console.error('get tags failed:', err);
+      return res.status(500).json({ error: 'ERR_GET_TAGS_FAILED', message: 'Failed to get tags' });
+    }
+  }
+
+  async getCategories(req, res) {
+    try {
+      console.log('[getCategories] Called with URL:', req.originalUrl || req.url);
+      const categories = await productsService.getAllCategories();
+      console.log('[getCategories] Success, returning', categories.length, 'categories');
+      return res.json({ success: true, data: { categories } });
+    } catch (err) {
+      if (err.message === 'ERR_GET_CATEGORIES_FAILED') {
+        return res.status(500).json({ error: 'ERR_GET_CATEGORIES_FAILED', message: 'Failed to get categories' });
+      }
+      console.error('get categories failed:', err);
+      return res.status(500).json({ error: 'ERR_GET_CATEGORIES_FAILED', message: 'Failed to get categories' });
     }
   }
 }

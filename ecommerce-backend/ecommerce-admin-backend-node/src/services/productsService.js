@@ -16,11 +16,23 @@ class ProductsService {
   decodeBase64Image(base64String) {
     if (!base64String || typeof base64String !== 'string') return null;
     let cleaned = base64String.trim();
+    // Skip if it's not a base64 string (e.g., empty string, URL, or existing path)
+    if (!cleaned || cleaned.length < 100) return null;
+    if (!cleaned.includes('base64') && !/^[A-Za-z0-9+/=]+$/.test(cleaned)) return null;
+    
     const dataUriMatch = cleaned.match(/^data:(.*?);base64,(.*)$/);
     if (dataUriMatch) {
       cleaned = dataUriMatch[2];
     }
-    return { buffer: Buffer.from(cleaned, 'base64') };
+    // Validate base64 string
+    if (!/^[A-Za-z0-9+/=]+$/.test(cleaned)) return null;
+    
+    try {
+      return { buffer: Buffer.from(cleaned, 'base64') };
+    } catch (err) {
+      console.error('[decodeBase64Image] Failed to decode base64:', err.message);
+      return null;
+    }
   }
 
   normalizeProductsId(value) {
@@ -64,12 +76,20 @@ class ProductsService {
 
   async saveImageForProduct(productId, base64String, filePrefix = 'main') {
     const decoded = this.decodeBase64Image(base64String);
-    if (!decoded) return null;
-    const productDir = path.join(this.mediaRoot, productId);
-    this.ensureDirSync(productDir);
-    const fileName = `${filePrefix}.webp`;
-    await sharp(decoded.buffer).webp({ quality: 82 }).toFile(path.join(productDir, fileName));
-    return `${productId}/${fileName}`.replace(/\\/g, '/');
+    if (!decoded) {
+      console.log(`[saveImageForProduct] Skipping image save for ${filePrefix}: invalid or empty base64`);
+      return null;
+    }
+    try {
+      const productDir = path.join(this.mediaRoot, productId);
+      this.ensureDirSync(productDir);
+      const fileName = `${filePrefix}.webp`;
+      await sharp(decoded.buffer).webp({ quality: 82 }).toFile(path.join(productDir, fileName));
+      return `${productId}/${fileName}`.replace(/\\/g, '/');
+    } catch (err) {
+      console.error(`[saveImageForProduct] Failed to save image for ${filePrefix}:`, err.message);
+      throw err;
+    }
   }
 
   parseMaybeJson(value) {
@@ -224,6 +244,17 @@ class ProductsService {
   }
 
   async updateProduct(idOrCode, payload) {
+    console.log('[updateProduct] Starting update for:', idOrCode);
+    console.log('[updateProduct] Payload keys:', Object.keys(payload || {}));
+    console.log('[updateProduct] Payload preview:', {
+      name: payload?.name,
+      variant: payload?.variant,
+      category: payload?.category,
+      hasImageUrl: Boolean(payload?.image_url),
+      imageUrlType: typeof payload?.image_url,
+      imageUrlLength: payload?.image_url?.length || 0
+    });
+
     const current = await this.getByIdOrCode(idOrCode);
     const productId = current.products_id;
 
@@ -237,11 +268,20 @@ class ProductsService {
       }
     };
 
-    if (payload.image_url) {
-      const rel = await this.saveImageForProduct(productId, payload.image_url, 'main');
-      if (rel) {
-        setIfPresent('image_url', rel);
+    // Only process image_url if it's a valid base64 string (not empty, not a URL/path)
+    if (payload.image_url && typeof payload.image_url === 'string' && payload.image_url.trim().length > 100) {
+      try {
+        const rel = await this.saveImageForProduct(productId, payload.image_url, 'main');
+        if (rel) {
+          setIfPresent('image_url', rel);
+          console.log('[updateProduct] Image saved successfully');
+        }
+      } catch (err) {
+        console.error('[updateProduct] Failed to save image:', err.message);
+        // Don't throw - allow other fields to be updated even if image fails
       }
+    } else if (payload.image_url !== undefined) {
+      console.log('[updateProduct] Skipping image_url (not a valid base64 string)');
     }
 
     if (payload.gallery) {
@@ -282,14 +322,24 @@ class ProductsService {
     if (payload.is_new !== undefined) setIfPresent('is_new', payload.is_new);
 
     if (fields.length === 0) {
+      console.log('[updateProduct] No fields to update, returning current product');
       return current;
     }
 
+    console.log('[updateProduct] Updating fields:', fields.map(f => f.split('=')[0].trim()));
     const sql = `UPDATE products SET ${fields.join(', ')} WHERE products_id = ? OR id = ?`;
     params.push(productId, current.id);
-    await pool.execute(sql, params);
-
-    return this.getByIdOrCode(productId);
+    
+    try {
+      await pool.execute(sql, params);
+      console.log('[updateProduct] Update successful');
+      return this.getByIdOrCode(productId);
+    } catch (err) {
+      console.error('[updateProduct] SQL error:', err.message);
+      console.error('[updateProduct] SQL:', sql);
+      console.error('[updateProduct] Params:', params);
+      throw err;
+    }
   }
 
   async deleteProduct(idOrCode) {
@@ -311,6 +361,62 @@ class ProductsService {
     }
 
     return { success: true };
+  }
+
+  async getAllTags() {
+    try {
+      const [rows] = await pool.execute(
+        'SELECT tags FROM products WHERE tags IS NOT NULL AND tags != "null" AND tags != ""'
+      );
+      
+      const allTags = [];
+      for (const row of rows) {
+        let tags = [];
+        try {
+          if (typeof row.tags === 'string') {
+            const parsed = JSON.parse(row.tags);
+            tags = Array.isArray(parsed) ? parsed : [];
+          } else if (Array.isArray(row.tags)) {
+            tags = row.tags;
+          }
+        } catch (_) {
+          // ignore parse errors
+        }
+        
+        for (const tag of tags) {
+          if (typeof tag === 'string' && tag.trim() !== '') {
+            allTags.push(tag.trim());
+          }
+        }
+      }
+      
+      // Remove duplicates and sort
+      const uniqueTags = [...new Set(allTags)].sort();
+      return uniqueTags;
+    } catch (err) {
+      console.error('getAllTags error:', err);
+      throw new Error('ERR_GET_TAGS_FAILED');
+    }
+  }
+
+  async getAllCategories() {
+    try {
+      const [rows] = await pool.execute(
+        'SELECT DISTINCT category FROM products WHERE category IS NOT NULL AND category != "" AND category != "null" ORDER BY category'
+      );
+      
+      const categories = rows
+        .map((row) => row.category)
+        .filter((cat) => typeof cat === 'string' && cat.trim() !== '')
+        .map((cat) => cat.trim());
+      
+      // Remove duplicates and sort
+      const uniqueCategories = [...new Set(categories)].sort();
+      return uniqueCategories;
+    } catch (err) {
+      console.error('getAllCategories error:', err);
+      throw new Error('ERR_GET_CATEGORIES_FAILED');
+    }
   }
 }
 

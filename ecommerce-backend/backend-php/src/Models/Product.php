@@ -9,6 +9,51 @@ use PDOException;
 class Product
 {
     private PDO $db;
+    
+    /**
+     * Maps normalized category filters (slugs or keywords) to database labels.
+     */
+    private const CATEGORY_SYNONYMS = [
+        'ao-dai' => ['Ao Dai', 'Ao Dai Couture'],
+        'ao-dai-couture' => ['Ao Dai', 'Ao Dai Couture'],
+        'suiting' => ['Suiting', 'Tailored Suiting'],
+        'tailored-suiting' => ['Suiting', 'Tailored Suiting'],
+        'vest' => ['Suiting', 'Tailored Suiting'],
+        'bridal' => ['Bridal', 'Bridal Gowns'],
+        'bridal-gowns' => ['Bridal', 'Bridal Gowns'],
+        'wedding' => ['Bridal', 'Bridal Gowns'],
+        'evening' => ['Evening', 'Evening Couture', 'Evening Dresses'],
+        'evening-couture' => ['Evening', 'Evening Couture', 'Evening Dresses'],
+        'conical-hats' => ['Conical Hats', 'Accessories'],
+        'non-la' => ['Conical Hats', 'Accessories'],
+        'accessories' => ['Accessories', 'Conical Hats'],
+        'kidswear' => ['Kidswear'],
+        'gift-procession-sets' => ['Gift Procession Sets', 'Gift Procession'],
+        'gift-procession' => ['Gift Procession Sets', 'Gift Procession'],
+        'gift' => ['Gift Procession Sets', 'Gift Procession'],
+        'all' => [],
+        'shop-all' => [],
+    ];
+    
+    /**
+     * Maps normalized variant filters (slugs or keywords) to possible database values.
+     */
+    private const VARIANT_SYNONYMS = [
+        'classic' => ['Classic', 'Cổ Điển', 'Co Dien'],
+        'co-dien' => ['Classic', 'Cổ Điển', 'Co Dien'],
+        'modern' => ['Modern', 'Modern Cut'],
+        'modern-cut' => ['Modern Cut', 'Modern'],
+        'minimal' => ['Minimal'],
+        'layered' => ['Layered'],
+        'daily-wear' => ['Daily Wear', 'Dailywear'],
+        'engagement' => ['Engagement'],
+        'ceremony' => ['Ceremony'],
+        'wedding-ao-dai' => ['Wedding Ao Dai'],
+        'mix-match' => ['Mix & Match', 'Mix and Match'],
+        'mix-and-match' => ['Mix & Match', 'Mix and Match'],
+        'best-sellers' => ['Best Sellers'],
+        'new-arrivals' => ['New Arrivals', 'New Ao Dai'],
+    ];
 
     public function __construct()
     {
@@ -29,12 +74,12 @@ class Product
                 $searchParams[] = "%{$search}%";
             }
             if ($category) {
-                $conditions[] = 'category = ?';
-                $searchParams[] = $category;
+                $categoryFilters = $this->resolveCategoryFilter($category);
+                $this->applyFilterCondition('category', $categoryFilters, $conditions, $searchParams);
             }
             if ($variant) {
-                $conditions[] = 'variant = ?';
-                $searchParams[] = $variant;
+                $variantFilters = $this->resolveVariantFilter($variant);
+                $this->applyFilterCondition('variant', $variantFilters, $conditions, $searchParams);
             }
 
             $whereClause = !empty($conditions) ? 'WHERE ' . implode(' AND ', $conditions) : '';
@@ -241,6 +286,87 @@ class Product
             return [];
         }
     }
+    
+    private function resolveCategoryFilter(string $category): array
+    {
+        $normalized = $this->normalizeFilterKey($category);
+        if ($normalized === '' || $normalized === 'all' || $normalized === 'shop-all') {
+            return [];
+        }
+        
+        if (isset(self::CATEGORY_SYNONYMS[$normalized])) {
+            return $this->deduplicateValues(self::CATEGORY_SYNONYMS[$normalized]);
+        }
+        
+        // Direct match fallback (case-insensitive)
+        return [$category];
+    }
+    
+    private function resolveVariantFilter(string $variant): array
+    {
+        $normalized = $this->normalizeFilterKey($variant);
+        if ($normalized === '') {
+            return [];
+        }
+        
+        if (isset(self::VARIANT_SYNONYMS[$normalized])) {
+            return $this->deduplicateValues(self::VARIANT_SYNONYMS[$normalized]);
+        }
+        
+        return [$variant];
+    }
+    
+    private function applyFilterCondition(string $column, array $values, array &$conditions, array &$params): void
+    {
+        $values = $this->deduplicateValues($values);
+        if (empty($values)) {
+            return;
+        }
+        
+        if (count($values) === 1) {
+            $conditions[] = "{$column} = ?";
+            $params[] = $values[0];
+            return;
+        }
+        
+        $placeholders = implode(', ', array_fill(0, count($values), '?'));
+        $conditions[] = "{$column} IN ({$placeholders})";
+        foreach ($values as $value) {
+            $params[] = $value;
+        }
+    }
+    
+    private function normalizeFilterKey(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+        
+        $transliterated = @iconv('UTF-8', 'ASCII//TRANSLIT', $value);
+        if ($transliterated !== false) {
+            $value = $transliterated;
+        }
+        
+        $value = strtolower($value);
+        $value = preg_replace('/[^a-z0-9]+/u', '-', $value);
+        return trim($value ?? '', '-');
+    }
+    
+    private function deduplicateValues(array $values): array
+    {
+        $unique = [];
+        foreach ($values as $value) {
+            $value = trim((string)$value);
+            if ($value === '') {
+                continue;
+            }
+            if (!in_array($value, $unique, true)) {
+                $unique[] = $value;
+            }
+        }
+        return $unique;
+    }
 
     public function checkStock(int $productId, int $quantity): bool
     {
@@ -272,6 +398,39 @@ class Product
             return $stmt->execute([$quantity, $productId]);
         } catch (PDOException $e) {
             throw new \Exception('ERR_UPDATE_STOCK_FAILED');
+        }
+    }
+
+    /**
+     * Get all unique tags from all products
+     * @return array Array of unique tag strings
+     */
+    public function getAllTags(): array
+    {
+        try {
+            $stmt = $this->db->query('SELECT tags FROM products WHERE tags IS NOT NULL AND tags != "null" AND tags != ""');
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            $allTags = [];
+            foreach ($rows as $row) {
+                $tags = self::decodeJsonArray($row['tags']);
+                if (is_array($tags)) {
+                    foreach ($tags as $tag) {
+                        if (is_string($tag) && trim($tag) !== '') {
+                            $allTags[] = trim($tag);
+                        }
+                    }
+                }
+            }
+            
+            // Remove duplicates and sort
+            $uniqueTags = array_unique($allTags);
+            sort($uniqueTags);
+            
+            return array_values($uniqueTags);
+        } catch (PDOException $e) {
+            error_log('Get tags error: ' . $e->getMessage());
+            throw new \Exception('ERR_GET_TAGS_FAILED');
         }
     }
 

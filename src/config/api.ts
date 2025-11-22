@@ -60,9 +60,34 @@ const resolveAdminBaseUrl = (): string => {
 
 const resolveApiBaseUrl = (): string => {
   const envOverride = process.env.NEXT_PUBLIC_API_URL;
-  const base = envOverride?.trim() ? normalizeAbsoluteUrl(envOverride, envOverride.trim()) : PROD_API_ORIGIN;
+  
+  // Default cho development: dùng gateway port 3002 (không phải admin port 3001)
+  const isDev = process.env.NODE_ENV === 'development';
+  const defaultOrigin = isDev ? 'http://localhost:3002' : PROD_API_ORIGIN;
+  
+  const base = envOverride?.trim() ? normalizeAbsoluteUrl(envOverride, envOverride.trim()) : defaultOrigin;
   // Nếu build runtime đang ở production domain nhưng env vẫn để localhost, chuyển sang domain chính
-  return forceProdIfDeployed(base);
+  let resolved = forceProdIfDeployed(base);
+  
+  // Client side API không nên có /admin prefix - loại bỏ nếu có
+  // Admin API dùng ADMIN_BASE_URL riêng, client API dùng BASE_URL không có /admin
+  try {
+    const url = new URL(resolved);
+    if (url.pathname.startsWith('/admin')) {
+      // Loại bỏ /admin khỏi pathname
+      url.pathname = url.pathname.replace(/^\/admin\/?/, '') || '/';
+      resolved = url.toString().replace(/\/+$/, '');
+    }
+    // Nếu đang ở localhost nhưng port là 3001 (admin), chuyển sang 3002 (gateway)
+    if (isLocalHostname(url.hostname) && url.port === '3001' && !url.pathname.startsWith('/admin')) {
+      url.port = '3002';
+      resolved = url.toString().replace(/\/+$/, '');
+    }
+  } catch {
+    // Nếu không parse được URL, giữ nguyên
+  }
+  
+  return resolved;
 };
 
 const RESOLVED_ADMIN_BASE = resolveAdminBaseUrl();

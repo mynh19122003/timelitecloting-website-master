@@ -1,5 +1,6 @@
 import { AdminApi, PublicApi } from '../api'
 import { getApiBaseUrl } from '../api/config'
+import PublicApiClient from '../api/public'
 
 const toNumber = (value, fallback = 0) => {
   const n = typeof value === 'string' ? parseFloat(value.replace(/[^0-9.\-]/g, '')) : Number(value)
@@ -74,7 +75,7 @@ const normalizeUiProduct = (apiProduct = {}, fallbackImage = '') => {
     image: resolvedImage,
     category: apiProduct.category || 'General',
     color: parsedColors[0] || '',
-    variant: '-',
+    variant: apiProduct.variant || '-',
     stock: {
       onHand: stockOnHand,
       state: stockLabel,
@@ -118,6 +119,22 @@ export const createProduct = async (formData = {}) => {
     sizesPayload = formData.sizes
   }
 
+  // Normalize tags: accept JSON string or array
+  let tagsPayload = []
+  if (Array.isArray(formData.tags)) {
+    tagsPayload = formData.tags
+  } else if (typeof formData.tags === 'string' && formData.tags.trim()) {
+    try {
+      const parsed = JSON.parse(formData.tags)
+      if (Array.isArray(parsed)) {
+        tagsPayload = parsed
+      }
+    } catch (_) {
+      // If not JSON, treat as comma-separated string
+      tagsPayload = formData.tags.split(',').map((t) => t.trim()).filter(Boolean)
+    }
+  }
+
   const payload = {
     name: formData.name,
     price: toNumber(formData.price, 0),
@@ -125,13 +142,14 @@ export const createProduct = async (formData = {}) => {
     description: formData.description || '',
     image_url: formData.imagePreview || '',
     category: formData.type || '',
+    variant: formData.variant || '',
     rating: toNumber(formData.rating, 0),
     colors: colorsPayload,
     sizes: sizesPayload,
     // Optional fields left blank for now
     short_description: '',
     original_price: null,
-    tags: formData.tags || ''
+    tags: tagsPayload
   }
 
   // Dev debug: in ra payload đúng lúc POST để kiểm tra trường gửi lên API
@@ -194,6 +212,111 @@ export const getProduct = async (idOrCode) => {
   return normalizeUiProduct(api)
 }
 
+export const updateProduct = async (idOrCode, formData = {}) => {
+  if (!idOrCode) throw new Error('Missing product id')
+  
+  // Map UI form -> backend payload (similar to createProduct)
+  let colorsPayload = []
+  if (Array.isArray(formData.colors)) {
+    colorsPayload = formData.colors
+  } else if (typeof formData.color === 'string') {
+    const raw = formData.color.trim()
+    if (raw) {
+      if (raw.startsWith('[')) {
+        try {
+          const arr = JSON.parse(raw)
+          if (Array.isArray(arr)) colorsPayload = arr
+        } catch (_) { /* ignore */ }
+      }
+      if (!colorsPayload.length) {
+        colorsPayload = raw.split(',').map((v) => v.trim()).filter(Boolean)
+      }
+    }
+  }
+
+  // Normalize sizes: accept array of size strings
+  let sizesPayload = []
+  if (Array.isArray(formData.sizes)) {
+    sizesPayload = formData.sizes
+  }
+
+  // Normalize tags: accept JSON string or array
+  let tagsPayload = []
+  if (Array.isArray(formData.tags)) {
+    tagsPayload = formData.tags
+  } else if (typeof formData.tags === 'string' && formData.tags.trim()) {
+    try {
+      const parsed = JSON.parse(formData.tags)
+      if (Array.isArray(parsed)) {
+        tagsPayload = parsed
+      }
+    } catch (_) {
+      // If not JSON, treat as comma-separated string
+      tagsPayload = formData.tags.split(',').map((t) => t.trim()).filter(Boolean)
+    }
+  }
+
+  const payload = {
+    name: formData.name,
+    price: toNumber(formData.price, 0),
+    stock: toInt(formData.inventory, 0),
+    description: formData.description || '',
+    image_url: formData.imagePreview || '',
+    category: formData.type || '',
+    variant: formData.variant || '',
+    rating: toNumber(formData.rating, 0),
+    colors: colorsPayload,
+    sizes: sizesPayload,
+    short_description: formData.short_description || '',
+    original_price: formData.original_price || null,
+    tags: tagsPayload
+  }
+
+  // Dev debug
+  if (import.meta?.env?.DEV) {
+    try {
+      console.groupCollapsed('[DEBUG] PATCH /admin/products/:id payload')
+      console.log('Product ID:', idOrCode)
+      console.log('Payload:', payload)
+      console.groupEnd()
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  try {
+    const res = await AdminApi.patch(`/products/${encodeURIComponent(idOrCode)}`, payload)
+    const api = res?.data?.data || res?.data || {}
+    return normalizeUiProduct(api, formData.imagePreview)
+  } catch (error) {
+    console.error('[updateProduct] API call failed:', {
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
+      error: error?.response?.data?.error,
+      message: error?.response?.data?.message,
+      url: error?.config?.url,
+      method: error?.config?.method,
+      baseURL: error?.config?.baseURL
+    })
+    
+    if (error?.response?.status === 403) {
+      const backendMessage = error?.response?.data?.message || 'Forbidden'
+      const backendError = error?.response?.data?.error || 'ERR_FORBIDDEN'
+      throw new Error(`403 Forbidden: ${backendMessage} (${backendError}). Kiểm tra ADMIN_API_TOKEN trong env hoặc localStorage.`)
+    } else if (error?.response?.status === 401) {
+      const backendMessage = error?.response?.data?.message || 'Unauthorized'
+      throw new Error(`401 Unauthorized: ${backendMessage}. Token không hợp lệ hoặc thiếu.`)
+    } else if (error?.response?.status === 404) {
+      throw new Error(`404 Not Found: Product không tồn tại.`)
+    } else if (error?.response?.data?.message) {
+      throw new Error(`${error.response.status || 'Error'}: ${error.response.data.message}`)
+    }
+    
+    throw error
+  }
+}
+
 export const listProducts = async ({ page = 1, limit = 1000, search = '', category = '' } = {}) => {
   try {
     const res = await AdminApi.get('/products', {
@@ -245,10 +368,55 @@ export const listProducts = async ({ page = 1, limit = 1000, search = '', catego
   }
 }
 
+export const getTags = async () => {
+  try {
+    // Use admin API endpoint /admin/products/tags
+    const res = await AdminApi.get('/products/tags')
+    const body = res?.data || {}
+    
+    // Support different response shapes
+    const tags = body?.data?.tags || body?.tags || []
+    return Array.isArray(tags) ? tags : []
+  } catch (error) {
+    console.error('[getTags] API call failed:', {
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
+      url: error?.config?.url
+    })
+    // Return empty array on error instead of throwing
+    return []
+  }
+}
+
+export const getCategories = async () => {
+  try {
+    // Use admin API endpoint /admin/products/categories
+    const res = await AdminApi.get('/products/categories')
+    const body = res?.data || {}
+    
+    // Support different response shapes
+    const categories = body?.data?.categories || body?.categories || []
+    return Array.isArray(categories) ? categories : []
+  } catch (error) {
+    console.error('[getCategories] API call failed:', {
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
+      url: error?.config?.url
+    })
+    // Return empty array on error instead of throwing
+    return []
+  }
+}
+
 export default {
   createProduct,
   getProduct,
-  listProducts
+  listProducts,
+  updateProduct,
+  getTags,
+  getCategories
 }
 
 

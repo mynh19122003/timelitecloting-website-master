@@ -258,9 +258,10 @@ export const ShopPage = ({ category }: ShopPageProps) => {
         const pageSize = 100;
         let page = 1;
         const aggregated: ApiProduct[] = [];
+        const categoryParam = slug !== defaultCategorySlug ? slug : undefined;
 
         while (true) {
-          const response = await ApiService.getProducts({ page, limit: pageSize }, false);
+          const response = await ApiService.getProducts({ page, limit: pageSize, category: categoryParam }, false);
           const pageProducts = (response?.products ?? []) as ApiProduct[];
           aggregated.push(...pageProducts);
 
@@ -309,7 +310,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [slug]);
 
   // Get available variants for current category
   const availableVariants = useMemo(() => {

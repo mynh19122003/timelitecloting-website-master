@@ -156,12 +156,16 @@ class UserService
     $stmt = $db->prepare('UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE id = ?');
     $stmt->execute([$resetToken, $expiryDate, $user['id']]);
 
+    // Get frontend URL from environment variable, default to localhost for development
+    $frontendUrl = $_ENV['FRONTEND_URL'] ?? getenv('FRONTEND_URL') ?: 'http://localhost:3000';
+    $resetUrl = rtrim($frontendUrl, '/') . '/reset-password?token=' . $resetToken;
+
     // 🔍 LOG TOKEN TO CONSOLE (since no email service)
     error_log("\n=== PASSWORD RESET TOKEN ===");
     error_log("Email: {$email}");
     error_log("Token: {$resetToken}");
     error_log("Expires at: {$expiryDate}");
-    error_log("Reset URL: http://localhost:3000/reset-password?token={$resetToken}");
+    error_log("Reset URL: {$resetUrl}");
     error_log("============================\n");
 
     return [
@@ -261,11 +265,15 @@ class UserService
     $stmt = $db->prepare('UPDATE users SET verification_token = ? WHERE id = ?');
     $stmt->execute([$verificationToken, $user['id']]);
 
+    // Get frontend URL from environment variable, default to localhost for development
+    $frontendUrl = $_ENV['FRONTEND_URL'] ?? getenv('FRONTEND_URL') ?: 'http://localhost:3000';
+    $verifyUrl = rtrim($frontendUrl, '/') . '/verify-email?token=' . $verificationToken;
+
     // 🔍 LOG TOKEN TO CONSOLE (since no email service)
     error_log("\n=== EMAIL VERIFICATION TOKEN ===");
     error_log("Email: {$email}");
     error_log("Token: {$verificationToken}");
-    error_log("Verify URL: http://localhost:3000/verify-email?token={$verificationToken}");
+    error_log("Verify URL: {$verifyUrl}");
     error_log("================================\n");
 
     return [

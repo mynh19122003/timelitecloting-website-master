@@ -110,6 +110,10 @@ const productUpdateSchema = Joi.object({
   is_new: Joi.number().valid(0,1).optional()
 }).min(1);
 
-module.exports = { validate, validateQuery, loginSchema, changePasswordSchema, updateProfileSchema, ordersListSchema, orderStatusUpdateSchema, customersListSchema, customerUpdateSchema, productCreateSchema, productUpdateSchema };
+const variantCreateSchema = Joi.object({
+  variant_name: Joi.string().max(128).required()
+});
+
+module.exports = { validate, validateQuery, loginSchema, changePasswordSchema, updateProfileSchema, ordersListSchema, orderStatusUpdateSchema, customersListSchema, customerUpdateSchema, productCreateSchema, productUpdateSchema, variantCreateSchema };
 
 

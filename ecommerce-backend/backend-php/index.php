@@ -194,12 +194,20 @@ if ($apiIndex !== false && count($pathParts) > $apiIndex + 1) {
             case 'products':
                 $controller = new \App\Controllers\ProductController();
                 
+                // Handle /api/products/tags endpoint
+                if ($action === 'tags') {
+                    if ($requestMethod === 'GET') {
+                        $controller->getTags();
+                    } else {
+                        sendErrorResponse(405, 'ERR_METHOD_NOT_ALLOWED', 'Method not allowed');
+                    }
+                }
                 // Check if action is a numeric ID or PID string (e.g., /api/products/1 or /api/products/PID10050)
                 // Use case-insensitive check for PID
-                $isNumericId = $action && is_numeric($action);
-                $isPidString = $action && (stripos($action, 'PID') === 0 || preg_match('/^PID\d+/i', $action));
-                
-                if ($isNumericId || $isPidString) {
+                elseif ($action && (is_numeric($action) || (stripos($action, 'PID') === 0 || preg_match('/^PID\d+/i', $action)))) {
+                    $isNumericId = is_numeric($action);
+                    $isPidString = !$isNumericId && (stripos($action, 'PID') === 0 || preg_match('/^PID\d+/i', $action));
+                    
                     if ($isNumericId) {
                         $_GET['id'] = $action;
                     } else {
