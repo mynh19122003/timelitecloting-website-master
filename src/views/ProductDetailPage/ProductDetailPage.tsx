@@ -1,15 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   FiCheck,
   FiChevronLeft,
-  FiPackage,
-  FiRotateCcw,
   FiStar,
 } from "react-icons/fi";
 import { categoryLabels, normalizeCategory, type Category, type Product as UiProduct } from "../../data/products";
-import { useCart } from "../../context/CartContext";
+import { useCart, type CartItem } from "../../context/CartContext";
 import { useToast } from "../../context/ToastContext";
 import { useI18n } from "../../context/I18nContext";
 import { formatCurrency } from "../../utils/currency";
@@ -68,7 +66,6 @@ export const ProductDetailPage = () => {
   const [selectedImage, setSelectedImage] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
-  const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState<boolean>(true);
   const [loadingRelated, setLoadingRelated] = useState<boolean>(false);
   const previousProductIdRef = useRef<string | undefined>(undefined);
@@ -223,13 +220,6 @@ export const ProductDetailPage = () => {
     };
   }, [id, navigate]);
 
-  const comparisonSet = useMemo(() => {
-    if (!product) {
-      return [] as UiProduct[];
-    }
-    return [product, ...relatedProducts].slice(0, 3);
-  }, [product, relatedProducts]);
-
   // Redirect to 404 page if product not found after loading
   useEffect(() => {
     if (!loading && !product && id) {
@@ -251,7 +241,7 @@ export const ProductDetailPage = () => {
     );
   }
 
-  const handleAddToCart = () => {
+  const addItemToCart = () => {
     const response = addToCart({
       productId: product.id,
       pid: product.pid,
@@ -260,10 +250,38 @@ export const ProductDetailPage = () => {
       price: product.price,
       color: selectedColor,
       size: selectedSize,
-      quantity,
+      quantity: 1,
     });
     showToast(response.message, response.status);
+    return response.status === "success";
   };
+
+  const buildDirectPurchaseItem = (): CartItem => ({
+    id: `direct::${String(product.id)}::${selectedColor || "any"}::${selectedSize || "any"}`,
+    productId: product.id,
+    pid: product.pid,
+    name: product.name,
+    image: product.image,
+    price: product.price,
+    color: selectedColor,
+    size: selectedSize,
+    quantity: 1,
+  });
+
+  const handleAddToBag = () => {
+    addItemToCart();
+  };
+
+  const handleBuyNow = () => {
+    const directItem = buildDirectPurchaseItem();
+    navigate("/checkout", { state: { directPurchase: directItem } });
+  };
+
+  const shippingNotes = [
+    t("product.shipping.info"),
+    t("product.shipping.arrives"),
+    t("product.alterations"),
+  ];
 
   return (
     <div className={styles.page}>
@@ -398,42 +416,24 @@ export const ProductDetailPage = () => {
               </div>
 
               <div className={styles.ctaRow}>
-                <label className={styles.quantityControl}>
-                  {t("product.quantity")}
-                  <input
-                    type="number"
-                    min={1}
-                    value={quantity}
-                    onChange={(event) =>
-                      setQuantity(Math.max(Number(event.target.value), 1))
-                    }
-                    className={styles.quantityInput}
-                  />
-                </label>
-
-                <button onClick={handleAddToCart} className={styles.addToCart}>
+                <button onClick={handleAddToBag} className={styles.addToCart}>
                   {t("product.add.to.cart")}
                 </button>
 
-                <Link to="/contact" className={styles.fittingLink}>
+                <button onClick={handleBuyNow} className={styles.buyNowButton}>
                   {t("product.book.fitting")}
-                </Link>
+                </button>
               </div>
             </div>
 
             <div className={styles.policies}>
-              <div className={styles.policyItem}>
-                <FiPackage className={styles.policyIcon} />
-                <p>
-                  {t("product.shipping.info")} {t("product.shipping.arrives")}
-                </p>
-              </div>
-              <div className={styles.policyItem}>
-                <FiRotateCcw className={styles.policyIcon} />
-                <p>
-                  {t("product.alterations")}
-                </p>
-              </div>
+              <ul className={styles.policyList}>
+                {shippingNotes.map((note) => (
+                  <li key={note} className={styles.policyLine}>
+                    {note}
+                  </li>
+                ))}
+              </ul>
             </div>
 
             <div className={styles.detailsSection}>
@@ -455,50 +455,6 @@ export const ProductDetailPage = () => {
               </ul>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section className={styles.compareSection}>
-        <h2 className={styles.compareHeading}>{t("product.compare.collection")}</h2>
-        <div className={styles.tableWrapper}>
-          <table className={styles.table}>
-            <thead>
-              <tr className={styles.tableHeadRow}>
-                <th className={styles.tableHeadCell}>{t("common.model")}</th>
-                {comparisonSet.map((item) => (
-                  <th key={item.id} className={styles.tableHeadCell}>
-                    {item.name}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className={styles.tableBody}>
-              <tr className={styles.tableRow}>
-                <td className={styles.tableCell}>{t("product.price")}</td>
-                {comparisonSet.map((item) => (
-                  <td key={item.id} className={styles.tableCell}>
-                    {formatCurrency(item.price)}
-                  </td>
-                ))}
-              </tr>
-              <tr className={styles.tableRow}>
-                <td className={styles.tableCell}>{t("product.colors")}</td>
-                {comparisonSet.map((item) => (
-                  <td key={item.id} className={styles.tableCell}>
-                    {item.colors.join(", ")}
-                  </td>
-                ))}
-              </tr>
-              <tr className={styles.tableRow}>
-                <td className={styles.tableCell}>{t("product.highlights")}</td>
-                {comparisonSet.map((item) => (
-                  <td key={item.id} className={styles.tableCell}>
-                    {item.tags.slice(0, 2).join(" | ")}
-                  </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
         </div>
       </section>
 

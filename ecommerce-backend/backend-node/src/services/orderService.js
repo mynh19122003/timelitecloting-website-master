@@ -76,7 +76,8 @@ class OrderService {
 
       // Compose fields
       const productsPrice = totalAmount;
-      const totalPrice = productsPrice; // hiện tại chưa có phí khác, có thể mở rộng sau
+      const shippingCost = orderDetails.shipping_cost ? Number(orderDetails.shipping_cost) : 0;
+      const totalPrice = productsPrice + shippingCost;
       const userName = `${(orderDetails.firstname || '').trim()} ${(orderDetails.lastname || '').trim()}`.trim();
       const userAddress = orderDetails.address || null;
       const userPhone = orderDetails.phonenumber || null;
@@ -85,10 +86,48 @@ class OrderService {
       const productsName = nameParts.join(', ');
       const productsItems = JSON.stringify(normalizedItems);
 
-      // Create order (new structure)
+      // Extract all additional fields
+      const email = orderDetails.email || null;
+      const company = orderDetails.company || null;
+      const streetAddress = orderDetails.street_address || null;
+      const apartment = orderDetails.apartment || null;
+      const city = orderDetails.city || null;
+      const state = orderDetails.state || null;
+      const zip = orderDetails.zip || null;
+      const country = orderDetails.country || null;
+      const shippingMethod = orderDetails.shipping_method || null;
+      const shippingFirstname = orderDetails.shipping_firstname || null;
+      const shippingLastname = orderDetails.shipping_lastname || null;
+      const shippingCompany = orderDetails.shipping_company || null;
+      const shippingAddress = orderDetails.shipping_address || null;
+      const shippingPhone = orderDetails.shipping_phone || null;
+      const billingFirstname = orderDetails.billing_firstname || null;
+      const billingLastname = orderDetails.billing_lastname || null;
+      const billingCompany = orderDetails.billing_company || null;
+      const billingAddress = orderDetails.billing_address || null;
+      const billingPhone = orderDetails.billing_phone || null;
+      const notes = orderDetails.notes || null;
+
+      // Create order (new structure with all fields)
       const [orderResult] = await connection.execute(
-        'INSERT INTO orders (user_id, user_name, user_address, user_phone, products_name, products_items, products_price, total_price, payment_method, payment_status, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [userId, userName, userAddress, userPhone, productsName, productsItems, productsPrice, totalPrice, paymentMethod, paymentStatus, 'pending']
+        `INSERT INTO orders (
+          user_id, user_name, user_address, user_phone, 
+          email, company, street_address, apartment, city, state, zip, country,
+          shipping_method, shipping_cost, shipping_firstname, shipping_lastname, 
+          shipping_company, shipping_address, shipping_phone,
+          billing_firstname, billing_lastname, billing_company, billing_address, billing_phone,
+          products_name, products_items, products_price, total_price, 
+          payment_method, payment_status, status, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          userId, userName, userAddress, userPhone,
+          email, company, streetAddress, apartment, city, state, zip, country,
+          shippingMethod, shippingCost, shippingFirstname, shippingLastname,
+          shippingCompany, shippingAddress, shippingPhone,
+          billingFirstname, billingLastname, billingCompany, billingAddress, billingPhone,
+          productsName, productsItems, productsPrice, totalPrice,
+          paymentMethod, paymentStatus, 'pending', notes
+        ]
       );
       const orderId = orderResult.insertId;
 

@@ -1,13 +1,17 @@
 .card {
-  @apply flex min-h-full flex-col overflow-hidden rounded-3xl border border-cream/80 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg;
+  @apply flex min-h-full flex-col overflow-hidden rounded-2xl border border-cream/70 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg;
 }
 
 .media {
   @apply relative;
 }
 
+.mediaLink {
+  @apply block;
+}
+
 .productImage {
-  @apply h-72 w-full object-cover transition duration-700 group-hover:scale-105;
+  @apply h-56 w-full object-cover transition duration-500 group-hover:scale-105;
 }
 
 .badges {
@@ -31,7 +35,7 @@
 }
 
 .content {
-  @apply flex flex-1 flex-col gap-4 px-6 py-6;
+  @apply flex flex-1 flex-col gap-3 px-4 py-4;
 }
 
 .contentGroup {
@@ -44,53 +48,30 @@
 }
 
 .productLink {
-  @apply font-serif text-2xl leading-tight text-dark transition hover:text-primary;
+  @apply font-serif text-lg leading-snug text-dark transition hover:text-primary;
 }
 
 .description {
-  @apply text-sm leading-relaxed text-dark/70;
+  @apply text-xs leading-relaxed text-dark/70;
 }
 
 .footer {
-  @apply flex flex-wrap items-end justify-between gap-4;
+  @apply mt-auto flex flex-col gap-1;
 }
 
 .priceGroup {
-  @apply flex items-baseline gap-3;
+  @apply flex items-baseline gap-2;
 }
 
 .price {
-  @apply text-lg font-semibold text-primary;
+  @apply text-base font-semibold text-primary;
 }
 
 .originalPrice {
-  @apply text-sm text-dark/50 line-through;
+  @apply text-xs text-dark/50 line-through;
 }
 
 .rating {
-  @apply text-xs uppercase tracking-[0.3em] text-dark/60;
+  @apply text-[0.65rem] uppercase tracking-[0.25em] text-dark/60;
   white-space: nowrap;
-}
-
-.actions {
-  @apply flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center;
-  min-width: 12rem;
-}
-
-.detailsButton {
-  @apply inline-flex justify-center rounded-full border border-dark/10 px-6 py-2 text-xs uppercase tracking-[0.25em] text-dark/80 transition hover:border-primary hover:text-primary;
-  white-space: nowrap;
-}
-
-.addButton {
-  @apply inline-flex items-center justify-center gap-2 rounded-full bg-dark px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white transition hover:bg-primary;
-  white-space: nowrap;
-}
-
-.addButtonText {
-  @apply inline;
-}
-
-.cartIcon {
-  @apply h-4 w-4;
 }

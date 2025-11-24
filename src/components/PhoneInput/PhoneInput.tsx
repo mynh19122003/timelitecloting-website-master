@@ -107,7 +107,7 @@ export const PhoneInput = ({ value, onChange, className = "", error }: PhoneInpu
                 <input
                   ref={searchInputRef}
                   type="text"
-                  placeholder="Tìm quốc gia..."
+                  placeholder="Search country..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className={styles.searchInput}

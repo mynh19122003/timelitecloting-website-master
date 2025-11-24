@@ -14,7 +14,7 @@ export const headerStyles = /* css */ `
 
   .header__top {
     display: grid;
-    grid-template-columns: 200px 1fr auto;
+    grid-template-columns: minmax(280px, auto) 1fr auto;
     align-items: center;
     gap: 1.5rem;
     transition: gap 0.2s ease, padding 0.2s ease;
@@ -28,36 +28,51 @@ export const headerStyles = /* css */ `
   .header__brand {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.25rem;
+    min-width: 0;
+    flex-shrink: 0;
   }
 
   .header__brand-mark {
     width: 68px;
     height: 68px;
+    min-width: 68px;
+    min-height: 68px;
     border-radius: 50%;
-    border: 2px solid var(--color-hero-frame-border);
+    border: 2px solid var(--color-hero-frame-border, #d4c5a9);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(circle at 30% 30%, #fff, var(--color-background-light));
+    background: radial-gradient(circle at 30% 30%, #fff, #f5f0e8);
     box-shadow: 0 8px 24px rgba(31, 26, 23, 0.08);
     overflow: hidden;
     position: relative;
     transition: width 0.2s ease, height 0.2s ease;
+    flex-shrink: 0;
+    z-index: 1;
   }
 
   .header--dropdown-open .header__brand-mark {
     width: 56px;
     height: 56px;
+    min-width: 56px;
+    min-height: 56px;
   }
 
   .header__brand-logo {
     width: 100%;
     height: 100%;
+    min-width: 100%;
+    min-height: 100%;
     border-radius: 50%;
     object-fit: cover;
-    position: relative;
-    z-index: 1;
+    object-position: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    display: block;
+    pointer-events: none;
   }
 
   .header__brand-name {
@@ -68,6 +83,9 @@ export const headerStyles = /* css */ `
     letter-spacing: 0.04em;
     line-height: 1;
     transition: font-size 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: fit-content;
   }
 
   .header--dropdown-open .header__brand-name {
@@ -80,13 +98,17 @@ export const headerStyles = /* css */ `
     gap: 0.5rem;
     border: 1px solid #ededed;
     border-radius: 999px;
-    padding: 0.8rem 1.25rem;
+    padding: 0.6rem 0.94rem;
     background: #fff;
     transition: padding 0.2s ease;
+    width: 100%;
+    min-width: 0;
+    flex-shrink: 1;
+    max-width: none;
   }
 
   .header--dropdown-open .header__search {
-    padding: 0.6rem 1rem;
+    padding: 0.5rem 0.8rem;
   }
 
   .header__search input {
@@ -94,13 +116,14 @@ export const headerStyles = /* css */ `
     width: 100%;
     outline: none;
     background: transparent;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
   }
 
   .header__actions {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    flex-shrink: 0;
   }
 
   .header__action,

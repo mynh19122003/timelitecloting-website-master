@@ -9,7 +9,7 @@ import {
 
 // Removed mock products import
 
-type CartItem = {
+export type CartItem = {
   id: string;
   productId: string;
   pid?: string; // Product ID from backend (e.g., PID00001)
@@ -21,7 +21,7 @@ type CartItem = {
   quantity: number;
 };
 
-type AddToCartPayload = {
+export type AddToCartPayload = {
   productId: string;
   pid?: string; // Optional: Product ID from backend (e.g., PID00001)
   name: string; // Product name from API/UI

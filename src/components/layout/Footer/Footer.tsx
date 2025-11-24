@@ -1,13 +1,27 @@
 "use client";
 
-import { FiFacebook, FiInstagram, FiMapPin, FiMail, FiPhone } from "react-icons/fi";
+import { FormEvent } from "react";
+import { FiClock, FiFacebook, FiInstagram, FiMapPin, FiMail, FiPhone } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { useI18n } from "../../../context/I18nContext";
 import styles from "./Footer.module.css";
 
+const mapHref = "https://maps.app.goo.gl/M675ESVRWXjbb9we9";
+
+const contactDetails = [
+  { icon: FiMapPin, label: "Location: 236 N Claremont Ave, San Jose, CA 95127, Hoa Kỳ", href: mapHref },
+  { icon: FiClock, label: "Business Hour: Monday - Sunday 10pm - 6pm (PST)" },
+  { icon: FiPhone, label: "1.669.254.7401", href: "tel:+16692547401" },
+  { icon: FiMail, label: "henry@timeliteclothing.com", href: "mailto:henry@timeliteclothing.com" },
+];
+
 export const Footer = () => {
   const { t } = useI18n();
   const currentYear = new Date().getFullYear();
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+  };
 
   return (
     <footer className={styles.footer}>
@@ -29,41 +43,58 @@ export const Footer = () => {
         </div>
 
         <div className={styles.column}>
-          <p className={styles.sectionTitle}>Customer Service</p>
-          <Link to="/contact">Help & FAQs</Link>
-          <Link to="/profile?tab=orders">Order Tracking</Link>
-          <Link to="/contact">Shipping & Delivery</Link>
-          <Link to="/contact">Returns</Link>
-          <Link to="/contact">Contact Us</Link>
+          <p className={styles.sectionTitle}>Contact Us</p>
+          <ul className={styles.contactList}>
+            {contactDetails.map(({ icon: Icon, label, href }) => (
+              <li key={label} className={styles.contactItem}>
+                <Icon className={styles.contactIcon} aria-hidden="true" />
+                {href ? (
+                  <a href={href}>{label}</a>
+                ) : (
+                  <span>{label}</span>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <div className={styles.column}>
-          <p className={styles.sectionTitle}>Our Stores</p>
-          <Link to="/contact">Find a Store</Link>
-          <Link to="/contact">Tell Us What You Think</Link>
-          <Link to="/about">Timelite Backstage</Link>
-          <Link to="/contact">Personal Stylist</Link>
+        <div className={`${styles.column} ${styles.formColumn}`}>
+          <p className={styles.sectionTitle}>Contact Timeliteclothing</p>
+          <form className={styles.contactForm} onSubmit={handleSubmit}>
+            <label className={styles.inputField}>
+              <span>Name</span>
+              <input className={styles.inputControl} type="text" name="name" placeholder="Your name" />
+            </label>
+
+            <div className={styles.formGrid}>
+              <label className={styles.inputField}>
+                <span>Email</span>
+                <input className={styles.inputControl} type="email" name="email" placeholder="email@example.com" />
+              </label>
+              <label className={styles.inputField}>
+                <span>Phone number</span>
+                <input className={styles.inputControl} type="tel" name="phone" placeholder="+1 (669) ..." />
+              </label>
         </div>
 
-        <div className={styles.column}>
-          <p className={styles.sectionTitle}>Connect With Us</p>
-          <div className={styles.contactRow}>
-            <FiMapPin />
-            <span>151 W 34th St, New York, NY 10001</span>
-          </div>
-          <div className={styles.contactRow}>
-            <FiPhone />
-            <a href="tel:+16692547401">669.254.7401</a>
-          </div>
-          <div className={styles.contactRow}>
-            <FiMail />
-            <a href="mailto:tim19092016@gmail.com">tim19092016@gmail.com</a>
-          </div>
+            <label className={styles.inputField}>
+              <span>Message</span>
+              <textarea
+                className={`${styles.inputControl} ${styles.textArea}`}
+                name="message"
+                placeholder="Share your occasion, styling preferences, or sizing questions."
+              />
+            </label>
+
+            <button type="submit" className={styles.submitButton}>
+              Send request
+            </button>
+          </form>
         </div>
       </div>
 
       <div className={styles.legal}>
-        <p>© {currentYear} Timelite. All rights reserved.</p>
+        <p>&copy; {currentYear} Timelite. All rights reserved.</p>
         <div className={styles.legalLinks}>
           <Link to="/about">Privacy Notice</Link>
           <Link to="/about">Terms & Conditions</Link>

@@ -18,7 +18,7 @@ export const homepageStyles = /* css */ `
     display: block;
   }
 
-  /* Override Navbar styles để làm nhỏ và vừa hơn */
+  /* Override Navbar styles to reduce scale for hero layout */
   .homepage__full-bleed :global(.header) {
     border-bottom: 1px solid #f0e6db !important;
   }
@@ -112,6 +112,7 @@ export const homepageStyles = /* css */ `
   }
 
   .hero {
+    --hero-image-scale: 0.5;
     width: 100%;
     border-radius: 40px;
     background: #fff;
@@ -125,15 +126,23 @@ export const homepageStyles = /* css */ `
     gap: 1.5rem;
   }
 
+  .hero__feature-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
   .hero__feature {
     display: flex;
     flex-direction: column;
     gap: 0.85rem;
+    align-items: center;
+    text-align: center;
   }
 
   .hero__feature-image {
-    width: 100%;
-    padding-bottom: 130%;
+    width: calc(100% * var(--hero-image-scale, 1));
+    padding-bottom: calc(130% * var(--hero-image-scale, 1));
     border-radius: 30px;
     background: linear-gradient(180deg, #f8f4ed, #f1ece3);
     background-size: cover;
@@ -141,6 +150,7 @@ export const homepageStyles = /* css */ `
     background-repeat: no-repeat;
     border: 1px solid #f3eee6;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+    margin: 0 auto;
   }
 
   .hero__feature-caption {
@@ -224,7 +234,14 @@ export const homepageStyles = /* css */ `
     border-radius: 24px;
   }
 
+  .hero__feature-link:focus-visible .hero__feature-image,
+  .curation__link:focus-visible .curation__image {
+    outline: 2px solid #1f1f1f;
+    outline-offset: 4px;
+  }
+
   .curation {
+    --curation-image-scale: 0.5;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
@@ -236,6 +253,12 @@ export const homepageStyles = /* css */ `
     gap: 1.25rem;
   }
 
+  .curation__link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
   .curation__card {
     padding: 1rem;
     border-radius: 28px;
@@ -244,16 +267,19 @@ export const homepageStyles = /* css */ `
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    align-items: center;
+    text-align: center;
   }
 
   .curation__image {
-    width: 100%;
-    padding-bottom: 120%;
+    width: calc(100% * var(--curation-image-scale, 1));
+    padding-bottom: calc(120% * var(--curation-image-scale, 1));
     border-radius: 22px;
     background: #f4efe6;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    margin: 0 auto;
   }
 
   .curation__caption {

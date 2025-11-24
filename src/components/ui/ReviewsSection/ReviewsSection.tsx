@@ -46,36 +46,36 @@ export const ReviewsSection = ({
         const mockReviews: Review[] = [
           {
             id: 1,
-            user_name: "Nguyễn Thị Lan",
+            user_name: "Lan Nguyen",
             rating: 5,
-            comment: "Sản phẩm rất đẹp và chất lượng tốt. Áo dài vừa vặn, chất liệu lụa mềm mại. Rất hài lòng với sản phẩm này!",
+            comment: "Stunning craftsmanship and buttery silk. The ao dai fit perfectly and feels luxurious.",
             created_at: "2024-01-15T10:30:00Z",
             verified_purchase: true,
             helpful_count: 12,
           },
           {
             id: 2,
-            user_name: "Trần Văn Minh",
+            user_name: "Minh Tran",
             rating: 4,
-            comment: "Sản phẩm đẹp, giao hàng nhanh. Chất liệu tốt nhưng giá hơi cao một chút. Nhìn chung là hài lòng.",
+            comment: "Beautiful piece with fast shipping. Fabric is excellent, though the price is on the higher side.",
             created_at: "2024-01-10T14:20:00Z",
             verified_purchase: true,
             helpful_count: 8,
           },
           {
             id: 3,
-            user_name: "Lê Thị Hương",
+            user_name: "Huong Le",
             rating: 5,
-            comment: "Tuyệt vời! Áo dài rất đẹp, thiết kế tinh tế. Dịch vụ khách hàng cũng rất tốt. Sẽ mua thêm sản phẩm khác.",
+            comment: "Wonderful experience. The design is refined and the customer service team was incredibly helpful.",
             created_at: "2024-01-05T09:15:00Z",
             verified_purchase: true,
             helpful_count: 15,
           },
           {
             id: 4,
-            user_name: "Phạm Đức Anh",
+            user_name: "Duc Pham",
             rating: 4,
-            comment: "Chất lượng sản phẩm tốt, đúng như mô tả. Màu sắc đẹp, form dáng chuẩn. Đáng giá tiền.",
+            comment: "Quality matches the description. Vibrant colors and precise tailoring—definitely worth the investment.",
             created_at: "2023-12-28T16:45:00Z",
             verified_purchase: true,
             helpful_count: 6,
@@ -92,7 +92,7 @@ export const ReviewsSection = ({
         }
       } catch (err) {
         console.error("Error loading reviews:", err);
-        setError("Không thể tải đánh giá");
+        setError("Unable to load reviews");
         setReviews([]);
       } finally {
         setLoading(false);
@@ -106,7 +106,7 @@ export const ReviewsSection = ({
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN", {
+    return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -130,7 +130,7 @@ export const ReviewsSection = ({
     return (
       <section className={styles.reviewsSection}>
         <h2 className={styles.title}>{t("product.reviews.title")}</h2>
-        <p className={styles.loading}>Đang tải đánh giá...</p>
+        <p className={styles.loading}>Loading reviews...</p>
       </section>
     );
   }
@@ -209,7 +209,7 @@ export const ReviewsSection = ({
             {review.helpful_count !== undefined && review.helpful_count > 0 && (
               <div className={styles.reviewFooter}>
                 <span className={styles.helpfulText}>
-                  {review.helpful_count} người thấy đánh giá này {t("product.reviews.helpful")}
+                  {review.helpful_count} people found this review {t("product.reviews.helpful")}
                 </span>
               </div>
             )}

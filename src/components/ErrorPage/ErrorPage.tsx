@@ -19,42 +19,42 @@ interface ErrorPageProps {
 
 const errorMessages: Record<number, { title: string; message: string; description?: string }> = {
   400: {
-    title: "Yêu cầu không hợp lệ",
-    message: "Yêu cầu của bạn không hợp lệ hoặc thiếu thông tin cần thiết.",
-    description: "Vui lòng kiểm tra lại thông tin bạn đã nhập và thử lại.",
+    title: "Invalid request",
+    message: "Your request is missing required information.",
+    description: "Double-check the details you entered and try again.",
   },
   401: {
-    title: "Không có quyền truy cập",
-    message: "Bạn cần đăng nhập để truy cập trang này.",
-    description: "Vui lòng đăng nhập để tiếp tục.",
+    title: "Unauthorized",
+    message: "You need to sign in to access this page.",
+    description: "Please sign in to continue.",
   },
   403: {
-    title: "Không có quyền",
-    message: "Bạn không có quyền truy cập trang này.",
-    description: "Liên hệ quản trị viên nếu bạn nghĩ đây là lỗi.",
+    title: "Forbidden",
+    message: "You do not have permission to view this page.",
+    description: "Contact the administrator if you believe this is a mistake.",
   },
   404: {
-    title: "Trang không tồn tại",
-    message: "Trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.",
-    description: "Có thể URL đã thay đổi hoặc trang đã bị xóa.",
+    title: "Page not found",
+    message: "The page you're looking for does not exist or has moved.",
+    description: "The URL may have changed or the page was removed.",
   },
   500: {
-    title: "Lỗi máy chủ",
-    message: "Đã xảy ra lỗi không mong muốn trên máy chủ.",
-    description: "Chúng tôi đang khắc phục sự cố. Vui lòng thử lại sau.",
+    title: "Server error",
+    message: "An unexpected error occurred on the server.",
+    description: "We're working to resolve it. Please try again later.",
   },
   503: {
-    title: "Dịch vụ không khả dụng",
-    message: "Dịch vụ hiện đang bảo trì hoặc tạm thời không khả dụng.",
-    description: "Vui lòng thử lại sau vài phút.",
+    title: "Service unavailable",
+    message: "The service is down for maintenance or temporarily unavailable.",
+    description: "Please try again in a few minutes.",
   },
 };
 
 // Static translations (ErrorPage may be rendered outside Router/I18n context)
 const translations = {
-  "error.go.home": "Về trang chủ",
-  "error.reload.page": "Tải lại trang",
-  "error.login": "Đăng nhập",
+  "error.go.home": "Back to home",
+  "error.reload.page": "Reload page",
+  "error.login": "Sign in",
 };
 
 export const ErrorPage = ({
@@ -118,12 +118,12 @@ export const ErrorPage = ({
           {showDetails && errorDetails && (
             <details className={styles.errorDetails}>
               <summary className={styles.errorSummary}>
-                Chi tiết lỗi (Development)
+                Error details (Development)
               </summary>
               <div className={styles.errorContent}>
                 {errorDetails.error && (
                   <div className={styles.errorSection}>
-                    <h3>Lỗi:</h3>
+                    <h3>Error:</h3>
                     <pre>{errorDetails.error.message}</pre>
                     {errorDetails.error.stack && (
                       <pre className={styles.stackTrace}>
@@ -134,7 +134,7 @@ export const ErrorPage = ({
                 )}
                 {errorDetails.errorInfo && (
                   <div className={styles.errorSection}>
-                    <h3>Thông tin lỗi:</h3>
+                    <h3>Error information:</h3>
                     <pre>{JSON.stringify(errorDetails.errorInfo, null, 2)}</pre>
                   </div>
                 )}

@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import Image from "next/image";
 import { type Product as UiProduct, type ProductCategory } from "../../data/products";
 import ApiService from "../../services/api";
-import { getAdminMediaUrlByAny, normalizePossibleMediaUrl } from "../../config/api";
+import { getAdminMediaUrlByAny, normalizePossibleMediaUrl, toProductsPid } from "../../config/api";
 import styles from "./ShopProductGrid.module.css";
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -14,10 +15,10 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 
 const categoryFilters: Array<{ label: string; value: "all" | ProductCategory }> = [
   { label: "All Products", value: "all" },
-  { label: "Áo Dài", value: "ao-dai" },
-  { label: "Áo Vest", value: "vest" },
-  { label: "Đầm Cưới", value: "wedding" },
-  { label: "Đầm Dạ Hội", value: "evening" },
+  { label: "Ao Dai", value: "ao-dai" },
+  { label: "Suiting", value: "vest" },
+  { label: "Bridal", value: "wedding" },
+  { label: "Evening Couture", value: "evening" },
 ];
 
 type ApiProduct = {
@@ -63,6 +64,7 @@ export default function ShopProductGrid() {
     const mapProduct = (p: ApiProduct): UiProduct => {
       const slug: string | undefined = p.slug ?? undefined;
       const pidLike: string | number | undefined = p.products_id ?? p.product_id ?? p.id ?? p.productId;
+      const pid = pidLike ? toProductsPid(pidLike) : undefined;
       const fromSlug = (s?: string): ProductCategory => {
         if (!s) return "ao-dai";
         if (s.startsWith("ao-dai-")) return "ao-dai";
@@ -93,6 +95,7 @@ export default function ShopProductGrid() {
 
       return {
         id: slug ?? String(p.id),
+        pid,
         name: p.name,
         category: p.category ?? fromSlug(slug),
         shortDescription: p.short_description ?? "",
@@ -211,8 +214,11 @@ export default function ShopProductGrid() {
           <div className={styles.empty}>Loading products...</div>
         ) : filteredProducts.length > 0 ? (
           <div className={styles.grid}>
-            {filteredProducts.map((product) => (
+            {filteredProducts.map((product) => {
+              const productHref = `/product/${product.pid || product.id}`;
+              return (
               <article key={product.name} className={styles.card}>
+                  <Link to={productHref} className={styles.mediaLink} aria-label={product.name}>
                 <div className={styles.imageWrapper}>
                   {product.badge && (
                     <span
@@ -225,8 +231,11 @@ export default function ShopProductGrid() {
                   )}
                   <ImageWithFallback src={product.image} alt={product.name} />
                 </div>
+                  </Link>
                 <div className={styles.content}>
+                    <Link to={productHref} className={styles.nameLink}>
                   <h3 className={styles.name}>{product.name}</h3>
+                    </Link>
                   <p className={styles.description}>{product.description}</p>
                   <div className={styles.priceRow}>
                     <span className={styles.price}>{currencyFormatter.format(product.price)}</span>
@@ -238,7 +247,8 @@ export default function ShopProductGrid() {
                   </div>
                 </div>
               </article>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className={styles.empty}>No products available in this category yet.</div>

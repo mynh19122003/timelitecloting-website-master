@@ -81,7 +81,7 @@ export const ProductSlider = ({
     return (
       <div className={styles.sliderWrapper}>
         <div className={styles.empty}>
-          <p>{t("product.related.empty", "Không có sản phẩm liên quan")}</p>
+          <p>{t("product.related.empty", "No related products available")}</p>
         </div>
       </div>
     );

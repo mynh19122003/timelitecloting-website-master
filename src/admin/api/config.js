@@ -10,6 +10,45 @@ const LOCAL_ADMIN_BASE = `${LOCAL_ADMIN_ORIGIN}/admin`
 // Local development API base (gateway) for public API
 const LOCAL_API_ORIGIN = 'http://localhost:3002'
 
+// Helper: Check if hostname is localhost
+const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '0.0.0.0', '[::1]'])
+const isLocalHostname = (hostname) => {
+  if (!hostname) return false
+  return LOCAL_HOSTNAMES.has(hostname.toLowerCase())
+}
+
+// Helper: Get runtime location (window.location)
+const getRuntimeLocation = () => {
+  if (typeof window !== 'undefined' && window.location) return window.location
+  return null
+}
+
+// Helper: Force production API if running on production domain but API URL points to localhost
+const forceProdIfDeployed = (url, isAdminApi = true) => {
+  try {
+    const parsed = new URL(url)
+    // If URL is already production, return as is
+    if (!isLocalHostname(parsed.hostname)) {
+      return url
+    }
+    // Check runtime hostname
+    const runtimeLocation = getRuntimeLocation()
+    if (runtimeLocation && !isLocalHostname(runtimeLocation.hostname)) {
+      // Running on production domain but API URL points to localhost - force production
+      const forcedUrl = isAdminApi ? PROD_ADMIN_BASE : PROD_PUBLIC_BASE
+      console.warn(`[Admin API] Detected production origin but API URL points to localhost. Forcing production API domain.`, {
+        runtimeHost: runtimeLocation.hostname,
+        previousApiHost: parsed.hostname,
+        forced: forcedUrl
+      })
+      return forcedUrl
+    }
+    return url
+  } catch {
+    return url
+  }
+}
+
 export const getApiBaseUrl = () => {
   // Ưu tiên env (absolute URL), fallback về domain production theo mặc định
   const isNext = typeof process !== 'undefined' && process.env
@@ -46,27 +85,34 @@ export const getApiBaseUrl = () => {
       if (!base.includes('/admin')) {
         base = `${base}/admin`
       }
-      return base
+      // Force production if running on production domain
+      return forceProdIfDeployed(base, true)
     } catch (_) {
-      return fromEnv
+      return forceProdIfDeployed(fromEnv, true)
     }
   }
 
   // Check if we're in development mode (build time check only)
   // For Next.js: NODE_ENV is set at build time and baked into the bundle
   // For Vite: import.meta.env.DEV is set at build time
-  // IMPORTANT: We only check build-time env, not runtime hostname
-  // This ensures production builds always use production API
   const isDevBuild = (isNext && process.env.NODE_ENV === 'development')
     || (isVite && import.meta?.env?.DEV)
   
-  // Use local API only during development builds
-  // Production builds will ALWAYS use production API, regardless of where they run
+  // Check runtime hostname to force production API if needed
+  const runtimeLocation = getRuntimeLocation()
+  const isRuntimeProduction = runtimeLocation && !isLocalHostname(runtimeLocation.hostname)
+  
+  // If running on production domain, ALWAYS use production API (even in dev build)
+  if (isRuntimeProduction) {
+    return PROD_ADMIN_BASE
+  }
+  
+  // Use local API only during development builds and when running on localhost
   if (isDevBuild) {
     return LOCAL_ADMIN_BASE
   }
 
-  // Production build: always use production API (even if running on localhost)
+  // Production build: always use production API
   return PROD_ADMIN_BASE
 }
 
@@ -85,21 +131,35 @@ export const getPublicApiBaseUrl = () => {
     || (isVite && import.meta?.env?.VITE_PUBLIC_API_URL)
     || ''
   const fromEnv = typeof fromEnvRaw === 'string' ? fromEnvRaw.trim() : ''
-  if (fromEnv) return fromEnv.endsWith('/') ? fromEnv.slice(0, -1) : fromEnv
+  
+  if (fromEnv) {
+    const cleaned = fromEnv.endsWith('/') ? fromEnv.slice(0, -1) : fromEnv
+    // Force production if running on production domain
+    return forceProdIfDeployed(cleaned, false)
+  }
 
   // Check if we're in development mode (build time check only)
   const isDevBuild = (isNext && process.env.NODE_ENV === 'development')
     || (isVite && import.meta?.env?.DEV)
   
-  // Use local API only during development builds
-  // Production builds will ALWAYS use production API, regardless of where they run
+  // Check runtime hostname to force production API if needed
+  const runtimeLocation = getRuntimeLocation()
+  const isRuntimeProduction = runtimeLocation && !isLocalHostname(runtimeLocation.hostname)
+  
+  // If running on production domain, ALWAYS use production API (even in dev build)
+  if (isRuntimeProduction) {
+    return PROD_PUBLIC_BASE
+  }
+  
+  // Use local API only during development builds and when running on localhost
   if (isDevBuild) {
-    return publicBaseTrimmed.startsWith('http')
+    const resolved = publicBaseTrimmed.startsWith('http')
       ? (publicBaseTrimmed.endsWith('/') ? publicBaseTrimmed.slice(0, -1) : publicBaseTrimmed)
       : `${LOCAL_API_ORIGIN}${publicBaseTrimmed.startsWith('/') ? publicBaseTrimmed : `/${publicBaseTrimmed}`}`
+    return forceProdIfDeployed(resolved, false)
   }
 
-  // Production build: always use production API (even if running on localhost)
+  // Production build: always use production API
   return publicBaseTrimmed.startsWith('http')
     ? (publicBaseTrimmed.endsWith('/') ? publicBaseTrimmed.slice(0, -1) : publicBaseTrimmed)
     : PROD_PUBLIC_BASE

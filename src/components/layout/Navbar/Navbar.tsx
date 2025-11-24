@@ -389,11 +389,11 @@ export const Navbar = () => {
               />
             </span>
             <span className="header__brand-name" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
-              Timelite
+              Timelitecloting
             </span>
           </div>
           <form className="header__search" onSubmit={handleSearchSubmit}>
-            <FiSearch size={16} />
+            <FiSearch size={14} />
             <input
               type="search"
               aria-label={t("profile.search.products")}
@@ -434,7 +434,7 @@ export const Navbar = () => {
             {isAuthenticated && (
               <button
                 className="header__action"
-                aria-label={t("auth.logout") || "Đăng xuất"}
+                aria-label={t("auth.logout") || "Logout"}
                 onClick={handleLogout}
                 style={{ 
                   fontSize: "0.7rem", 

@@ -687,8 +687,8 @@ const AddProduct = () => {
                       ×
                     </button>
                   </span>
-                ))}
-              </div>
+              ))}
+            </div>
             )}
             {tagsList.length === 0 && (
               <p style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>

@@ -30,7 +30,36 @@ class OrderController {
       userLimits.count++;
       orderRateLimits.set(userId, userLimits);
       
-      const { items, firstname, lastname, address, phonenumber, payment_method, notes, total_amount } = req.body;
+      const { 
+        items, 
+        firstname, 
+        lastname, 
+        address, 
+        phonenumber, 
+        payment_method, 
+        notes, 
+        total_amount,
+        email,
+        company,
+        street_address,
+        apartment,
+        city,
+        state,
+        zip,
+        country,
+        shipping_method,
+        shipping_cost,
+        shipping_firstname,
+        shipping_lastname,
+        shipping_company,
+        shipping_address,
+        shipping_phone,
+        billing_firstname,
+        billing_lastname,
+        billing_company,
+        billing_address,
+        billing_phone
+      } = req.body;
 
       const orderDetails = {
         firstname,
@@ -39,7 +68,27 @@ class OrderController {
         phonenumber,
         payment_method,
         notes,
-        total_amount
+        total_amount,
+        email,
+        company,
+        street_address,
+        apartment,
+        city,
+        state,
+        zip,
+        country,
+        shipping_method,
+        shipping_cost,
+        shipping_firstname,
+        shipping_lastname,
+        shipping_company,
+        shipping_address,
+        shipping_phone,
+        billing_firstname,
+        billing_lastname,
+        billing_company,
+        billing_address,
+        billing_phone
       };
       
       const order = await orderService.createOrder(userId, items, orderDetails);

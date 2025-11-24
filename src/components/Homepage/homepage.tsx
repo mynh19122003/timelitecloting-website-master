@@ -1,21 +1,66 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Navbar } from "../layout/Navbar/Navbar";
+import { defaultCategorySlug, toCategorySlug } from "../Shop/shop.data";
 import { homepageStyles } from "./homepage.styles";
 
 const heroFeatures = [
-  { title: "Ao Dai", image: "/images/image_1.png" },
-  { title: "Suiting", image: "/images/image_2.png" },
-  { title: "Bridal Gowns", image: "/images/image_3.png" },
+  {
+    id: "ao-dai",
+    label: "Ao Dai",
+    image: "/images/image_1.png",
+    category: "Ao Dai",
+  },
+  {
+    id: "suiting",
+    label: "Suiting",
+    image: "/images/image_2.png",
+    category: "Suiting",
+  },
+  {
+    id: "bridal-gowns",
+    label: "Bridal Gowns",
+    image: "/images/image_3.png",
+    category: "Bridal Gowns",
+  },
 ];
 
 const curationItems = [
-  { title: "Evening Couture", image: "/images/image_4.png" },
-  { title: "Conical Hats", image: "/images/image_5.png" },
-  { title: "Kidswear", image: "/images/image_6.png" },
-  { title: "Gift Procession Sets", image: "/images/image_7.png" },
+  {
+    id: "evening-couture",
+    label: "Evening Couture",
+    image: "/images/image_4.png",
+    category: "Evening Couture",
+  },
+  {
+    id: "conical-hats",
+    label: "Conical Hats",
+    image: "/images/image_5.png",
+    category: "Conical Hats",
+  },
+  {
+    id: "kidswear",
+    label: "Kidswear",
+    image: "/images/image_6.png",
+    category: "Kidswear",
+  },
+  {
+    id: "gift-sets",
+    label: "Gift Procession Sets",
+    image: "/images/image_7.png",
+    category: "Gift Procession Sets",
+  },
 ];
+
+const getCategoryPath = (categoryLabel?: string) => {
+  if (!categoryLabel) {
+    return "/shop";
+  }
+  const slug = toCategorySlug(categoryLabel);
+  return slug === defaultCategorySlug ? "/shop" : `/shop?category=${encodeURIComponent(slug)}`;
+};
 
 type HomePageProps = {
   showFooter?: boolean;
@@ -28,6 +73,11 @@ export default function HomePage({ showFooter = true }: HomePageProps = {}) {
     const timer = setTimeout(() => setIsLoading(false), 900);
     return () => clearTimeout(timer);
   }, []);
+
+  const copy = {
+    viewHero: "View",
+    viewCategory: "Open category",
+  };
 
   return (
     <>
@@ -48,12 +98,12 @@ export default function HomePage({ showFooter = true }: HomePageProps = {}) {
               <span className="skeleton skeleton--nav" />
               <div className="skeleton-grid">
                 {heroFeatures.map((feature) => (
-                  <span key={feature.title} className="skeleton skeleton--tile" />
+                  <span key={feature.id} className="skeleton skeleton--tile" />
                 ))}
               </div>
               <div className="skeleton-grid skeleton-grid--small">
                 {curationItems.map((item) => (
-                  <span key={item.title} className="skeleton skeleton--card" />
+                  <span key={item.id} className="skeleton skeleton--card" />
                 ))}
               </div>
             </div>
@@ -67,13 +117,20 @@ export default function HomePage({ showFooter = true }: HomePageProps = {}) {
             <main className="hero">
               <section className="hero__gallery">
                 {heroFeatures.map((feature) => (
-                  <figure key={feature.title} className="hero__feature">
+                  <Link
+                    key={feature.id}
+                    className="hero__feature-link"
+                    to={getCategoryPath(feature.category)}
+                    aria-label={`${copy.viewHero} ${feature.label}`}
+                  >
+                    <figure className="hero__feature">
                     <div 
                       className="hero__feature-image" 
                       style={{ backgroundImage: `url(${feature.image})` }}
                     />
-                    <figcaption className="hero__feature-caption">{feature.title}</figcaption>
+                      <figcaption className="hero__feature-caption">{feature.label}</figcaption>
                   </figure>
+                  </Link>
                 ))}
               </section>
             </main>
@@ -81,13 +138,20 @@ export default function HomePage({ showFooter = true }: HomePageProps = {}) {
             <section className="curation">
               <div className="curation__grid">
                 {curationItems.map((item) => (
-                  <article key={item.title} className="curation__card">
+                  <Link
+                    key={item.id}
+                    className="curation__link"
+                    to={getCategoryPath(item.category)}
+                    aria-label={`${copy.viewCategory} ${item.label}`}
+                  >
+                    <article className="curation__card">
                     <div 
                       className="curation__image" 
                       style={{ backgroundImage: `url(${item.image})` }}
                     />
-                    <p className="curation__caption">{item.title}</p>
+                      <p className="curation__caption">{item.label}</p>
                   </article>
+                  </Link>
                 ))}
               </div>
             </section>

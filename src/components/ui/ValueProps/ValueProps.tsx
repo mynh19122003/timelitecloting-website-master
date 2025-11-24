@@ -1,14 +1,9 @@
 "use client";
 
-import { FiAward, FiHeadphones, FiShield, FiTruck } from "react-icons/fi";
+import { FiHeadphones, FiShield, FiTruck } from "react-icons/fi";
 import styles from "./ValueProps.module.css";
 
 const valueProps = [
-  {
-    icon: FiAward,
-    title: "Artisan Craft",
-    description: "Hand-finished couture details from Saigon atelier.",
-  },
   {
     icon: FiShield,
     title: "Warranty",

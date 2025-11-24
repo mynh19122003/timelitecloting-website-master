@@ -28,7 +28,7 @@ class ProductsService {
     if (!/^[A-Za-z0-9+/=]+$/.test(cleaned)) return null;
     
     try {
-      return { buffer: Buffer.from(cleaned, 'base64') };
+    return { buffer: Buffer.from(cleaned, 'base64') };
     } catch (err) {
       console.error('[decodeBase64Image] Failed to decode base64:', err.message);
       return null;
@@ -81,11 +81,11 @@ class ProductsService {
       return null;
     }
     try {
-      const productDir = path.join(this.mediaRoot, productId);
-      this.ensureDirSync(productDir);
-      const fileName = `${filePrefix}.webp`;
-      await sharp(decoded.buffer).webp({ quality: 82 }).toFile(path.join(productDir, fileName));
-      return `${productId}/${fileName}`.replace(/\\/g, '/');
+    const productDir = path.join(this.mediaRoot, productId);
+    this.ensureDirSync(productDir);
+    const fileName = `${filePrefix}.webp`;
+    await sharp(decoded.buffer).webp({ quality: 82 }).toFile(path.join(productDir, fileName));
+    return `${productId}/${fileName}`.replace(/\\/g, '/');
     } catch (err) {
       console.error(`[saveImageForProduct] Failed to save image for ${filePrefix}:`, err.message);
       throw err;
@@ -271,9 +271,9 @@ class ProductsService {
     // Only process image_url if it's a valid base64 string (not empty, not a URL/path)
     if (payload.image_url && typeof payload.image_url === 'string' && payload.image_url.trim().length > 100) {
       try {
-        const rel = await this.saveImageForProduct(productId, payload.image_url, 'main');
-        if (rel) {
-          setIfPresent('image_url', rel);
+      const rel = await this.saveImageForProduct(productId, payload.image_url, 'main');
+      if (rel) {
+        setIfPresent('image_url', rel);
           console.log('[updateProduct] Image saved successfully');
         }
       } catch (err) {
@@ -331,9 +331,9 @@ class ProductsService {
     params.push(productId, current.id);
     
     try {
-      await pool.execute(sql, params);
+    await pool.execute(sql, params);
       console.log('[updateProduct] Update successful');
-      return this.getByIdOrCode(productId);
+    return this.getByIdOrCode(productId);
     } catch (err) {
       console.error('[updateProduct] SQL error:', err.message);
       console.error('[updateProduct] SQL:', sql);

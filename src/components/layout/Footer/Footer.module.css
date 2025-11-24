@@ -3,7 +3,7 @@
 }
 
 .columns {
-  @apply mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4;
+  @apply mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-3;
 }
 
 .column {
@@ -28,6 +28,61 @@
 
 .column a {
   @apply text-sm text-[#4b433a] transition hover:text-[#c61a1a];
+}
+
+.contactList {
+  @apply mt-4 flex flex-col gap-3;
+}
+
+.contactItem {
+  @apply flex items-start gap-3 text-sm text-[#4b433a];
+}
+
+.contactItem a {
+  @apply text-[#4b433a] hover:text-[#c61a1a];
+}
+
+.contactIcon {
+  @apply mt-1 text-[#c69d5c];
+}
+
+.formColumn {
+  @apply h-full;
+}
+
+.contactForm {
+  @apply mt-4 flex flex-col gap-5 rounded-[32px] border border-[#f5d77a] bg-white/90 p-5 shadow-[0_12px_30px_rgba(0,0,0,0.04)];
+}
+
+.formGrid {
+  @apply grid gap-4;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .formGrid {
+    grid-template-columns: 0.9fr 1.1fr;
+  }
+}
+
+.inputField {
+  @apply flex flex-col gap-2 text-xs font-semibold uppercase text-[#c69d5c];
+}
+
+.inputField span {
+  @apply tracking-[0.4em];
+}
+
+.inputControl {
+  @apply w-full rounded-full border border-[#efe6da] px-4 py-3 text-sm text-[#4b433a] placeholder:text-[#b8afa4] focus:border-[#f0c341] focus:outline-none;
+}
+
+.textArea {
+  @apply min-h-[120px] rounded-3xl resize-none;
+}
+
+.submitButton {
+  @apply mt-2 w-full rounded-full bg-[#cf1020] px-6 py-3 text-center text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-[#b20d1a];
 }
 
 .contactRow {

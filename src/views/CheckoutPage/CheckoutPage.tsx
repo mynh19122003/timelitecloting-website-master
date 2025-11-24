@@ -1,11 +1,14 @@
 import { useState, useEffect, FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useCart } from "../../context/CartContext";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useCart, type CartItem } from "../../context/CartContext";
 import { useToast } from "../../context/ToastContext";
 import { useI18n } from "../../context/I18nContext";
 import { formatCurrency } from "../../utils/currency";
 import { ApiService } from "../../services/api";
 import { getUserData } from "../../utils/auth";
+import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
+import CountryPhoneInput from "react-country-phone-input";
+import "react-country-phone-input/lib/style.css";
 // We no longer rely on static numeric productId map.
 import styles from "./CheckoutPage.module.css";
 
@@ -21,13 +24,14 @@ type InputProps = {
   minLength?: number;
   maxLength?: number;
   placeholder?: string;
+  autoComplete?: string;
 };
 
-const Input = ({ label, type = "text", className, name, value, onChange, required = false, pattern, minLength, maxLength, placeholder }: InputProps) => (
+const Input = ({ label, type = "text", className, name, value, onChange, required = false, pattern, minLength, maxLength, placeholder, autoComplete }: InputProps) => (
   <label className={`${styles.inputLabel} ${className ?? ""}`.trim()}>
     {label}
-    <input 
-      type={type} 
+    <input
+      type={type}
       name={name}
       value={value}
       onChange={onChange}
@@ -36,7 +40,8 @@ const Input = ({ label, type = "text", className, name, value, onChange, require
       minLength={minLength}
       maxLength={maxLength}
       placeholder={placeholder}
-      className={styles.inputField} 
+      autoComplete={autoComplete}
+      className={styles.inputField}
     />
   </label>
 );
@@ -49,19 +54,58 @@ interface FormData {
   phone: string;
   company: string;
   streetAddress: string;
+  apartment: string;
   city: string;
   state: string;
   zipCode: string;
+  country: string;
   notes: string;
-  paymentMethod: 'cod' | 'bank_transfer' | 'card';
+  paymentMethod: 'credit_card' | 'bank_transfer';
+  shippingMethod: string;
+  cardName: string;
+  cardNumber: string;
+  cardExpiry: string;
+  cardCvc: string;
+  billingSameAsShipping: boolean;
+  billingFirstName: string;
+  billingLastName: string;
+  billingCompany: string;
+  billingStreetAddress: string;
+  billingApartment: string;
+  billingCity: string;
+  billingState: string;
+  billingZipCode: string;
+  billingCountry: string;
+  billingPhone: string;
 }
 
+const SHIPPING_METHODS = [
+  { id: 'usps_ground', name: 'USPS Ground Advantage', price: 7.23, time: '3 business days' },
+  { id: 'usps_priority', name: 'USPS Priority Mail', price: 8.64, time: '2 business days' },
+  { id: 'usps_express', name: 'USPS Priority Mail Express', price: 58.35, time: '1 business day' },
+];
+
+const FREE_SHIPPING_ID = 'free_shipping';
+const DEFAULT_SHIPPING_METHOD = SHIPPING_METHODS[0].id;
+
+type CheckoutLocationState = {
+  directPurchase?: CartItem;
+};
+
 export const CheckoutPage = () => {
-  const { items, total, clearCart } = useCart();
+  const { items: cartItems, total: cartTotal, clearCart } = useCart();
   const { showToast } = useToast();
   const { t } = useI18n();
   const navigate = useNavigate();
-  
+  const location = useLocation();
+  const locationState = (location.state ?? null) as CheckoutLocationState | null;
+  const directPurchaseItem = locationState?.directPurchase;
+  const items = directPurchaseItem ? [directPurchaseItem] : cartItems;
+  const total = directPurchaseItem
+    ? directPurchaseItem.price * directPurchaseItem.quantity
+    : cartTotal;
+  const isDirectPurchase = Boolean(directPurchaseItem);
+
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
@@ -69,13 +113,31 @@ export const CheckoutPage = () => {
     phone: '',
     company: '',
     streetAddress: '',
+    apartment: '',
     city: '',
     state: '',
     zipCode: '',
+    country: 'United States',
     notes: '',
-    paymentMethod: 'cod'
+    paymentMethod: 'credit_card',
+    shippingMethod: DEFAULT_SHIPPING_METHOD,
+    cardName: '',
+    cardNumber: '',
+    cardExpiry: '',
+    cardCvc: '',
+    billingSameAsShipping: true,
+    billingFirstName: '',
+    billingLastName: '',
+    billingCompany: '',
+    billingStreetAddress: '',
+    billingApartment: '',
+    billingCity: '',
+    billingState: '',
+    billingZipCode: '',
+    billingCountry: 'United States',
+    billingPhone: ''
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -89,24 +151,28 @@ export const CheckoutPage = () => {
 
       try {
         const profile = hasToken ? await ApiService.getProfile() : getUserData();
-        
+
         // Parse name into first/last name
         const nameParts = ((profile && profile.name) || '').trim().split(' ').filter(Boolean);
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
-        
+
         // Parse address into components
         const rawAddress = (profile && profile.address) || '';
-        const addressParts = rawAddress.split(',').map(s => s.trim());
+        const addressParts = rawAddress.split(',').map(s => s.trim()).filter(Boolean);
         let streetAddress = addressParts[0] || '';
         const city = addressParts[1] || '';
         let state = '';
         let zipCode = '';
+        let detectedCountry = '';
         if (addressParts.length >= 3) {
           const stateZip = addressParts[2] || '';
           const stateZipMatch = stateZip.match(/^([A-Z]{2})\s+(\d{5})(?:-\d{4})?$/i);
           state = stateZipMatch ? stateZipMatch[1].toUpperCase() : '';
           zipCode = stateZipMatch ? stateZipMatch[2] : '';
+          if (addressParts.length >= 4) {
+            detectedCountry = addressParts[addressParts.length - 1] || '';
+          }
         } else if (rawAddress && (!streetAddress || !city)) {
           // Fallback: if cannot parse, put full address into streetAddress
           streetAddress = rawAddress;
@@ -122,6 +188,7 @@ export const CheckoutPage = () => {
           city: city || prev.city,
           state: state || prev.state,
           zipCode: zipCode || prev.zipCode,
+          country: detectedCountry || prev.country || 'United States',
         }));
       } catch (err: unknown) {
         console.error('Failed to load profile:', err);
@@ -137,27 +204,31 @@ export const CheckoutPage = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
+
     let sanitizedValue = value;
-    
+
     // Auto-format and sanitize based on field type
-    if (name === 'state') {
+    if (name === 'state' || name === 'billingState') {
       // Auto uppercase state code and limit to 2 chars
       sanitizedValue = value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2);
-    } else if (name === 'zipCode') {
+    } else if (name === 'zipCode' || name === 'billingZipCode') {
       // Only allow digits and hyphen for ZIP
       sanitizedValue = value.replace(/[^\d-]/g, '').slice(0, 10);
-    } else if (name === 'phone') {
-      // Allow digits, spaces, parentheses, plus, hyphen
-      sanitizedValue = value.replace(/[^\d\s()+-]/g, '');
-    } else if (name === 'firstName' || name === 'lastName' || name === 'city') {
+    } else if (
+      name === 'firstName' ||
+      name === 'lastName' ||
+      name === 'city' ||
+      name === 'billingFirstName' ||
+      name === 'billingLastName' ||
+      name === 'billingCity'
+    ) {
       // Prevent numbers and special chars in names
       sanitizedValue = value.replace(/[^a-zA-Z\s'-]/g, '');
     } else if (name === 'email') {
       // No spaces in email
       sanitizedValue = value.replace(/\s/g, '').toLowerCase();
     }
-    
+
     setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
     // Clear error when user starts typing
     if (error) setError(null);
@@ -169,9 +240,105 @@ export const CheckoutPage = () => {
     if (error) setError(null);
   };
 
+  const handleCountryChange = (country: string) => {
+    setFormData(prev => ({
+      ...prev,
+      country,
+      state: ''
+    }));
+    if (error) setError(null);
+  };
+
+  const handleRegionChange = (region: string) => {
+    const normalizedRegion = region ? region.toUpperCase() : '';
+    setFormData(prev => ({ ...prev, state: normalizedRegion }));
+    if (error) setError(null);
+  };
+
+  const handleShippingChange = (methodId: string) => {
+    setFormData(prev => ({ ...prev, shippingMethod: methodId }));
+  };
+
+  const handleBillingToggle = () => {
+    setFormData(prev => {
+      const nextValue = !prev.billingSameAsShipping;
+      if (nextValue) {
+        return {
+          ...prev,
+          billingSameAsShipping: nextValue,
+          billingFirstName: prev.firstName,
+          billingLastName: prev.lastName,
+          billingCompany: prev.company,
+          billingStreetAddress: prev.streetAddress,
+          billingApartment: prev.apartment,
+          billingCity: prev.city,
+          billingState: prev.state,
+          billingZipCode: prev.zipCode,
+          billingCountry: prev.country,
+          billingPhone: prev.phone
+        };
+      }
+
+      return { ...prev, billingSameAsShipping: nextValue };
+    });
+  };
+
+  const handleBillingCountryChange = (country: string) => {
+    setFormData(prev => ({
+      ...prev,
+      billingCountry: country,
+      billingState: ''
+    }));
+    if (error) setError(null);
+  };
+
+  const handleBillingRegionChange = (region: string) => {
+    const normalizedRegion = region ? region.toUpperCase() : '';
+    setFormData(prev => ({ ...prev, billingState: normalizedRegion }));
+    if (error) setError(null);
+  };
+
+  // Calculate shipping cost
+  const getShippingCost = () => {
+    if (formData.shippingMethod === FREE_SHIPPING_ID) return 0;
+    const method = SHIPPING_METHODS.find(m => m.id === formData.shippingMethod);
+    return method ? method.price : 0;
+  };
+
+  const qualifiesForFreeShipping = total >= 99;
+  const shippingCost = getShippingCost();
+  const finalTotal = total + shippingCost;
+
+  useEffect(() => {
+    if (qualifiesForFreeShipping) {
+      setFormData(prev => (prev.shippingMethod === FREE_SHIPPING_ID ? prev : { ...prev, shippingMethod: FREE_SHIPPING_ID }));
+    } else {
+      setFormData(prev => (prev.shippingMethod !== FREE_SHIPPING_ID ? prev : { ...prev, shippingMethod: DEFAULT_SHIPPING_METHOD }));
+    }
+  }, [qualifiesForFreeShipping]);
+
+  const shippingOptions = qualifiesForFreeShipping
+    ? [
+        {
+          id: FREE_SHIPPING_ID,
+          name: t("checkout.shipping.freeOption"),
+          time: t("checkout.shipping.freeOption.description"),
+          price: 0
+        },
+        ...SHIPPING_METHODS
+      ]
+    : SHIPPING_METHODS;
+
+  const sanitizePhoneNumber = (value: string) => value.replace(/[^\d+]/g, "");
+
+  const handlePhoneChange = (field: "phone" | "billingPhone", value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (error) setError(null);
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     // Validate cart has items
     if (items.length === 0) {
       setError(t("checkout.cart.empty"));
@@ -188,7 +355,7 @@ export const CheckoutPage = () => {
         setIsSubmitting(false);
         return;
       }
-      
+
       // Email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
@@ -196,36 +363,46 @@ export const CheckoutPage = () => {
         setIsSubmitting(false);
         return;
       }
-      
-      // Phone validation (US format)
-      const phoneRegex = /^[\d\s()+-]{10,}$/;
-      if (!phoneRegex.test(formData.phone)) {
+
+      // Phone validation (allow international)
+      const numericPhone = sanitizePhoneNumber(formData.phone);
+      if (numericPhone.length < 8) {
         setError(t("checkout.phone.invalid"));
         setIsSubmitting(false);
         return;
       }
-      
+
       // Address validation
       if (!formData.streetAddress.trim() || formData.streetAddress.length < 5) {
         setError(t("checkout.address.invalid"));
         setIsSubmitting(false);
         return;
       }
-      
+
       if (!formData.city.trim() || formData.city.length < 2) {
         setError(t("checkout.city.invalid"));
         setIsSubmitting(false);
         return;
       }
-      
-      // State validation (2 letter US state code)
-      const stateRegex = /^[A-Z]{2}$/i;
-      if (!stateRegex.test(formData.state)) {
+
+      if (!formData.country.trim()) {
+        setError(t("checkout.country.invalid"));
+        setIsSubmitting(false);
+        return;
+      }
+
+      // State validation (support US + general regions)
+      const stateRegex = /^[A-Z]{2}$/;
+      if (!formData.state.trim()) {
+        setError(t("checkout.state.required"));
+        setIsSubmitting(false);
+        return;
+      } else if (formData.country === 'United States' && !stateRegex.test(formData.state)) {
         setError(t("checkout.state.invalid"));
         setIsSubmitting(false);
         return;
       }
-      
+
       // ZIP code validation (5 digits or 5+4 format)
       const zipRegex = /^\d{5}(-\d{4})?$/;
       if (!zipRegex.test(formData.zipCode)) {
@@ -233,10 +410,72 @@ export const CheckoutPage = () => {
         setIsSubmitting(false);
         return;
       }
-      
+
       // Prepare order data for backend
-      const fullAddress = `${formData.streetAddress}, ${formData.city}, ${formData.state} ${formData.zipCode}`.trim();
-      
+      const shippingStreetLine = formData.apartment
+        ? `${formData.streetAddress}, ${formData.apartment}`
+        : formData.streetAddress;
+      const shippingAddress = `${shippingStreetLine}, ${formData.city}, ${formData.state} ${formData.zipCode}, ${formData.country}`.trim();
+
+      const billingData = formData.billingSameAsShipping
+        ? {
+            billingFirstName: formData.firstName,
+            billingLastName: formData.lastName,
+            billingCompany: formData.company,
+            billingStreetAddress: formData.streetAddress,
+            billingApartment: formData.apartment,
+            billingCity: formData.city,
+            billingState: formData.state,
+            billingZipCode: formData.zipCode,
+            billingCountry: formData.country,
+            billingPhone: formData.phone,
+          }
+        : {
+            billingFirstName: formData.billingFirstName,
+            billingLastName: formData.billingLastName,
+            billingCompany: formData.billingCompany,
+            billingStreetAddress: formData.billingStreetAddress,
+            billingApartment: formData.billingApartment,
+            billingCity: formData.billingCity,
+            billingState: formData.billingState,
+            billingZipCode: formData.billingZipCode,
+            billingCountry: formData.billingCountry,
+            billingPhone: formData.billingPhone,
+          };
+
+      if (!formData.billingSameAsShipping) {
+        const requiredBillingFields: Array<[keyof typeof billingData, string]> = [
+          ["billingFirstName", t("checkout.first.name")],
+          ["billingLastName", t("checkout.last.name")],
+          ["billingStreetAddress", t("checkout.address.search")],
+          ["billingCity", t("checkout.city")],
+          ["billingState", t("checkout.state")],
+          ["billingZipCode", t("checkout.zip")],
+          ["billingCountry", t("checkout.country")],
+          ["billingPhone", t("checkout.phone")],
+        ];
+
+        for (const [field, label] of requiredBillingFields) {
+          if (!billingData[field]?.trim()) {
+            setError(t("checkout.billing.required").replace("{field}", label));
+            setIsSubmitting(false);
+            return;
+          }
+        }
+
+        const billingPhoneNumeric = sanitizePhoneNumber(billingData.billingPhone || "");
+        if (billingPhoneNumeric.length < 8) {
+          setError(t("checkout.billing.phone.invalid"));
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      const billingStreetLine = billingData.billingApartment
+        ? `${billingData.billingStreetAddress}, ${billingData.billingApartment}`
+        : billingData.billingStreetAddress;
+      const billingAddress = `${billingStreetLine}, ${billingData.billingCity}, ${billingData.billingState} ${billingData.billingZipCode}, ${billingData.billingCountry}`.trim();
+
       // 🔍 DEBUG: Log raw cart items first
       console.log('🛒 ========== CART ITEMS DEBUG ==========');
       console.log('Total items in cart:', items.length);
@@ -254,7 +493,7 @@ export const CheckoutPage = () => {
         });
       });
       console.log('=========================================\n');
-      
+
       // Build items with products_id (PID) or product_slug fallback
       type OrderItemPayload = {
         quantity: number;
@@ -290,14 +529,14 @@ export const CheckoutPage = () => {
           color: item.color,
           size: item.size
         };
-        
+
         // Priority 1: Use pid (products_id) from cart item if available
         if (item.pid && item.pid.trim() !== '') {
           const result = { products_id: String(item.pid), ...base };
           console.log(`  ✅ Using products_id: ${item.pid}`, result);
           return result;
         }
-        
+
         // Priority 2: Try to parse productId as number (product_id)
         if (item.productId) {
           const numericId = parseInt(item.productId, 10);
@@ -306,7 +545,7 @@ export const CheckoutPage = () => {
             console.log(`  ✅ Using product_id: ${numericId}`, result);
             return result;
           }
-          
+
           // Priority 3: Fallback: use product_slug so backend can resolve
           if (item.productId.trim() !== '') {
             const result = { product_slug: item.productId, ...base };
@@ -314,7 +553,7 @@ export const CheckoutPage = () => {
             return result;
           }
         }
-        
+
         // If we get here, the item has no valid identifier
         const errorMsg = `Item #${index + 1} (${item.name}) has no valid product identifier. productId: "${item.productId}", pid: "${item.pid}"`;
         console.error(`  ❌ ${errorMsg}`);
@@ -322,17 +561,17 @@ export const CheckoutPage = () => {
       });
 
       console.log('\n📋 Final mapped items:', JSON.stringify(mappedItems, null, 2));
-      
+
       // Final validation: ensure all items have at least one identifier
       mappedItems.forEach((item, index) => {
         const hasProductId = !!item.product_id;
         const hasProductsId = !!item.products_id;
         const hasProductSlug = !!item.product_slug;
-        
+
         if (!hasProductId && !hasProductsId && !hasProductSlug) {
           throw new Error(`Mapped item #${index + 1} is missing all product identifiers: ${JSON.stringify(item)}`);
         }
-        
+
         if (!item.quantity || item.quantity <= 0) {
           throw new Error(`Mapped item #${index + 1} has invalid quantity: ${item.quantity}`);
         }
@@ -341,12 +580,32 @@ export const CheckoutPage = () => {
       const orderData = {
         firstname: formData.firstName,
         lastname: formData.lastName,
-        address: fullAddress,
+        email: formData.email,
+        company: formData.company,
+        address: shippingAddress,
+        street_address: formData.streetAddress,
+        apartment: formData.apartment,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zipCode,
+        country: formData.country,
         phonenumber: formData.phone,
+        notes: formData.notes || "",
         payment_method: formData.paymentMethod,
+        shipping_method: formData.shippingMethod,
+        shipping_cost: shippingCost,
+        shipping_firstname: formData.firstName,
+        shipping_lastname: formData.lastName,
+        shipping_company: formData.company,
+        shipping_address: shippingAddress,
+        shipping_phone: formData.phone,
+        billing_firstname: billingData.billingFirstName,
+        billing_lastname: billingData.billingLastName,
+        billing_company: billingData.billingCompany,
+        billing_address: billingAddress,
+        billing_phone: billingData.billingPhone,
         items: mappedItems,
-        total_amount: total,
-        notes: formData.notes || ''
+        total_amount: finalTotal,
       };
 
       // 🔍 DEBUG: Log complete order data being sent to API
@@ -356,23 +615,25 @@ export const CheckoutPage = () => {
 
       // Create order via API
       const response = await ApiService.createOrder(orderData) as { order_id?: string; id?: string | number };
-      
+
       // 🔍 DEBUG: Log API response
       console.log('✅ API Response:', response);
-      
+
       // Show success toast
       const orderId = response.order_id || response.id || 'placed';
       showToast(
         t("checkout.order.success").replace("{orderId}", String(orderId)),
         'success'
       );
-      
-      // Clear cart on success
+
+      // Clear cart on success only when checking out cart contents
+      if (!isDirectPurchase) {
       clearCart();
-      
+      }
+
       // Navigate to order history
       navigate('/profile?tab=orders');
-      
+
     } catch (err: unknown) {
       console.error('❌ Order creation failed:', err);
       console.error('Error type:', err instanceof Error ? err.constructor.name : typeof err);
@@ -382,10 +643,10 @@ export const CheckoutPage = () => {
         stack: err instanceof Error ? err.stack : undefined,
         fullError: err
       });
-      
+
       // Extract error message from various error formats
       let message = t("checkout.order.failed");
-      
+
       if (err instanceof Error) {
         message = err.message || message;
       } else if (typeof err === 'object' && err !== null) {
@@ -396,7 +657,7 @@ export const CheckoutPage = () => {
           message = String((err as { error?: unknown }).error) || message;
         }
       }
-      
+
       setError(message);
       setIsSubmitting(false);
     }
@@ -450,8 +711,8 @@ export const CheckoutPage = () => {
             <div>
               <h2 className={styles.sectionTitle}>{t("checkout.client.info")}</h2>
               <div className={styles.fieldGrid}>
-                <Input 
-                  label={t("checkout.first.name")} 
+                <Input
+                  label={t("checkout.first.name")}
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleInputChange}
@@ -459,58 +720,58 @@ export const CheckoutPage = () => {
                   minLength={2}
                   maxLength={50}
                   placeholder={t("checkout.first.name")}
+                  autoComplete="given-name"
                 />
-                <Input 
+                <Input
                   label={t("checkout.last.name")}
-                  name="lastName" 
+                  name="lastName"
                   value={formData.lastName}
                   onChange={handleInputChange}
                   required
                   minLength={2}
                   maxLength={50}
                   placeholder={t("checkout.last.name")}
+                  autoComplete="family-name"
                 />
-                <Input 
-                  label={t("checkout.email")} 
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                  placeholder={t("checkout.email")}
-                />
-                <Input 
-                  label={t("checkout.phone")}
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  required
-                  minLength={10}
-                  placeholder="(555) 123-4567"
-                />
-                <Input 
+                <Input
                   label={t("checkout.company")}
                   name="company"
                   value={formData.company}
                   onChange={handleInputChange}
-                />
-              </div>
-            </div>
-
-            <div>
-              <h2 className={styles.sectionTitle}>{t("checkout.shipping.address")}</h2>
-              <div className={styles.fieldGrid}>
-                <Input 
-                  label={t("checkout.address")} 
+                  autoComplete="organization"
                   className={styles.fullWidth}
-                  name="streetAddress"
-                  value={formData.streetAddress}
-                  onChange={handleInputChange}
-                  required
-                  minLength={5}
-                  placeholder={t("checkout.address")}
                 />
-                <Input 
+                <label className={`${styles.inputLabel} ${styles.fullWidth}`}>
+                  {t("checkout.address.search")}
+                  <div className={styles.addressSearchField}>
+                    <span className={styles.addressSearchIcon} aria-hidden="true">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <circle cx="11" cy="11" r="7" />
+                        <line x1="16.5" y1="16.5" x2="22" y2="22" />
+                      </svg>
+                    </span>
+                    <input
+                      name="streetAddress"
+                      value={formData.streetAddress}
+                      onChange={handleInputChange}
+                      required
+                      minLength={5}
+                      placeholder={t("checkout.address.search.placeholder")}
+                      autoComplete="address-line1"
+                      className={styles.addressInput}
+                    />
+                  </div>
+                </label>
+                <Input
+                  label={t("checkout.apartment")}
+                  name="apartment"
+                  value={formData.apartment}
+                  onChange={handleInputChange}
+                  className={styles.fullWidth}
+                  placeholder={t("checkout.apartment.placeholder")}
+                  autoComplete="address-line2"
+                />
+                <Input
                   label={t("checkout.city")}
                   name="city"
                   value={formData.city}
@@ -518,19 +779,40 @@ export const CheckoutPage = () => {
                   required
                   minLength={2}
                   placeholder={t("checkout.city")}
+                  autoComplete="address-level2"
                 />
-                <Input 
-                  label={t("checkout.state")}
-                  name="state"
-                  value={formData.state}
-                  onChange={handleInputChange}
-                  required
-                  pattern="[A-Z]{2}"
-                  minLength={2}
-                  maxLength={2}
-                  placeholder="CA"
-                />
-                <Input 
+                <label className={styles.inputLabel}>
+                  {t("checkout.country")}
+                  <div className={styles.selectWrapper}>
+                  <CountryDropdown
+                    value={formData.country}
+                    onChange={handleCountryChange}
+                    priorityOptions={["United States", "Canada", "United Kingdom"]}
+                      className={styles.selectField}
+                    defaultOptionLabel={t("checkout.country.placeholder")}
+                    valueType="full"
+                    name="country"
+                    aria-label={t("checkout.country")}
+                  />
+                  </div>
+                </label>
+                <label className={styles.inputLabel}>
+                  {t("checkout.state")}
+                  <div className={styles.selectWrapper}>
+                  <RegionDropdown
+                    country={formData.country}
+                    value={formData.state}
+                    onChange={handleRegionChange}
+                    valueType="short"
+                      className={styles.selectField}
+                    blankOptionLabel={t("checkout.state.placeholder")}
+                    disableWhenEmpty
+                    name="state"
+                    aria-label={t("checkout.state")}
+                  />
+                  </div>
+                </label>
+                <Input
                   label={t("checkout.zip")}
                   name="zipCode"
                   value={formData.zipCode}
@@ -538,7 +820,62 @@ export const CheckoutPage = () => {
                   required
                   pattern="\d{5}(-\d{4})?"
                   placeholder="90001"
+                  autoComplete="postal-code"
                 />
+                <label className={styles.inputLabel}>
+                  {t("checkout.phone")}
+                  <div className={styles.phoneInputWrapper}>
+                    <CountryPhoneInput
+                      value={formData.phone}
+                      onChange={(value: string) => handlePhoneChange("phone", value)}
+                      placeholder={t("checkout.phone.placeholder")}
+                      enableSearch
+                      inputProps={{ name: "phone", autoComplete: "tel" }}
+                    />
+                  </div>
+                </label>
+                <Input
+                  label={t("checkout.email")}
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                  placeholder={t("checkout.email")}
+                  autoComplete="email"
+                  className={styles.fullWidth}
+                />
+              </div>
+            </div>
+
+            {/* Shipping Method Section */}
+            <div>
+              <h2 className={styles.sectionTitle}>{t("checkout.shipping.method")}</h2>
+              <div className={styles.shippingOptions}>
+                {shippingOptions.map((method) => (
+                  <label
+                    key={method.id}
+                    className={`${styles.shippingOption} ${formData.shippingMethod === method.id ? styles.shippingOptionActive : ''}`}
+                  >
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="shippingMethod"
+                        value={method.id}
+                        checked={formData.shippingMethod === method.id}
+                        onChange={() => handleShippingChange(method.id)}
+                        className={styles.shippingRadio}
+                      />
+                      <div className={styles.shippingInfo}>
+                        <span className={styles.shippingName}>{method.name}</span>
+                        <span className={styles.shippingTime}>{method.time}</span>
+                      </div>
+                    </div>
+                    <span className={styles.shippingPrice}>
+                      {method.id === FREE_SHIPPING_ID ? t("cart.complimentary") : formatCurrency(method.price)}
+                    </span>
+                  </label>
+                ))}
               </div>
             </div>
 
@@ -558,58 +895,236 @@ export const CheckoutPage = () => {
 
             <div>
               <h2 className={styles.sectionTitle}>{t("checkout.payment.method")}</h2>
-              <div className={styles.paymentMethods}>
-                <label className={`${styles.paymentOption} ${formData.paymentMethod === 'bank_transfer' ? styles.paymentOptionActive : ''}`}>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="bank_transfer"
-                    checked={formData.paymentMethod === 'bank_transfer'}
-                    onChange={handleSelectChange}
-                    className={styles.paymentRadio}
-                    required
-                  />
-                  <div className={styles.paymentContent}>
-                    <div className={styles.paymentIcon}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="6" width="18" height="12" rx="2"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <p className={styles.paymentTitle}>{t("checkout.payment.bank")}</p>
-                      <p className={styles.paymentDesc}>{t("checkout.payment.bank")}</p>
-                    </div>
-                  </div>
-                </label>
 
-                <label className={`${styles.paymentOption} ${formData.paymentMethod === 'cod' ? styles.paymentOptionActive : ''}`}>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="cod"
-                    checked={formData.paymentMethod === 'cod'}
-                    onChange={handleSelectChange}
-                    className={styles.paymentRadio}
+              <div className={styles.paymentGroup}>
+                <div className={`${styles.paymentOption} ${formData.paymentMethod === 'credit_card' ? styles.paymentOptionActive : ''}`}>
+                  <label htmlFor="payment-credit-card" className={styles.paymentOptionHeader}>
+                    <div className={styles.paymentHeaderLeft}>
+                      <input
+                        type="radio"
+                        id="payment-credit-card"
+                        name="paymentMethod"
+                        value="credit_card"
+                        checked={formData.paymentMethod === 'credit_card'}
+                        onChange={handleSelectChange}
+                        className={styles.paymentRadio}
+                      />
+                      <div>
+                        <p className={styles.paymentTitle}>Credit card</p>
+                        <p className={styles.paymentDesc}>
+                          Pay securely with Visa, Mastercard or digital wallets
+                        </p>
+                    </div>
+                    </div>
+                    <div className={styles.paymentLogos}>
+                      <img
+                        src="/images/apple-pay-seeklogo.png"
+                        alt="Apple Pay"
+                        className={styles.paymentLogo}
+                        loading="lazy"
+                      />
+                      <img
+                        src="/images/google-pay.png"
+                        alt="Google Pay"
+                        className={styles.paymentLogo}
+                        loading="lazy"
+                      />
+                  </div>
+                  </label>
+
+                  <div className={styles.paymentBody} aria-hidden={formData.paymentMethod !== 'credit_card'}>
+                <div className={styles.ccInputGroup}>
+                  <Input
+                    label=""
+                    name="cardNumber"
+                    value={formData.cardNumber}
+                    onChange={handleInputChange}
+                    placeholder="Card number"
+                    className="w-full"
                   />
-                  <div className={styles.paymentContent}>
-                    <div className={styles.paymentIcon}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="12" y1="1" x2="12" y2="23"/>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                  <div className={styles.ccInputIcon}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                  </div>
+                </div>
+
+                    <div className={styles.paymentBodyGrid}>
+                  <Input
+                    label=""
+                    name="cardExpiry"
+                    value={formData.cardExpiry}
+                    onChange={handleInputChange}
+                    placeholder="Expiration date (MM / YY)"
+                  />
+                  <Input
+                    label=""
+                    name="cardCvc"
+                    value={formData.cardCvc}
+                    onChange={handleInputChange}
+                    placeholder="Security code"
+                  />
+                </div>
+
+                <Input
+                  label=""
+                  name="cardName"
+                  value={formData.cardName}
+                  onChange={handleInputChange}
+                  placeholder="Name on card"
+                />
+
+                <div className={styles.billingToggle}>
+                  <input
+                    type="checkbox"
+                    id="billingSame"
+                    checked={formData.billingSameAsShipping}
+                    onChange={handleBillingToggle}
+                    className={styles.billingCheckbox}
+                  />
+                  <label htmlFor="billingSame" className={styles.billingLabel}>
+                    Use shipping address as billing address
+                  </label>
+              </div>
+
+                    {!formData.billingSameAsShipping && (
+                      <div className={styles.billingDetails} aria-live="polite">
+                        <div className={styles.billingDetailsHeader}>
+                          <p className={styles.billingTitle}>Billing address</p>
+                          <p className={styles.billingSubtitle}>Enter the address that matches your payment method</p>
+                        </div>
+                        <div className={styles.fieldGrid}>
+                          <Input
+                            label={t("checkout.first.name")}
+                            name="billingFirstName"
+                            value={formData.billingFirstName}
+                            onChange={handleInputChange}
+                            required
+                            minLength={2}
+                            autoComplete="billing given-name"
+                          />
+                          <Input
+                            label={t("checkout.last.name")}
+                            name="billingLastName"
+                            value={formData.billingLastName}
+                            onChange={handleInputChange}
+                            required
+                            minLength={2}
+                            autoComplete="billing family-name"
+                          />
+                          <Input
+                            label={t("checkout.company")}
+                            name="billingCompany"
+                            value={formData.billingCompany}
+                            onChange={handleInputChange}
+                            className={styles.fullWidth}
+                            autoComplete="billing organization"
+                  />
+                          <label className={`${styles.inputLabel} ${styles.fullWidth}`}>
+                            {t("checkout.address.search")}
+                            <div className={styles.addressSearchField}>
+                              <span className={styles.addressSearchIcon} aria-hidden="true">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                  <circle cx="11" cy="11" r="7" />
+                                  <line x1="16.5" y1="16.5" x2="22" y2="22" />
                       </svg>
+                              </span>
+                              <input
+                                name="billingStreetAddress"
+                                value={formData.billingStreetAddress}
+                                onChange={handleInputChange}
+                                required
+                                minLength={5}
+                                placeholder={t("checkout.address.search.placeholder")}
+                                autoComplete="billing address-line1"
+                                className={styles.addressInput}
+                              />
                     </div>
-                    <div>
-                      <p className={styles.paymentTitle}>{t("checkout.payment.cod")}</p>
-                      <p className={styles.paymentDesc}>{t("checkout.payment.cod")}</p>
+                          </label>
+                          <Input
+                            label={t("checkout.apartment")}
+                            name="billingApartment"
+                            value={formData.billingApartment}
+                            onChange={handleInputChange}
+                            className={styles.fullWidth}
+                            placeholder={t("checkout.apartment.placeholder")}
+                            autoComplete="billing address-line2"
+                          />
+                          <Input
+                            label={t("checkout.city")}
+                            name="billingCity"
+                            value={formData.billingCity}
+                            onChange={handleInputChange}
+                            required
+                            minLength={2}
+                            placeholder={t("checkout.city")}
+                            autoComplete="billing address-level2"
+                          />
+                          <label className={styles.inputLabel}>
+                            {t("checkout.country")}
+                            <div className={styles.selectWrapper}>
+                              <CountryDropdown
+                                value={formData.billingCountry}
+                                onChange={handleBillingCountryChange}
+                                priorityOptions={["United States", "Canada", "United Kingdom"]}
+                                className={styles.selectField}
+                                defaultOptionLabel={t("checkout.country.placeholder")}
+                                valueType="full"
+                                name="billingCountry"
+                                aria-label={`${t("checkout.country")} (billing)`}
+                              />
                     </div>
+                          </label>
+                          <label className={styles.inputLabel}>
+                            {t("checkout.state")}
+                            <div className={styles.selectWrapper}>
+                              <RegionDropdown
+                                country={formData.billingCountry}
+                                value={formData.billingState}
+                                onChange={handleBillingRegionChange}
+                                valueType="short"
+                                className={styles.selectField}
+                                blankOptionLabel={t("checkout.state.placeholder")}
+                                disableWhenEmpty
+                                name="billingState"
+                                aria-label={`${t("checkout.state")} (billing)`}
+                              />
                   </div>
                 </label>
+                          <Input
+                            label={t("checkout.zip")}
+                            name="billingZipCode"
+                            value={formData.billingZipCode}
+                            onChange={handleInputChange}
+                            required
+                            pattern="\d{5}(-\d{4})?"
+                            placeholder="90001"
+                            autoComplete="billing postal-code"
+                          />
+                          <label className={styles.inputLabel}>
+                            {t("checkout.phone")}
+                            <div className={styles.phoneInputWrapper}>
+                              <CountryPhoneInput
+                                value={formData.billingPhone}
+                                onChange={(value: string) => handlePhoneChange("billingPhone", value)}
+                                placeholder={t("checkout.phone.placeholder")}
+                                enableSearch
+                                inputProps={{ name: "billingPhone", autoComplete: "billing tel" }}
+                              />
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
               </div>
             </div>
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className={styles.submitButton}
               disabled={isSubmitting || items.length === 0}
             >
@@ -651,7 +1166,7 @@ export const CheckoutPage = () => {
               </div>
               <div className={styles.summaryRow}>
                 <span>{t("cart.shipping")}</span>
-                <span>{t("cart.complimentary")}</span>
+                <span>{shippingCost === 0 ? t("cart.complimentary") : formatCurrency(shippingCost)}</span>
               </div>
               <div className={styles.summaryRow}>
                 <span>{t("cart.concierge.service")}</span>
@@ -662,7 +1177,7 @@ export const CheckoutPage = () => {
             <div className={styles.totalWrapper}>
               <div className={styles.totalRow}>
                 <span>{t("cart.total")}</span>
-                <span>{formatCurrency(total)}</span>
+                <span>{formatCurrency(finalTotal)}</span>
               </div>
             </div>
 
@@ -679,5 +1194,5 @@ export const CheckoutPage = () => {
   );
 };
 
-    export default CheckoutPage;
+export default CheckoutPage;
 

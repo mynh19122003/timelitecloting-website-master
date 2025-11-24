@@ -21,7 +21,7 @@ const translations: Record<Language, Record<string, string>> = {
     "header.order.tracking": "Theo dõi đơn hàng",
     "header.account": "Tài khoản",
     "header.shopping.bag": "Giỏ hàng",
-    
+
     // Navigation
     "nav.shop.all": "Tất cả sản phẩm",
     "nav.ao.dai": "Áo Dài",
@@ -32,7 +32,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.kidswear": "Trẻ Em",
     "nav.gift.procession": "Lễ Vật",
     "nav.quick.links": "Liên kết nhanh",
-    
+
     // Cart
     "cart.title": "Giỏ hàng của bạn",
     "cart.empty": "Giỏ hàng của bạn đang trống.",
@@ -48,7 +48,7 @@ const translations: Record<Language, Record<string, string>> = {
     "cart.total": "Tổng cộng",
     "cart.proceed.checkout": "Thanh toán",
     "cart.legal.text": "Bằng cách tiếp tục, bạn đồng ý với các chính sách và hướng dẫn chăm sóc của Timelite.",
-    
+
     // Product
     "product.new": "Mới",
     "product.save": "Tiết kiệm",
@@ -59,10 +59,10 @@ const translations: Record<Language, Record<string, string>> = {
     "product.size": "Kích thước",
     "product.available.sizes": "Các kích cỡ có sẵn",
     "product.quantity": "Số lượng",
-    "product.add.to.cart": "Thêm vào giỏ hàng",
-    "product.shipping.info": "Miễn phí vận chuyển nhanh trong nước cho đơn hàng trên 1.500.000 VNĐ. Mỗi sản phẩm",
+    "product.add.to.cart": "Thêm vào túi",
+    "product.shipping.info": "Phí vận chuyển được tính tại bước thanh toán. Giao hàng qua USPS.",
     "product.highlights": "Điểm nổi bật",
-    
+
     // Shop
     "shop.home": "Trang chủ",
     "shop.all.collections": "Tất cả bộ sưu tập",
@@ -91,19 +91,33 @@ const translations: Record<Language, Record<string, string>> = {
     "shop.kidswear.subtitle": "Xưởng may mini cho các buổi lễ, ngày lễ và chụp ảnh vui vẻ.",
     "shop.gift.procession.title": "Lễ Vật",
     "shop.gift.procession.subtitle": "Khay lễ vật được tuyển chọn, vải dệt và dịch vụ tạo kiểu nghi lễ.",
-    
+
     // Checkout
     "checkout.title": "Thanh toán",
     "checkout.first.name": "Tên",
     "checkout.last.name": "Họ",
     "checkout.email": "Email",
     "checkout.phone": "Số điện thoại",
+    "checkout.phone.placeholder": "Nhập số điện thoại của bạn",
     "checkout.company": "Công ty (tùy chọn)",
+    "checkout.address.search": "Địa chỉ",
+    "checkout.address.search.placeholder": "Tìm kiếm địa chỉ",
+    "checkout.apartment": "Căn hộ, phòng, v.v.",
+    "checkout.apartment.placeholder": "Căn hộ, phòng, v.v. (tùy chọn)",
+    "checkout.country": "Quốc gia/Vùng lãnh thổ",
+    "checkout.country.placeholder": "Chọn quốc gia",
+    "checkout.state.placeholder": "Chọn tỉnh/thành",
     "checkout.address": "Địa chỉ",
     "checkout.city": "Thành phố",
     "checkout.state": "Tỉnh/Thành phố",
     "checkout.zip": "Mã bưu điện",
     "checkout.notes": "Ghi chú đơn hàng (tùy chọn)",
+    "checkout.shipping.method": "Phương thức giao hàng",
+    "checkout.shipping.freeTitle": "Miễn phí vận chuyển",
+    "checkout.shipping.freeSubtitle": "Đơn hàng từ $99 trở lên sẽ được miễn phí vận chuyển. Chọn phương thức bên dưới.",
+    "checkout.shipping.freeOption": "Tùy chọn miễn phí vận chuyển",
+    "checkout.shipping.freeOption.description": "Giao hàng tiêu chuẩn (3-5 ngày làm việc)",
+    "checkout.shipping.freeOption.locked": "Đạt $99 để mở khóa miễn phí vận chuyển.",
     "checkout.payment.method": "Phương thức thanh toán",
     "checkout.payment.cod": "Thanh toán khi nhận hàng",
     "checkout.payment.bank": "Chuyển khoản ngân hàng",
@@ -112,7 +126,7 @@ const translations: Record<Language, Record<string, string>> = {
     "checkout.place.order": "Đặt hàng",
     "checkout.empty.cart": "Bạn chưa thêm sản phẩm nào. ",
     "checkout.discover.shop": "Khám phá cửa hàng.",
-    
+
     // Profile
     "profile.title": "Hồ sơ",
     "profile.orders": "Đơn hàng",
@@ -121,7 +135,7 @@ const translations: Record<Language, Record<string, string>> = {
     "profile.status.shipped": "Đã gửi",
     "profile.status.delivered": "Đã giao",
     "profile.status.cancelled": "Đã hủy",
-    
+
     // Login/Register
     "auth.login.title": "Đăng nhập vào Timelite",
     "auth.login.subtitle": "Nhập thông tin của bạn bên dưới",
@@ -139,7 +153,7 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.login.email.invalid": "Định dạng email không hợp lệ.",
     "auth.login.password.required": "Vui lòng nhập mật khẩu của bạn.",
     "auth.login.password.min": "Mật khẩu phải có ít nhất 8 ký tự.",
-    
+
     "auth.register.title": "Tạo tài khoản",
     "auth.register.subtitle": "Nhập thông tin của bạn bên dưới",
     "auth.register.name.label": "Tên",
@@ -162,7 +176,7 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.register.password.min": "Mật khẩu phải có ít nhất 8 ký tự.",
     "auth.register.confirm.required": "Vui lòng xác nhận mật khẩu của bạn.",
     "auth.register.confirm.match": "Mật khẩu không khớp.",
-    
+
     // Footer
     "footer.about.eyebrow": "Timelite Couture",
     "footer.about.description": "Được chế tác tại Sài Gòn, được tuyển chọn cho phụ nữ hiện đại trên khắp Hoa Kỳ. Timelite tôn vinh nghệ thuật của áo dài với góc nhìn đương đại.",
@@ -172,7 +186,7 @@ const translations: Record<Language, Record<string, string>> = {
     "footer.links.contact": "Liên hệ",
     "footer.contact.heading": "Liên hệ chúng tôi",
     "footer.legal": "© 2025 Timelite Couture | Bảo lưu mọi quyền",
-    
+
     // Common
     "common.loading": "Đang tải...",
     "common.error": "Có lỗi xảy ra",
@@ -184,17 +198,17 @@ const translations: Record<Language, Record<string, string>> = {
     "common.reviews": "đánh giá",
     "common.model": "Mẫu",
     "common.view.all": "Xem tất cả",
-    
+
     // Product Detail Page
-    "product.book.fitting": "Đặt lịch đo",
-    "product.shipping.arrives": "đi kèm với túi đựng và bộ hấp.",
-    "product.alterations": "Chỉnh sửa hoặc làm lại có sẵn trong vòng 14 ngày kể từ ngày giao hàng. Chấp nhận trả hàng để lấy tín dụng cửa hàng cho các sản phẩm chưa mặc.",
-    "product.detailed.description": "Mô tả chi tiết",
+    "product.book.fitting": "Mua ngay",
+    "product.shipping.arrives": "Miễn phí vận chuyển cho mọi đơn hàng từ $199.00.",
+    "product.alterations": "Không hỗ trợ đổi hoặc trả.",
+    "product.detailed.description": "Mô tả",
     "product.fabrication": "Chất liệu: 100% lụa tơ tằm thủ công tại Việt Nam.",
     "product.complimentary.fitting": "Tư vấn đo ảo miễn phí với nhà tạo mẫu Timelite.",
     "product.made.to.order": "Đặt may theo yêu cầu. Thời gian sản xuất 14 đến 18 ngày.",
     "product.compare.collection": "So sánh bộ sưu tập",
-    "product.related.pieces": "Sản phẩm liên quan",
+    "product.related.pieces": "Conbine shopping",
     "product.related.empty": "Không có sản phẩm liên quan",
     "product.colors": "Màu sắc",
     "product.reviews.title": "Đánh giá từ khách hàng",
@@ -204,7 +218,7 @@ const translations: Record<Language, Record<string, string>> = {
     "product.reviews.verified.purchase": "Đã mua hàng",
     "product.reviews.helpful": "Hữu ích",
     "product.reviews.verified": "Đã xác minh",
-    
+
     // Checkout page specific
     "checkout.eyebrow": "Thanh toán",
     "checkout.heading": "Chi tiết thanh toán tư vấn",
@@ -219,7 +233,9 @@ const translations: Record<Language, Record<string, string>> = {
     "checkout.cart.empty": "Giỏ hàng của bạn đang trống. Vui lòng thêm sản phẩm trước khi thanh toán.",
     "checkout.name.required": "Vui lòng nhập họ và tên đầy đủ của bạn.",
     "checkout.email.invalid": "Vui lòng nhập địa chỉ email hợp lệ.",
-    "checkout.phone.invalid": "Vui lòng nhập số điện thoại hợp lệ (ít nhất 10 chữ số).",
+    "checkout.phone.invalid": "Vui lòng nhập số điện thoại hợp lệ (ít nhất 8 chữ số).",
+    "checkout.billing.required": "Vui lòng điền {field} cho hóa đơn.",
+    "checkout.billing.phone.invalid": "Số điện thoại thanh toán không hợp lệ.",
     "checkout.address.invalid": "Vui lòng nhập địa chỉ đường phố hợp lệ.",
     "checkout.city.invalid": "Vui lòng nhập tên thành phố hợp lệ.",
     "checkout.state.invalid": "Vui lòng nhập mã tỉnh/thành phố 2 chữ cái hợp lệ (ví dụ: CA, NY, TX).",
@@ -229,7 +245,7 @@ const translations: Record<Language, Record<string, string>> = {
     "checkout.concierge.perk": "Đặc quyền tư vấn",
     "checkout.concierge.perk.description": "Mỗi đơn hàng mở khóa quyền truy cập 24/7 vào đội ngũ nhà tạo mẫu của chúng tôi, bao gồm một buổi tư vấn tạo kiểu ảo miễn phí để chuẩn bị cho dịp của bạn.",
     "checkout.qty": "SL",
-    
+
     // Error messages
     "error.occurred": "Có lỗi xảy ra",
     "error.unknown": "Lỗi không xác định",
@@ -296,7 +312,7 @@ const translations: Record<Language, Record<string, string>> = {
     "profile.open.chat": "Mở tùy chọn chat",
     "profile.close.notification": "Đóng thông báo",
     "auth.logout": "Đăng xuất",
-    
+
     // Contact Page
     "contact.eyebrow": "Liên hệ",
     "contact.title": "Kết nối với đội ngũ tư vấn Timelite",
@@ -319,7 +335,7 @@ const translations: Record<Language, Record<string, string>> = {
     "contact.submit.request": "Gửi yêu cầu",
     "contact.by.appointment": "Chỉ theo lịch hẹn",
     "contact.hours": "Thứ 2 - Thứ 7: 9:00 - 18:00 (PST)",
-    
+
     // Verify Email
     "verify.email.title": "Xác minh Email",
     "verify.email.verifying": "Đang xác minh email của bạn...",
@@ -330,7 +346,7 @@ const translations: Record<Language, Record<string, string>> = {
     "verify.email.go.login": "Đi đến đăng nhập ngay",
     "verify.email.failed.message": "Xác minh email thất bại.",
     "verify.email.network.error": "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối và thử lại.",
-    
+
     // Navigation Menu - Column Headings
     "nav.column.silhouettes": "Kiểu dáng",
     "nav.column.occasions": "Dịp",
@@ -346,7 +362,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.column.sets": "Bộ",
     "nav.column.textures": "Chất liệu",
     "nav.column.services": "Dịch vụ",
-    
+
     // Navigation Menu - Ao Dai
     "nav.ao.dai.classic": "Cổ điển",
     "nav.ao.dai.modern.cut": "Cắt hiện đại",
@@ -362,7 +378,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.ao.dai.capsule.title": "Bộ sưu tập Áo Dài Timelite",
     "nav.ao.dai.capsule.description": "Những bộ trang phục được tuyển chọn kết hợp chi tiết di sản với tỷ lệ đương đại.",
     "nav.ao.dai.capsule.cta": "Mua bộ sưu tập Áo Dài",
-    
+
     // Navigation Menu - Suiting
     "nav.suiting.full.suits": "Bộ com lê đầy đủ",
     "nav.suiting.vests": "Áo vest",
@@ -375,7 +391,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.suiting.view.all": "Xem tất cả com lê",
     "nav.suiting.tailored.title": "May đo cho chuyển động",
     "nav.suiting.tailored.description": "Cấu trúc nhẹ được thiết kế để giữ sắc nét từ ngày đến đêm.",
-    
+
     // Navigation Menu - Bridal
     "nav.bridal.ceremony.gowns": "Áo cưới lễ nghi",
     "nav.bridal.reception.dresses": "Váy tiệc cưới",
@@ -390,7 +406,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.bridal.book.fitting": "Đặt lịch đo",
     "nav.bridal.fitting.description": "Khám phá kiểu dáng với hỗ trợ tạo kiểu 1:1 tại studio của chúng tôi.",
     "nav.bridal.explore": "Khám phá áo cưới",
-    
+
     // Navigation Menu - Evening
     "nav.evening.column": "Cột",
     "nav.evening.mermaid": "Nàng tiên cá",
@@ -404,7 +420,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.evening.view.all": "Xem tất cả dạ hội",
     "nav.evening.edit.title": "Bộ sưu tập dạ hội",
     "nav.evening.edit.description": "Những món đồ nổi bật với đường nét điêu khắc và chi tiết hoàn thiện thủ công.",
-    
+
     // Navigation Menu - Conical Hats
     "nav.hats.mother.of.pearl": "Xà cừ",
     "nav.hats.hand.painted": "Vẽ tay",
@@ -417,7 +433,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.hats.editorial.looks": "Trang phục biên tập",
     "nav.hats.custom.engraving": "Khắc tùy chỉnh",
     "nav.hats.collector.sets": "Bộ sưu tập",
-    
+
     // Navigation Menu - Kidswear
     "nav.kidswear.infant": "Trẻ sơ sinh",
     "nav.kidswear.toddler": "Trẻ mới biết đi",
@@ -433,7 +449,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.kidswear.custom.sibling.title": "Bộ anh chị em tùy chỉnh",
     "nav.kidswear.custom.sibling.description": "Trang phục phối hợp được may đo cho các lễ kỷ niệm gia đình hiện đại.",
     "nav.kidswear.plan.styling": "Lên kế hoạch tạo kiểu",
-    
+
     // Navigation Menu - Gift Procession Sets
     "nav.gift.eight.tray": "Tám khay",
     "nav.gift.ten.tray": "Mười khay",
@@ -456,7 +472,7 @@ const translations: Record<Language, Record<string, string>> = {
     "header.order.tracking": "Order tracking",
     "header.account": "Account",
     "header.shopping.bag": "Shopping bag",
-    
+
     // Navigation
     "nav.shop.all": "Shop All",
     "nav.ao.dai": "Ao Dai",
@@ -467,7 +483,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.kidswear": "Kidswear",
     "nav.gift.procession": "Gift Procession Sets",
     "nav.quick.links": "Quick links",
-    
+
     // Cart
     "cart.title": "Your Timelite selection",
     "cart.empty": "Your cart is empty.",
@@ -483,7 +499,7 @@ const translations: Record<Language, Record<string, string>> = {
     "cart.total": "Total",
     "cart.proceed.checkout": "Proceed to checkout",
     "cart.legal.text": "By continuing you agree to Timelite concierge policies and couture care guidelines.",
-    
+
     // Product
     "product.new": "New",
     "product.save": "Save",
@@ -494,10 +510,10 @@ const translations: Record<Language, Record<string, string>> = {
     "product.size": "Size",
     "product.available.sizes": "Available sizes",
     "product.quantity": "Quantity",
-    "product.add.to.cart": "Add to cart",
-    "product.shipping.info": "Complimentary express shipping within Vietnam on orders above 1,500,000 VND. Each piece",
+    "product.add.to.cart": "Add to bag",
+    "product.shipping.info": "Shipping fee calculated at checkout. Shipping by USPS.",
     "product.highlights": "Highlights",
-    
+
     // Shop
     "shop.home": "Home",
     "shop.all.collections": "All Collections",
@@ -519,26 +535,40 @@ const translations: Record<Language, Record<string, string>> = {
     "shop.bridal.title": "Bridal Gowns",
     "shop.bridal.subtitle": "Timeless bridal pieces for your ceremony, reception and engagement photos.",
     "shop.evening.title": "Evening Couture",
-    "shop.evening.subtitle": "Dramatic evening gowns and red‑carpet ready looks.",
+    "shop.evening.subtitle": "Dramatic evening gowns and red-carpet ready looks.",
     "shop.conical.hats.title": "Conical Hats",
     "shop.conical.hats.subtitle": "Heritage Non La silhouettes with couture-level finishing.",
     "shop.kidswear.title": "Kidswear",
     "shop.kidswear.subtitle": "Mini ateliers for ceremonies, holidays and joyful portraits.",
     "shop.gift.procession.title": "Gift Procession Sets",
-    "shop.gift.procession.subtitle": "Curated lễ vật trays, textiles and ceremonial styling services.",
-    
+    "shop.gift.procession.subtitle": "Curated ceremonial trays, textiles and styling services.",
+
     // Checkout
     "checkout.title": "Checkout",
     "checkout.first.name": "First Name",
     "checkout.last.name": "Last Name",
     "checkout.email": "Email",
     "checkout.phone": "Phone",
+    "checkout.phone.placeholder": "Enter your phone number",
     "checkout.company": "Company (optional)",
+    "checkout.address.search": "Address",
+    "checkout.address.search.placeholder": "Search for address",
+    "checkout.apartment": "Apartment, suite, etc.",
+    "checkout.apartment.placeholder": "Apartment, suite, etc. (optional)",
+    "checkout.country": "Country/Region",
+    "checkout.country.placeholder": "Select Country",
+    "checkout.state.placeholder": "Select State",
     "checkout.address": "Street Address",
     "checkout.city": "City",
     "checkout.state": "State/Province",
     "checkout.zip": "ZIP/Postal Code",
     "checkout.notes": "Order notes (optional)",
+    "checkout.shipping.method": "Shipping method",
+    "checkout.shipping.freeTitle": "Free shipping unlocked",
+    "checkout.shipping.freeSubtitle": "Orders of $99 or more ship free—choose any method below.",
+    "checkout.shipping.freeOption": "Free shipping",
+    "checkout.shipping.freeOption.description": "Standard shipping (3-5 business days)",
+    "checkout.shipping.freeOption.locked": "Spend $99 to unlock complimentary shipping.",
     "checkout.payment.method": "Payment Method",
     "checkout.payment.cod": "Cash on Delivery",
     "checkout.payment.bank": "Bank Transfer",
@@ -547,7 +577,7 @@ const translations: Record<Language, Record<string, string>> = {
     "checkout.place.order": "Place Order",
     "checkout.empty.cart": "You have not added any items yet. ",
     "checkout.discover.shop": "Discover the shop.",
-    
+
     // Profile
     "profile.title": "Profile",
     "profile.orders": "Orders",
@@ -556,7 +586,7 @@ const translations: Record<Language, Record<string, string>> = {
     "profile.status.shipped": "Shipped",
     "profile.status.delivered": "Delivered",
     "profile.status.cancelled": "Cancelled",
-    
+
     // Login/Register
     "auth.login.title": "Log in to Exclusive",
     "auth.login.subtitle": "Enter your details below",
@@ -574,7 +604,7 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.login.email.invalid": "Email format looks invalid.",
     "auth.login.password.required": "Please add your password.",
     "auth.login.password.min": "Password must be at least 8 characters.",
-    
+
     "auth.register.title": "Create an account",
     "auth.register.subtitle": "Enter your details below",
     "auth.register.name.label": "Name",
@@ -597,7 +627,7 @@ const translations: Record<Language, Record<string, string>> = {
     "auth.register.password.min": "Password must be at least 8 characters.",
     "auth.register.confirm.required": "Please confirm your password.",
     "auth.register.confirm.match": "Passwords do not match.",
-    
+
     // Footer
     "footer.about.eyebrow": "Timelite Couture",
     "footer.about.description": "Crafted in Saigon, curated for modern women across the United States. Timelite celebrates the artistry of the ao dai with a contemporary point of view.",
@@ -606,30 +636,30 @@ const translations: Record<Language, Record<string, string>> = {
     "footer.links.shop": "Shop",
     "footer.links.contact": "Contact",
     "footer.contact.heading": "Contact Us",
-    "footer.legal": "© 2025 Timelite Couture | All rights reserved",
-    
+    "footer.legal": "(c) 2025 Timelite Couture | All rights reserved",
+
     // Common
-    "common.loading": "Đang tải...",
-    "common.error": "Có lỗi xảy ra",
-    "common.success": "Thành công",
-    "common.home": "Trang chủ",
-    "common.all": "Tất cả",
-    "common.back.to.shop": "Quay lại cửa hàng",
-    "common.product": "Sản phẩm",
-    "common.reviews": "đánh giá",
-    "common.model": "Mẫu",
-    "common.view.all": "Xem tất cả",
-    
+    "common.loading": "Loading...",
+    "common.error": "Something went wrong",
+    "common.success": "Success",
+    "common.home": "Home",
+    "common.all": "All",
+    "common.back.to.shop": "Back to shop",
+    "common.product": "Product",
+    "common.reviews": "reviews",
+    "common.model": "Model",
+    "common.view.all": "View all",
+
     // Product Detail Page
-    "product.book.fitting": "Đặt lịch đo",
-    "product.shipping.arrives": "đi kèm với túi đựng và bộ hấp.",
-    "product.alterations": "Chỉnh sửa hoặc làm lại có sẵn trong vòng 14 ngày kể từ ngày giao hàng. Chấp nhận trả hàng để lấy tín dụng cửa hàng cho các sản phẩm chưa mặc.",
-    "product.detailed.description": "Mô tả chi tiết",
-    "product.fabrication": "Chất liệu: 100% lụa tơ tằm thủ công tại Việt Nam.",
-    "product.complimentary.fitting": "Tư vấn đo ảo miễn phí với nhà tạo mẫu Timelite.",
-    "product.made.to.order": "Đặt may theo yêu cầu. Thời gian sản xuất 14 đến 18 ngày.",
-    "product.compare.collection": "So sánh bộ sưu tập",
-    "product.related.pieces": "Related Products",
+    "product.book.fitting": "Buy now",
+    "product.shipping.arrives": "Free shipping on all orders $199.00+",
+    "product.alterations": "No returns or exchange.",
+    "product.detailed.description": "Description",
+    "product.fabrication": "Fabrication: 100% silk handwoven in Vietnam.",
+    "product.complimentary.fitting": "Complimentary virtual fitting with a Timelite stylist.",
+    "product.made.to.order": "Made to order. Production timeline 14 to 18 days.",
+    "product.compare.collection": "Compare collection",
+    "product.related.pieces": "Conbine shopping",
     "product.related.empty": "No related products available",
     "product.colors": "Colors",
     "product.reviews.title": "Customer Reviews",
@@ -639,7 +669,7 @@ const translations: Record<Language, Record<string, string>> = {
     "product.reviews.verified.purchase": "Verified Purchase",
     "product.reviews.helpful": "helpful",
     "product.reviews.verified": "Verified",
-    
+
     // Checkout page specific
     "checkout.eyebrow": "Checkout",
     "checkout.heading": "Concierge checkout details",
@@ -654,7 +684,9 @@ const translations: Record<Language, Record<string, string>> = {
     "checkout.cart.empty": "Your cart is empty. Please add items before checking out.",
     "checkout.name.required": "Please enter your full name.",
     "checkout.email.invalid": "Please enter a valid email address.",
-    "checkout.phone.invalid": "Please enter a valid phone number (at least 10 digits).",
+    "checkout.phone.invalid": "Please enter a valid phone number (minimum 8 digits).",
+    "checkout.billing.required": "Please provide {field} for billing.",
+    "checkout.billing.phone.invalid": "Billing phone number is invalid.",
     "checkout.address.invalid": "Please enter a valid street address.",
     "checkout.city.invalid": "Please enter a valid city name.",
     "checkout.state.invalid": "Please enter a valid 2-letter state code (e.g., CA, NY, TX).",
@@ -664,7 +696,7 @@ const translations: Record<Language, Record<string, string>> = {
     "checkout.concierge.perk": "Concierge perk",
     "checkout.concierge.perk.description": "Every order unlocks 24/7 access to our stylist team, including one complimentary virtual styling session to prepare for your occasion.",
     "checkout.qty": "Qty",
-    
+
     // Error messages
     "error.occurred": "An error occurred",
     "error.unknown": "Unknown error",
@@ -690,7 +722,7 @@ const translations: Record<Language, Record<string, string>> = {
     "profile.password.success": "Password changed successfully!",
     "profile.update.success": "Profile updated successfully!",
     "profile.contact.info": "Contact Information",
-    
+
     // Verify Email
     "verify.email.title": "Email Verification",
     "verify.email.verifying": "Verifying your email...",
@@ -701,7 +733,7 @@ const translations: Record<Language, Record<string, string>> = {
     "verify.email.go.login": "Go to login now",
     "verify.email.failed.message": "Email verification failed.",
     "verify.email.network.error": "Network error. Please check your connection and try again.",
-    
+
     // Navigation Menu - Column Headings
     "nav.column.silhouettes": "Silhouettes",
     "nav.column.occasions": "Occasions",
@@ -717,7 +749,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.column.sets": "Sets",
     "nav.column.textures": "Textures",
     "nav.column.services": "Services",
-    
+
     // Navigation Menu - Ao Dai
     "nav.ao.dai.classic": "Classic",
     "nav.ao.dai.modern.cut": "Modern cut",
@@ -733,7 +765,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.ao.dai.capsule.title": "Timelite Ao Dai Capsule",
     "nav.ao.dai.capsule.description": "Curated looks that blend heritage details with contemporary proportions.",
     "nav.ao.dai.capsule.cta": "Shop Ao Dai capsule",
-    
+
     // Navigation Menu - Suiting
     "nav.suiting.full.suits": "Full suits",
     "nav.suiting.vests": "Vests",
@@ -746,7 +778,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.suiting.view.all": "View all suiting",
     "nav.suiting.tailored.title": "Tailored for movement",
     "nav.suiting.tailored.description": "Lightweight structures designed to stay sharp from day to night.",
-    
+
     // Navigation Menu - Bridal
     "nav.bridal.ceremony.gowns": "Ceremony gowns",
     "nav.bridal.reception.dresses": "Reception dresses",
@@ -761,11 +793,11 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.bridal.book.fitting": "Book a fitting",
     "nav.bridal.fitting.description": "Explore silhouettes with 1:1 styling support in our studio.",
     "nav.bridal.explore": "Explore bridal",
-    
+
     // Navigation Menu - Evening
     "nav.evening.column": "Column",
     "nav.evening.mermaid": "Mermaid",
-    "nav.evening.a.line": "A‑line",
+    "nav.evening.a.line": "A-line",
     "nav.evening.mini": "Mini",
     "nav.evening.gala": "Gala",
     "nav.evening.cocktail": "Cocktail",
@@ -774,8 +806,8 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.evening.embellished": "Embellished gowns",
     "nav.evening.view.all": "View all evening",
     "nav.evening.edit.title": "Evening edit",
-    "nav.evening.edit.description": "Statement pieces with sculpted lines and hand‑finished details.",
-    
+    "nav.evening.edit.description": "Statement pieces with sculpted lines and hand-finished details.",
+
     // Navigation Menu - Conical Hats
     "nav.hats.mother.of.pearl": "Mother of Pearl",
     "nav.hats.hand.painted": "Hand-Painted",
@@ -788,7 +820,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.hats.editorial.looks": "Editorial Looks",
     "nav.hats.custom.engraving": "Custom Engraving",
     "nav.hats.collector.sets": "Collector Sets",
-    
+
     // Navigation Menu - Kidswear
     "nav.kidswear.infant": "Infant",
     "nav.kidswear.toddler": "Toddler",
@@ -804,7 +836,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.kidswear.custom.sibling.title": "Custom Sibling Sets",
     "nav.kidswear.custom.sibling.description": "Coordinated looks tailored for modern family celebrations.",
     "nav.kidswear.plan.styling": "Plan styling",
-    
+
     // Navigation Menu - Gift Procession Sets
     "nav.gift.eight.tray": "Eight Tray",
     "nav.gift.ten.tray": "Ten Tray",
@@ -823,18 +855,18 @@ const translations: Record<Language, Record<string, string>> = {
 };
 
 export const I18nProvider = ({ children }: { children: ReactNode }) => {
-  // Force Vietnamese language only
-  const [language] = useState<Language>("vi");
+  // Force English language only
+  const [language] = useState<Language>("en");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("language", "vi");
+      localStorage.setItem("language", "en");
     }
   }, []);
 
-  const setLanguage = (lang: Language) => {
-    // Do nothing - always use Vietnamese
-    console.log("Language switching disabled. Using Vietnamese only.");
+  const setLanguage = (_lang: Language) => {
+    // Do nothing - always use English
+    console.log("Language switching disabled. Using English only.");
   };
 
   const t = (key: string): string => {

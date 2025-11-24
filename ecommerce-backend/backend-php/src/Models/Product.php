@@ -9,7 +9,7 @@ use PDOException;
 class Product
 {
     private PDO $db;
-    
+
     /**
      * Maps normalized category filters (slugs or keywords) to database labels.
      */

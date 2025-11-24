@@ -68,6 +68,7 @@
   background: #ffffff;
   box-shadow: 0 14px 30px rgba(15, 15, 15, 0.08);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  gap: 0.35rem;
 }
 
 .card:hover {
@@ -75,12 +76,19 @@
   box-shadow: 0 28px 48px rgba(15, 15, 15, 0.12);
 }
 
+.mediaLink {
+  display: block;
+  padding: 1.1rem 1.1rem 0;
+}
+
 .imageWrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 16 / 7;
+  min-height: clamp(110px, 14vw, 210px);
   overflow: hidden;
-  background: #f8f5f2;
+  border-radius: 22px;
+  background: radial-gradient(circle at top, #fdf1e4 0%, #f8f5f2 60%, #f0f0f0 100%);
 }
 
 .badge {
@@ -105,11 +113,20 @@
 }
 
 .content {
-  padding: 1.35rem 1.4rem 1.75rem;
+  padding: 0 1.4rem 1.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
   background: linear-gradient(180deg, #ffffff 0%, #fdf7ec 100%);
+}
+
+.nameLink {
+  text-decoration: none;
+  width: fit-content;
+}
+
+.nameLink:hover .name {
+  text-decoration: underline;
 }
 
 .name {

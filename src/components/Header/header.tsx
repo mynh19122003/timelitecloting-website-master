@@ -260,11 +260,11 @@ export function Header({ navMenu }: HeaderProps) {
               />
             </span>
             <span className="header__brand-name" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
-              Timelite
+              Timelitecloting
             </span>
           </div>
           <div className="header__search">
-            <FiSearch size={18} />
+            <FiSearch size={16} />
             <input type="search" aria-label={t("profile.search.products")} placeholder={t("header.search.placeholder")} />
           </div>
           <div className="header__actions">

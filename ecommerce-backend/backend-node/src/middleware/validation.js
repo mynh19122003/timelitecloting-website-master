@@ -37,10 +37,33 @@ const orderSchema = Joi.object({
   address: Joi.string().max(500).required(),
   phonenumber: Joi.string().max(32).required(),
   payment_method: Joi.string().max(32).required(),
-  // Optional
+  // Optional customer info
+  email: Joi.string().email().max(255).optional(),
+  company: Joi.string().max(255).allow('').optional(),
+  street_address: Joi.string().max(255).allow('').optional(),
+  apartment: Joi.string().max(128).allow('').optional(),
+  city: Joi.string().max(100).allow('').optional(),
+  state: Joi.string().max(100).allow('').optional(),
+  zip: Joi.string().max(20).allow('').optional(),
+  country: Joi.string().max(100).allow('').optional(),
+  // Shipping info
+  shipping_method: Joi.string().max(64).allow('').optional(),
+  shipping_cost: Joi.number().min(0).optional(),
+  shipping_firstname: Joi.string().max(100).allow('').optional(),
+  shipping_lastname: Joi.string().max(100).allow('').optional(),
+  shipping_company: Joi.string().max(255).allow('').optional(),
+  shipping_address: Joi.string().max(500).allow('').optional(),
+  shipping_phone: Joi.string().max(32).allow('').optional(),
+  // Billing info
+  billing_firstname: Joi.string().max(100).allow('').optional(),
+  billing_lastname: Joi.string().max(100).allow('').optional(),
+  billing_company: Joi.string().max(255).allow('').optional(),
+  billing_address: Joi.string().max(500).allow('').optional(),
+  billing_phone: Joi.string().max(32).allow('').optional(),
+  // Other optional fields
   total_amount: Joi.number().positive().optional(),
   notes: Joi.string().max(2000).allow('').optional()
-});
+}).unknown(false); // Explicitly disallow unknown fields to catch typos
 
 const validate = (schema) => {
   return (req, res, next) => {
