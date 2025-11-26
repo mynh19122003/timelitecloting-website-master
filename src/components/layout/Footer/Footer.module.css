@@ -3,7 +3,7 @@
 }
 
 .columns {
-  @apply mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-3;
+  @apply mx-auto grid w-full max-w-4xl gap-6 px-4 py-12 sm:grid-cols-2;
 }
 
 .column {

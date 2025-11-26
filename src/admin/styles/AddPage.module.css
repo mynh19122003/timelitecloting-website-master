@@ -189,30 +189,82 @@
 
 .mediaUpload {
   display: flex;
-  align-items: center;
-  gap: 24px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
   padding: 20px;
   border-radius: 18px;
   border: 1px dashed rgba(148, 163, 184, 0.45);
   background: #f8fafc;
 }
 
-.preview {
-  width: 108px;
-  height: 108px;
-  border-radius: 16px;
-  background: #eef2ff;
+.mediaNote {
+  margin: 0;
+  font-size: 13px;
+  color: #475569;
+}
+
+.mediaGallery {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.mediaLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.mediaThumbGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 14px;
+}
+
+.mediaThumb {
+  position: relative;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 12px 24px -18px rgba(15, 23, 42, 0.25);
+}
+
+.mediaThumb img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+
+.mediaThumb figcaption {
+  padding: 6px 8px 10px;
+  font-size: 12px;
+  text-align: center;
+  color: #475569;
+}
+
+.mediaRemove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.75);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-.preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+.mediaRemove:hover {
+  background: rgba(220, 38, 38, 0.9);
 }
 
 .uploadActions {

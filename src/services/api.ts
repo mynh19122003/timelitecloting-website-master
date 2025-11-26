@@ -46,6 +46,14 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
+export interface ContactRequestPayload {
+  name: string;
+  email: string;
+  phone?: string;
+  eventDate?: string;
+  message: string;
+}
+
 // API Error class
 export class ApiError extends Error {
   constructor(
@@ -937,6 +945,10 @@ export class ApiService {
         throw error; // Throw original error if all fail
       }
     }
+  }
+
+  static async submitContactRequest(payload: ContactRequestPayload): Promise<ApiResponse> {
+    return httpClient.post<ApiResponse>(API_CONFIG.ENDPOINTS.CONTACT, payload, true);
   }
 
   // Auth utilities

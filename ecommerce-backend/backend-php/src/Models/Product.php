@@ -14,23 +14,45 @@ class Product
      * Maps normalized category filters (slugs or keywords) to database labels.
      */
     private const CATEGORY_SYNONYMS = [
-        'ao-dai' => ['Ao Dai', 'Ao Dai Couture'],
+        // Ao Dai capsule
+        'ao-dai' => ['Ao Dai', 'Ao Dai Couture', 'Ceremonial Attire'],
         'ao-dai-couture' => ['Ao Dai', 'Ao Dai Couture'],
-        'suiting' => ['Suiting', 'Tailored Suiting'],
-        'tailored-suiting' => ['Suiting', 'Tailored Suiting'],
-        'vest' => ['Suiting', 'Tailored Suiting'],
-        'bridal' => ['Bridal', 'Bridal Gowns'],
-        'bridal-gowns' => ['Bridal', 'Bridal Gowns'],
-        'wedding' => ['Bridal', 'Bridal Gowns'],
+
+        // Suiting / Suits
+        'suiting' => ['Suiting', 'Tailored Suiting', 'Suits', 'Uniforms & Teamwear'],
+        'tailored-suiting' => ['Suiting', 'Tailored Suiting', 'Suits'],
+        'vest' => ['Suiting', 'Tailored Suiting', 'Suits', 'Uniforms & Teamwear'],
+        'suits' => ['Suits', 'Suiting', 'Tailored Suiting'],
+        'uniforms-teamwear' => ['Uniforms & Teamwear'],
+
+        // Bridal & formal
+        'bridal' => ['Bridal', 'Bridal Gowns', 'Bridal & Formal Dresses'],
+        'bridal-gowns' => ['Bridal', 'Bridal Gowns', 'Bridal & Formal Dresses'],
+        'wedding' => ['Bridal', 'Bridal Gowns', 'Bridal & Formal Dresses'],
+        'bridal-formal-dresses' => ['Bridal & Formal Dresses', 'Bridal Gowns'],
+
+        // Evening
         'evening' => ['Evening', 'Evening Couture', 'Evening Dresses'],
         'evening-couture' => ['Evening', 'Evening Couture', 'Evening Dresses'],
+
+        // Accessories / Conical hats
         'conical-hats' => ['Conical Hats', 'Accessories'],
         'non-la' => ['Conical Hats', 'Accessories'],
         'accessories' => ['Accessories', 'Conical Hats'],
+
+        // Kids
         'kidswear' => ['Kidswear'],
-        'gift-procession-sets' => ['Gift Procession Sets', 'Gift Procession'],
-        'gift-procession' => ['Gift Procession Sets', 'Gift Procession'],
-        'gift' => ['Gift Procession Sets', 'Gift Procession'],
+
+        // Gift / Lunar New Year décor
+        'gift-procession-sets' => ['Gift Procession Sets', 'Gift Procession', 'Lunar New Year Décor'],
+        'gift-procession' => ['Gift Procession Sets', 'Gift Procession', 'Lunar New Year Décor'],
+        'gift' => ['Gift Procession Sets', 'Gift Procession', 'Lunar New Year Décor'],
+        'lunar-new-year-decor' => ['Lunar New Year Décor', 'Lunar New Year Decor', 'Gift Procession Sets'],
+
+        // Ceremonial
+        'ceremonial-attire' => ['Ceremonial Attire', 'Ao Dai'],
+
+        // Shop all
         'all' => [],
         'shop-all' => [],
     ];

@@ -87,6 +87,7 @@ const SHIPPING_METHODS = [
 
 const FREE_SHIPPING_ID = 'free_shipping';
 const DEFAULT_SHIPPING_METHOD = SHIPPING_METHODS[0].id;
+const SUPPORTED_COUNTRIES = ["US", "CA"];
 
 type CheckoutLocationState = {
   directPurchase?: CartItem;
@@ -666,15 +667,7 @@ export const CheckoutPage = () => {
   return (
     <div className={styles.page}>
       <section className={styles.section}>
-        <div className={styles.headerRow}>
-          <div>
-            <span className={styles.eyebrow}>{t("checkout.eyebrow")}</span>
-            <h1 className={styles.heading}>{t("checkout.heading")}</h1>
-            <p className={styles.description}>
-              {t("checkout.description")}
-            </p>
-          </div>
-
+        <div className={styles.headerActions}>
           <Link to="/cart" className={styles.linkUnderline}>
             {t("checkout.return.to.cart")}
           </Link>
@@ -709,7 +702,7 @@ export const CheckoutPage = () => {
         <div className={styles.grid}>
           <form className={styles.form} onSubmit={handleSubmit}>
             <div>
-              <h2 className={styles.sectionTitle}>{t("checkout.client.info")}</h2>
+              <h2 className={styles.clientInfoTitle}>{t("checkout.client.info")}</h2>
               <div className={styles.fieldGrid}>
                 <Input
                   label={t("checkout.first.name")}
@@ -787,7 +780,7 @@ export const CheckoutPage = () => {
                   <CountryDropdown
                     value={formData.country}
                     onChange={handleCountryChange}
-                    priorityOptions={["United States", "Canada", "United Kingdom"]}
+                      whitelist={SUPPORTED_COUNTRIES}
                       className={styles.selectField}
                     defaultOptionLabel={t("checkout.country.placeholder")}
                     valueType="full"
@@ -1067,7 +1060,7 @@ export const CheckoutPage = () => {
                               <CountryDropdown
                                 value={formData.billingCountry}
                                 onChange={handleBillingCountryChange}
-                                priorityOptions={["United States", "Canada", "United Kingdom"]}
+                                whitelist={SUPPORTED_COUNTRIES}
                                 className={styles.selectField}
                                 defaultOptionLabel={t("checkout.country.placeholder")}
                                 valueType="full"

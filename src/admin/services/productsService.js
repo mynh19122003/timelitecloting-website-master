@@ -12,6 +12,32 @@ const toInt = (value, fallback = 0) => {
   return Number.isFinite(n) ? n : fallback
 }
 
+const resolveMediaPath = (value, fallback = '') => {
+  if (!value) return fallback
+  const raw = String(value)
+  const isAbsolute = /^https?:\/\//i.test(raw) || raw.startsWith('data:')
+  if (isAbsolute) return raw
+  if (raw.startsWith('/admin/media/')) return raw
+  if (raw.startsWith('admin/media/')) return `/${raw}`
+  const base = getApiBaseUrl()
+  const prefix = `${base.replace(/\/+$/, '')}/media/`
+  return `${prefix}${raw.replace(/^\/?(admin\/media\/)?/, '')}`
+}
+
+const parseJsonArray = (value) => {
+  if (!value) return []
+  if (Array.isArray(value)) return value
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value)
+      return Array.isArray(parsed) ? parsed : []
+    } catch (_) {
+      return []
+    }
+  }
+  return []
+}
+
 const normalizeUiProduct = (apiProduct = {}, fallbackImage = '') => {
   const priceValue = toNumber(apiProduct.price, 0)
   const listPrice = priceValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
@@ -46,19 +72,11 @@ const normalizeUiProduct = (apiProduct = {}, fallbackImage = '') => {
     // ignore parse error -> keep empty
   }
 
-  const resolvedImage = (() => {
-    const raw = apiProduct.image_url || apiProduct.image || ''
-    if (!raw) return fallbackImage
-    const isAbsolute = /^https?:\/\//i.test(raw) || raw.startsWith('data:')
-    if (isAbsolute) return raw
-    // If backend already returns `/admin/media/...`, keep it as-is
-    if (raw.startsWith('/admin/media/')) return raw
-    // Also handle accidental leading 'admin/media/...'
-    if (raw.startsWith('admin/media/')) return `/${raw}`
-    const base = getApiBaseUrl() // '/admin' in dev, 'http://host/admin' in prod
-    const prefix = `${base.replace(/\/+$/, '')}/media/`
-    return `${prefix}${String(raw).replace(/^\/?(admin\/media\/)?/, '')}`
-  })()
+  const resolvedImage = resolveMediaPath(apiProduct.image_url || apiProduct.image || '', fallbackImage)
+  const galleryRaw = parseJsonArray(apiProduct.gallery)
+  const resolvedGallery = galleryRaw
+    .map((entry) => resolveMediaPath(entry, ''))
+    .filter(Boolean)
 
   // Ensure id is always a string
   let rawId = apiProduct.products_id || apiProduct.product_id || apiProduct.id
@@ -73,6 +91,7 @@ const normalizeUiProduct = (apiProduct = {}, fallbackImage = '') => {
     name: apiProduct.name || 'Untitled product',
     sku: rawId ? String(rawId) : '',
     image: resolvedImage,
+    gallery: resolvedGallery,
     category: apiProduct.category || 'General',
     color: parsedColors[0] || '',
     variant: apiProduct.variant || '-',
@@ -135,12 +154,19 @@ export const createProduct = async (formData = {}) => {
     }
   }
 
+  const baseImagePayload = typeof formData.imagePreview === 'string' && formData.imagePreview.startsWith('data:')
+    ? formData.imagePreview
+    : undefined
+
+  const galleryPayload = Array.isArray(formData.galleryPayload)
+    ? formData.galleryPayload.filter((img) => typeof img === 'string' && img.startsWith('data:'))
+    : []
+
   const payload = {
     name: formData.name,
     price: toNumber(formData.price, 0),
     stock: toInt(formData.inventory, 0),
     description: formData.description || '',
-    image_url: formData.imagePreview || '',
     category: formData.type || '',
     variant: formData.variant || '',
     rating: toNumber(formData.rating, 0),
@@ -150,6 +176,14 @@ export const createProduct = async (formData = {}) => {
     short_description: '',
     original_price: null,
     tags: tagsPayload
+  }
+
+  if (baseImagePayload) {
+    payload.image_url = baseImagePayload
+  }
+
+  if (galleryPayload.length) {
+    payload.gallery = galleryPayload
   }
 
   // Dev debug: in ra payload đúng lúc POST để kiểm tra trường gửi lên API
@@ -256,12 +290,19 @@ export const updateProduct = async (idOrCode, formData = {}) => {
     }
   }
 
+  const baseImagePayload = typeof formData.imagePreview === 'string' && formData.imagePreview.startsWith('data:')
+    ? formData.imagePreview
+    : undefined
+
+  const galleryPayload = Array.isArray(formData.galleryPayload)
+    ? formData.galleryPayload.filter((img) => typeof img === 'string' && img.startsWith('data:'))
+    : []
+
   const payload = {
     name: formData.name,
     price: toNumber(formData.price, 0),
     stock: toInt(formData.inventory, 0),
     description: formData.description || '',
-    image_url: formData.imagePreview || '',
     category: formData.type || '',
     variant: formData.variant || '',
     rating: toNumber(formData.rating, 0),
@@ -270,6 +311,14 @@ export const updateProduct = async (idOrCode, formData = {}) => {
     short_description: formData.short_description || '',
     original_price: formData.original_price || null,
     tags: tagsPayload
+  }
+
+  if (baseImagePayload) {
+    payload.image_url = baseImagePayload
+  }
+
+  if (galleryPayload.length) {
+    payload.gallery = galleryPayload
   }
 
   // Dev debug

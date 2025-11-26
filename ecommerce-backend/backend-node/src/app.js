@@ -75,6 +75,7 @@ const logger = {
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -132,6 +133,7 @@ app.get('/health', (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/contact', contactRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

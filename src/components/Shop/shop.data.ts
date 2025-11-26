@@ -57,39 +57,33 @@ export const getNavItemPath = (item: ShopNavItem): string => {
 export const shopCatalog: Record<string, ShopCatalogEntry> = {
   [defaultCategorySlug]: {
     title: "All Collections",
-    subtitle: "Discover every silhouette from our Ao Dai, suiting, bridal and evening couture lines.",
+    subtitle: "Discover every silhouette from our couture Ao Dai, tailoring, bridal and ceremonial lines.",
     chips: ["Highlights", "Best sellers", "New arrivals", "Limited edition"],
     filters: ["Silhouette", "Fabric", "Occasion"],
   },
   [toCategorySlug("Ao Dai")]: {
     title: "Ao Dai",
     subtitle: "Modern Ao Dai silhouettes crafted with traditional details and premium fabrics.",
-    chips: ["Classic", "Modern cut", "Wedding Ao Dai", "Mix & match"],
+    chips: ["Women's Ao Dai", "Men's Ao Dai", "Family Sets", "Heritage"],
     filters: ["Silhouette", "Fabric", "Occasion"],
   },
-  [toCategorySlug("Suiting")]: {
-    title: "Suiting",
-    subtitle: "Tailored suits and vest sets for elevated everyday and special occasions.",
-    chips: ["Business", "Ceremony", "Casual suiting", "Statement pieces"],
+  [toCategorySlug("Suits")]: {
+    title: "Suits",
+    subtitle: "Tailored suits and vest sets for ceremonies, receptions and bespoke appointments.",
+    chips: ["Men’s Suits", "Women’s Suits", "Vest Sets", "Custom Orders"],
     filters: ["Fit", "Fabric", "Occasion"],
   },
-  [toCategorySlug("Bridal Gowns")]: {
-    title: "Bridal Gowns",
-    subtitle: "Timeless bridal pieces for your ceremony, reception and engagement photos.",
-    chips: ["Ceremony gown", "Reception dress", "Engagement", "Minimal bridal"],
-    filters: ["Silhouette", "Fabric", "Train length"],
-  },
-  [toCategorySlug("Evening Couture")]: {
-    title: "Evening Couture",
-    subtitle: "Dramatic evening gowns and red‑carpet ready looks.",
-    chips: ["Gala", "Cocktail", "Black tie", "Statement"],
+  [toCategorySlug("Bridal & Formal Dresses")]: {
+    title: "Bridal & Formal Dresses",
+    subtitle: "From aisle to after-party, discover gowns for every celebration.",
+    chips: ["Wedding", "Party & Gala", "Pageant", "Bridesmaid"],
     filters: ["Silhouette", "Embellishment", "Length"],
   },
-  [toCategorySlug("Conical Hats")]: {
-    title: "Conical Hats",
-    subtitle: "Heritage Non La silhouettes with couture-level finishing.",
-    chips: ["Mother of Pearl", "Hand-Painted", "Velvet straps", "Collectible"],
-    filters: ["Fabric", "Occasion"],
+  [toCategorySlug("Accessories")]: {
+    title: "Accessories",
+    subtitle: "Complete the look with heirloom hats, handbags and finishing touches.",
+    chips: ["Conical Hats", "Handbags", "Sandals", "Headpieces"],
+    filters: ["Material", "Occasion"],
   },
   [toCategorySlug("Kidswear")]: {
     title: "Kidswear",
@@ -97,13 +91,32 @@ export const shopCatalog: Record<string, ShopCatalogEntry> = {
     chips: ["Infant", "Toddler", "Little Muse", "Young Muse"],
     filters: ["Occasion", "Length"],
   },
-  [toCategorySlug("Gift Procession Sets")]: {
-    title: "Gift Procession Sets",
-    subtitle: "Curated lễ vật trays, textiles and ceremonial styling services.",
-    chips: ["Eight Tray", "Ten Tray", "Twelve Tray", "Concierge"],
-    filters: ["Occasion", "Fabric"],
+  [toCategorySlug("Lunar New Year Décor")]: {
+    title: "Lunar New Year Décor",
+    subtitle: "Backdrops, blossoms and calligraphy accents for festive gatherings.",
+    chips: ["Backdrops", "Mai Blossoms", "Peach Blossoms", "Lanterns"],
+    filters: ["Color", "Scale"],
+  },
+  [toCategorySlug("Ceremonial Attire")]: {
+    title: "Ceremonial Attire",
+    subtitle: "Temple robes, pilgrimage sets and heritage ensembles for the entire family.",
+    chips: ["Women", "Men", "Family Sets", "Heritage"],
+    filters: ["Silhouette", "Occasion"],
+  },
+  [toCategorySlug("Uniforms & Teamwear")]: {
+    title: "Uniforms & Teamwear",
+    subtitle: "Coordinated looks for schools, choirs, hospitality teams and more.",
+    chips: ["Schools", "Choirs", "Restaurants", "Retail"],
+    filters: ["Industry", "Color"],
   },
 };
+
+// Legacy slug aliases for backward compatibility
+shopCatalog[toCategorySlug("Suiting")] = shopCatalog[toCategorySlug("Suits")];
+shopCatalog[toCategorySlug("Bridal Gowns")] = shopCatalog[toCategorySlug("Bridal & Formal Dresses")];
+shopCatalog[toCategorySlug("Evening Couture")] = shopCatalog[toCategorySlug("Bridal & Formal Dresses")];
+shopCatalog[toCategorySlug("Conical Hats")] = shopCatalog[toCategorySlug("Accessories")];
+shopCatalog[toCategorySlug("Gift Procession Sets")] = shopCatalog[toCategorySlug("Lunar New Year Décor")];
 
 export const shopNavMenu: ShopNavItem[] = [
   {
@@ -117,15 +130,35 @@ export const shopNavMenu: ShopNavItem[] = [
     categorySlug: toCategorySlug("Ao Dai"),
     columns: [
       {
-        heading: "Silhouettes",
-        links: ["Classic", "Modern cut", "Minimal", "Layered"],
+        heading: "Women's Ao Dai",
+        links: [
+          "Bridal Ao Dai",
+          "Designer Ao Dai (Women)",
+          "Traditional Ao Dai (Women)",
+          "Modern Ao Dai (Women)",
+        ],
       },
       {
-        heading: "Occasions",
-        links: ["Daily wear", "Engagement", "Ceremony"],
+        heading: "Heritage & Family",
+        links: [
+          "Ceremonial Nhạc Bình (Women)",
+          "Five-Panel Ao Dai (Women)",
+          "Girls’ Ao Dai",
+          "Mother & Daughter Sets",
+        ],
+      },
+      {
+        heading: "Men & Family",
+        links: [
+          "Modern Ao Dai (Men)",
+          "Designer Ao Dai (Men)",
+          "Five-Panel Ao Dai (Men)",
+          "Ceremonial Nhạc Bình (Men)",
+          "Father & Son Sets",
+        ],
       },
     ],
-    quickLinks: ["New Ao Dai", "Best sellers", "View all Ao Dai"],
+    quickLinks: ["View all Ao Dai"],
     highlight: {
       eyebrow: "Signature drop",
       title: "Timelite Ao Dai Capsule",
@@ -134,38 +167,38 @@ export const shopNavMenu: ShopNavItem[] = [
     },
   },
   {
-    label: "Suiting",
-    categorySlug: toCategorySlug("Suiting"),
+    label: "Suits",
+    categorySlug: toCategorySlug("Suits"),
     columns: [
       {
-        heading: "Categories",
-        links: ["Full suits", "Vests", "Separates"],
+        heading: "Tailoring",
+        links: ["Men’s Suits", "Women’s Suits"],
       },
       {
-        heading: "Occasions",
-        links: ["Office", "Ceremony", "Black tie"],
+        heading: "Vest Sets",
+        links: ["Men’s Vests", "Women’s Vests"],
       },
     ],
-    quickLinks: ["Statement blazers", "Essential suiting", "View all suiting"],
+    quickLinks: ["View all Suits"],
     highlight: {
       title: "Tailored for movement",
       description: "Lightweight structures designed to stay sharp from day to night.",
     },
   },
   {
-    label: "Bridal",
-    categorySlug: toCategorySlug("Bridal Gowns"),
+    label: "Bridal & Formal Dresses",
+    categorySlug: toCategorySlug("Bridal & Formal Dresses"),
     columns: [
       {
         heading: "By moment",
-        links: ["Ceremony gowns", "Reception dresses", "Engagement looks"],
+        links: ["Wedding Dresses", "Party & Gala Dresses"],
       },
       {
-        heading: "Details",
-        links: ["Lace", "Beading", "Minimal satin"],
+        heading: "Specialty",
+        links: ["Pageant Dresses", "Bridesmaid Dresses"],
       },
     ],
-    quickLinks: ["New bridal", "Timelite brides", "View all bridal"],
+    quickLinks: ["View all Bridal & Formal"],
     highlight: {
       eyebrow: "Bridal studio",
       title: "Book a fitting",
@@ -174,90 +207,82 @@ export const shopNavMenu: ShopNavItem[] = [
     },
   },
   {
-    label: "Evening",
-    categorySlug: toCategorySlug("Evening Couture"),
+    label: "Accessories",
+    categorySlug: toCategorySlug("Accessories"),
     columns: [
       {
-        heading: "Silhouettes",
-        links: ["Column", "Mermaid", "A‑line", "Mini"],
+        heading: "Iconic Pieces",
+        links: ["Conical Hats", "Handbags & Clutches", "Wooden Sandals"],
       },
       {
-        heading: "Occasions",
-        links: ["Gala", "Cocktail", "Black tie"],
+        heading: "Finishing Touches",
+        links: ["Statement Collars", "Traditional Turbans", "Heels & Dress Shoes"],
       },
     ],
-    quickLinks: ["New evening", "Embellished gowns", "View all evening"],
-    highlight: {
-      title: "Evening edit",
-      description: "Statement pieces with sculpted lines and hand‑finished details.",
-    },
+    quickLinks: ["View all Accessories"],
   },
   {
-    label: "Conical Hats",
-    categorySlug: toCategorySlug("Conical Hats"),
+    label: "Lunar New Year Décor",
+    categorySlug: toCategorySlug("Lunar New Year Décor"),
     columns: [
       {
-        heading: "Editions",
-        links: ["Mother of Pearl", "Hand-Painted", "Lacquered"],
+        heading: "Décor Highlights",
+        links: ["Backdrops & Photo Walls", "Mai Blossoms", "Peach Blossoms"],
       },
       {
-        heading: "Straps",
-        links: ["Velvet Ribbon", "Pearl Garland", "Silk Twist"],
-      },
-      {
-        heading: "Pair With",
-        links: ["Heritage Ao Dai", "Modern Suit", "Editorial Looks"],
+        heading: "Accents",
+        links: ["Calligraphy Panels", "Red Envelopes", "Lanterns"],
       },
     ],
-    quickLinks: ["Custom Engraving", "Collector Sets"],
+    quickLinks: ["View all Lunar Décor"],
   },
   {
-    label: "Kidswear",
-    categorySlug: toCategorySlug("Kidswear"),
+    label: "Ceremonial Attire",
+    categorySlug: toCategorySlug("Ceremonial Attire"),
     columns: [
       {
-        heading: "By Age",
-        links: ["Infant", "Toddler", "Little Muse (6-10)", "Young Muse (11-14)"],
+        heading: "Women",
+        links: [
+          "Temple Robes (Women)",
+          "Pilgrimage Ao Dai",
+          "Women’s Ba Ba Sets",
+        ],
       },
       {
-        heading: "Storylines",
-        links: ["Festive Bloom", "Mini Maestro", "Garden Party"],
+        heading: "Men",
+        links: [
+          "Temple Ao Dai (Men)",
+          "Men’s Ba Ba Sets",
+        ],
       },
       {
-        heading: "Gifting",
-        links: ["Keepsake Boxes", "Accessories", "Sibling Sets"],
+        heading: "Family Sets",
+        links: [
+          "Girls’ Ba Ba Sets",
+          "Family Matching Sets",
+        ],
       },
     ],
-    highlight: {
-      eyebrow: "Mini Atelier",
-      title: "Custom Sibling Sets",
-      description: "Coordinated looks tailored for modern family celebrations.",
-      cta: "Plan styling",
-    },
+    quickLinks: ["View all Ceremonial Attire"],
   },
   {
-    label: "Gift Procession Sets",
-    categorySlug: toCategorySlug("Gift Procession Sets"),
+    label: "Uniforms & Teamwear",
+    categorySlug: toCategorySlug("Uniforms & Teamwear"),
     columns: [
       {
-        heading: "Sets",
-        links: ["Eight Tray", "Ten Tray", "Twelve Tray"],
+        heading: "Schools & Choirs",
+        links: ["School Uniforms", "Choir & Church Uniforms"],
       },
       {
-        heading: "Textures",
-        links: ["Velvet", "Mother of Pearl", "Bamboo Inlay"],
+        heading: "Hospitality & Retail",
+        links: ["Restaurant Uniforms", "Retail Uniforms"],
       },
       {
-        heading: "Services",
-        links: ["Styling Crew", "Custom Engraving", "Venue Logistics"],
+        heading: "Teams & Workshops",
+        links: ["Factory & Workshop Uniforms", "Youth Team Uniforms"],
       },
     ],
-    highlight: {
-      eyebrow: "Concierge Team",
-      title: "Complete Planning",
-      description: "Full procession styling and logistics for celebrations worldwide.",
-      cta: "Meet the team",
-    },
+    quickLinks: ["View all Uniforms"],
   },
 ];
 

@@ -9,7 +9,7 @@ import styles from "./Footer.module.css";
 const mapHref = "https://maps.app.goo.gl/M675ESVRWXjbb9we9";
 
 const contactDetails = [
-  { icon: FiMapPin, label: "Location: 236 N Claremont Ave, San Jose, CA 95127, Hoa Kỳ", href: mapHref },
+  { icon: FiMapPin, label: "Location: 236 N Claremont Ave, San Jose, CA 95127, USA", href: mapHref },
   { icon: FiClock, label: "Business Hour: Monday - Sunday 10pm - 6pm (PST)" },
   { icon: FiPhone, label: "1.669.254.7401", href: "tel:+16692547401" },
   { icon: FiMail, label: "henry@timeliteclothing.com", href: "mailto:henry@timeliteclothing.com" },
@@ -26,22 +26,6 @@ export const Footer = () => {
   return (
     <footer className={styles.footer}>
       <div className={styles.columns}>
-        <div className={styles.column}>
-          <p className={styles.brand}>Timelite</p>
-          <p className={styles.bodyText}>
-            Modern Vietnamese fashion curated for global shoppers. Shop online with international
-            shipping or visit our U.S. showrooms for personalized styling.
-          </p>
-          <div className={styles.socialRow}>
-            <a href="https://www.instagram.com" target="_blank" rel="noreferrer" aria-label={t("profile.instagram")}>
-              <FiInstagram />
-            </a>
-            <a href="https://www.facebook.com" target="_blank" rel="noreferrer" aria-label={t("profile.facebook")}>
-              <FiFacebook />
-            </a>
-          </div>
-        </div>
-
         <div className={styles.column}>
           <p className={styles.sectionTitle}>Contact Us</p>
           <ul className={styles.contactList}>
@@ -94,17 +78,14 @@ export const Footer = () => {
       </div>
 
       <div className={styles.legal}>
-        <p>&copy; {currentYear} Timelite. All rights reserved.</p>
+        <p>&copy; 2025 Timeliteclothing. All rights reserved.</p>
+        {process.env.NODE_ENV === "development" && (
         <div className={styles.legalLinks}>
-          <Link to="/about">Privacy Notice</Link>
-          <Link to="/about">Terms & Conditions</Link>
-          <Link to="/contact">Accessibility</Link>
-          {process.env.NODE_ENV === "development" && (
             <Link to="/404" style={{ color: "#ff6b6b", fontSize: "0.85rem" }}>
               [Dev] Preview 404
             </Link>
+          </div>
           )}
-        </div>
       </div>
     </footer>
   );

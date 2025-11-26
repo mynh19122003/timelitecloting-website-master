@@ -129,7 +129,7 @@ class ProductsService {
         for (let idx = 0; idx < arr.length; idx += 1) {
           const b64 = arr[idx];
           // eslint-disable-next-line no-await-in-loop
-          const rel = await this.saveImageForProduct(productId, b64, `gallery_${idx + 1}`);
+          const rel = await this.saveImageForProduct(productId, b64, `main_${idx + 2}`);
           if (rel) saved.push(rel);
         }
         galleryJson = JSON.stringify(saved);
@@ -293,7 +293,7 @@ class ProductsService {
         for (let idx = 0; idx < arr.length; idx += 1) {
           const b64 = arr[idx];
           // eslint-disable-next-line no-await-in-loop
-          const rel = await this.saveImageForProduct(productId, b64, `gallery_${idx + 1}`);
+          const rel = await this.saveImageForProduct(productId, b64, `main_${idx + 2}`);
           if (rel) saved.push(rel);
         }
         setIfPresent('gallery', JSON.stringify(saved));

@@ -13,10 +13,13 @@ export const headerStyles = /* css */ `
   }
 
   .header__top {
-    display: grid;
-    grid-template-columns: minmax(280px, auto) 1fr auto;
+    display: flex;
     align-items: center;
-    gap: 1.5rem;
+    justify-content: space-between;
+    gap: 0.75rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
     transition: gap 0.2s ease, padding 0.2s ease;
   }
 
@@ -98,13 +101,14 @@ export const headerStyles = /* css */ `
     gap: 0.5rem;
     border: 1px solid #ededed;
     border-radius: 999px;
-    padding: 0.6rem 0.94rem;
+    padding: 0.5rem 0.9rem;
     background: #fff;
-    transition: padding 0.2s ease;
+    transition: padding 0.2s ease, max-width 0.2s ease;
     width: 100%;
     min-width: 0;
-    flex-shrink: 1;
-    max-width: none;
+    flex: 1 1 0;
+    max-width: 480px;
+    margin: 0 1rem;
   }
 
   .header--dropdown-open .header__search {
@@ -172,8 +176,9 @@ export const headerStyles = /* css */ `
     text-transform: uppercase;
     letter-spacing: 0.18em;
     color: #4a3e2b;
-    max-width: 1160px;
+    max-width: 1200px;
     margin: 0 auto;
+    padding: 0 1.5rem;
     white-space: nowrap;
   }
 

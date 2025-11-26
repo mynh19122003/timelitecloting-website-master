@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { FiUploadCloud } from 'react-icons/fi'
+import { FiUploadCloud, FiX } from 'react-icons/fi'
 import styles from '../../styles/AddPage.module.css'
 import Button from '../../components/Button/Button'
 import { defaultProductImage, statusLabelMap, statusToneMap } from './productData'
@@ -16,8 +16,8 @@ const emptyForm = {
   type: '',
   price: '',
   status: 'published',
-  imageFile: null,
   imagePreview: '',
+  galleryPayload: [],
   tags: '',
   discountPrice: '',
   addTax: false,
@@ -31,20 +31,46 @@ const emptyForm = {
   sizes: []
 }
 
-// Default categories as fallback
-const DEFAULT_CATEGORIES = [
-  'Ao Dai',
-  'Suiting',
-  'Bridal Gowns',
-  'Bridal',
-  'Evening Couture',
-  'Conical Hats',
-  'Accessories',
-  'Kidswear',
-  'Gift Procession Sets'
+const PRIMARY_CATEGORIES = [
+  { label: 'Ao Dai', slug: 'ao-dai' },
+  { label: 'Suits', slug: 'suits' },
+  { label: 'Bridal & Formal Dresses', slug: 'bridal-formal-dresses' },
+  { label: 'Accessories', slug: 'accessories' },
+  { label: 'Lunar New Year Décor', slug: 'lunar-new-year-decor' },
+  { label: 'Ceremonial Attire', slug: 'ceremonial-attire' },
+  { label: 'Uniforms & Teamwear', slug: 'uniforms-teamwear' }
 ]
 
+const CATEGORY_SLUG_MAP = PRIMARY_CATEGORIES.reduce((acc, item) => {
+  acc[item.label] = item.slug
+  return acc
+}, {})
+
+const toCategorySlug = (value = '') => {
+  if (!value) return ''
+  if (CATEGORY_SLUG_MAP[value]) return CATEGORY_SLUG_MAP[value]
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+// Default categories as fallback
+const DEFAULT_CATEGORIES = PRIMARY_CATEGORIES
+
 const SIZES = ['XS', 'S', 'M', 'L', 'XL']
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+
+const sortVariantsByCategory = (variants = []) =>
+  [...variants].sort((a, b) => {
+    if (a.category_slug === b.category_slug) {
+      if (a.sort_order !== b.sort_order) return (a.sort_order || 0) - (b.sort_order || 0)
+      return a.variant_name.localeCompare(b.variant_name)
+    }
+    return a.category_slug.localeCompare(b.category_slug)
+  })
 
 const AddProduct = () => {
   const navigate = useNavigate()
@@ -59,12 +85,25 @@ const AddProduct = () => {
   const [selectedTags, setSelectedTags] = useState([])
   const [showNewVariantInput, setShowNewVariantInput] = useState(false)
   const [newVariantName, setNewVariantName] = useState('')
+  const [mediaUploads, setMediaUploads] = useState([])
+  const [existingMedia, setExistingMedia] = useState([])
   const isEditMode = !!id
+
+  const selectedCategorySlug = useMemo(() => toCategorySlug(formData.type), [formData.type])
+  const filteredVariants = useMemo(() => {
+    if (!selectedCategorySlug) return variantsList
+    return variantsList.filter((variant) => variant.category_slug === selectedCategorySlug)
+  }, [variantsList, selectedCategorySlug])
+  const variantOptions = filteredVariants.length ? filteredVariants : variantsList
+  const hasSelectedVariant = useMemo(
+    () => variantOptions.some((variant) => variant.variant_name === formData.variant),
+    [variantOptions, formData.variant]
+  )
 
   useEffect(() => {
     const fetchVariants = async () => {
       const list = await listVariants()
-      setVariantsList(list)
+      setVariantsList(sortVariantsByCategory(list))
     }
     fetchVariants()
   }, [])
@@ -80,9 +119,12 @@ const AddProduct = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       const categories = await getCategories()
-      if (categories && categories.length > 0) {
-        setCategoriesList(categories)
+      if (Array.isArray(categories) && categories.length > 0) {
+        // Always show the curated primary list in the specified order
+        setCategoriesList(PRIMARY_CATEGORIES)
+        return
       }
+      setCategoriesList(PRIMARY_CATEGORIES)
     }
     fetchCategories()
   }, [])
@@ -125,6 +167,7 @@ const AddProduct = () => {
               price: productToEdit.pricing.listPrice.replace(/[^0-9.]/g, ''),
               status: productToEdit.status.label.toLowerCase(),
               imagePreview: productToEdit.image,
+              galleryPayload: [],
               rating: productToEdit.rating.toString(),
               tags: Array.isArray(parsedTags) && parsedTags.length > 0 ? JSON.stringify(parsedTags) : '',
               discountPrice: '',
@@ -137,6 +180,21 @@ const AddProduct = () => {
               digitalItem: false,
               sizes: productToEdit.sizes || []
             })
+            const existingList = []
+            if (productToEdit.image) {
+              existingList.push({ id: 'existing-main', url: productToEdit.image, label: 'Cover' })
+            }
+            if (Array.isArray(productToEdit.gallery)) {
+              productToEdit.gallery.forEach((url, index) => {
+                existingList.push({
+                  id: `existing-gallery-${index}`,
+                  url,
+                  label: `main_${index + 2}.webp`
+                })
+              })
+            }
+            setExistingMedia(existingList)
+            setMediaUploads([])
           }
         } catch (error) {
           console.error('Failed to load product:', error)
@@ -146,6 +204,28 @@ const AddProduct = () => {
       loadProduct()
     }
   }, [id, isEditMode])
+
+  useEffect(() => {
+    if (!isEditMode) {
+      setExistingMedia([])
+      setMediaUploads([])
+    }
+  }, [isEditMode])
+
+  useEffect(() => {
+    if (showNewVariantInput && !selectedCategorySlug) {
+      setShowNewVariantInput(false)
+      setNewVariantName('')
+    }
+  }, [selectedCategorySlug])
+
+  const syncMediaToFormData = (uploads) => {
+    setFormData((prev) => ({
+      ...prev,
+      imagePreview: uploads[0]?.dataUrl || (isEditMode && existingMedia[0]?.url) || '',
+      galleryPayload: uploads.length > 1 ? uploads.slice(1).map((item) => item.dataUrl) : []
+    }))
+  }
 
   const handleBack = () => navigate('/admin/products')
 
@@ -197,19 +277,60 @@ const AddProduct = () => {
 
   const handleImageBrowse = () => fileInputRef.current?.click()
 
-  const handleImageChange = (event) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+  const handleImageChange = async (event) => {
+    const files = Array.from(event.target.files || [])
+    if (!files.length) return
 
-    const reader = new FileReader()
-    reader.onload = () => {
-      setFormData((prev) => ({
-        ...prev,
-        imageFile: file,
-        imagePreview: typeof reader.result === 'string' ? reader.result : ''
-      }))
+    const oversizeFile = files.find((file) => file.size > MAX_FILE_SIZE)
+    if (oversizeFile) {
+      setFormError(`"${oversizeFile.name}" exceeds the 5MB limit. Please choose a smaller file.`)
+      event.target.value = ''
+      return
     }
-    reader.readAsDataURL(file)
+
+    try {
+      const uploads = await Promise.all(
+        files.map(
+          (file) =>
+            new Promise((resolve, reject) => {
+              const reader = new FileReader()
+              reader.onload = () => {
+                if (typeof reader.result === 'string') {
+                  resolve({
+                    id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                    name: file.name,
+                    dataUrl: reader.result
+                  })
+                } else {
+                  reject(new Error('Failed to read file'))
+                }
+              }
+              reader.onerror = () => reject(new Error('Failed to read file'))
+              reader.readAsDataURL(file)
+            })
+        )
+      )
+
+      setMediaUploads((prev) => {
+        const merged = [...prev, ...uploads]
+        syncMediaToFormData(merged)
+        return merged
+      })
+      if (formError) setFormError('')
+    } catch (error) {
+      console.error('Failed to process images:', error)
+      setFormError('Failed to process selected images. Please try again.')
+    } finally {
+      if (event.target) event.target.value = ''
+    }
+  }
+
+  const handleRemoveUpload = (uploadId) => {
+    setMediaUploads((prev) => {
+      const updated = prev.filter((item) => item.id !== uploadId)
+      syncMediaToFormData(updated)
+      return updated
+    })
   }
 
   const handleSubmit = async (event) => {
@@ -220,6 +341,11 @@ const AddProduct = () => {
     if (missing.length) {
       setFormError('Please fill in all required fields before saving.')
       setMissingFields(missing)
+      return
+    }
+
+    if (!isEditMode && mediaUploads.length === 0) {
+      setFormError('Please upload at least one product image before saving.')
       return
     }
 
@@ -255,17 +381,29 @@ const AddProduct = () => {
       
       // Handle new variant creation if applicable
       let finalVariant = formData.variant
-      if (showNewVariantInput && newVariantName.trim()) {
+      if (showNewVariantInput) {
+        if (!selectedCategorySlug) {
+          setFormError('Please choose a category before creating a new variant.')
+          return
+        }
+
+        if (!newVariantName.trim()) {
+          setFormError('Please enter the new variant name.')
+          return
+        }
+
         try {
-          const created = await createVariant(newVariantName.trim())
+          const created = await createVariant(newVariantName.trim(), selectedCategorySlug)
           if (created) {
             finalVariant = created.variant_name
-            setVariantsList((prev) => [...prev, created].sort((a, b) => a.variant_name.localeCompare(b.variant_name)))
+            setVariantsList((prev) => sortVariantsByCategory([...prev, created]))
+            setShowNewVariantInput(false)
+            setNewVariantName('')
           }
         } catch (error) {
           console.error('Failed to create variant:', error)
-          // Continue with empty or existing variant?
-          // Maybe show error? For now just log.
+          setFormError(error?.response?.data?.message || 'Failed to create variant')
+          return
         }
       }
 
@@ -433,9 +571,9 @@ const AddProduct = () => {
                   aria-invalid={missingFields.includes('type')}
                 >
                   <option value=''>Select a category</option>
-                  {categoriesList.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
+                {categoriesList.map((cat) => (
+                  <option key={cat.slug} value={cat.label}>
+                    {cat.label}
                     </option>
                   ))}
                 </select>
@@ -451,15 +589,25 @@ const AddProduct = () => {
                       style={{ flex: 1 }}
                     >
                       <option value=''>Select variant</option>
-                      {variantsList.map((v) => (
-                        <option key={v.id} value={v.variant_name}>
-                          {v.variant_name}
-                        </option>
-                      ))}
+                    {variantOptions.map((v) => (
+                      <option key={`${v.category_slug}-${v.variant_name}`} value={v.variant_name}>
+                        {v.variant_name}
+                      </option>
+                    ))}
+                    {!hasSelectedVariant && formData.variant && (
+                      <option value={formData.variant}>{formData.variant}</option>
+                    )}
                     </select>
                     <button
                       type='button'
-                      onClick={() => setShowNewVariantInput(true)}
+                    onClick={() => {
+                      if (!selectedCategorySlug) {
+                        setFormError('Please choose a category before adding a new variant.')
+                        return
+                      }
+                      setShowNewVariantInput(true)
+                      setNewVariantName('')
+                    }}
                       style={{ whiteSpace: 'nowrap', padding: '0 8px', border: '1px solid #ccc', borderRadius: '4px', background: '#fff', cursor: 'pointer' }}
                     >
                       + New
@@ -520,20 +668,61 @@ const AddProduct = () => {
 
           <section className={styles.section}>
             <h3>Images</h3>
-            <div className={styles.mediaUpload}>
-              <div className={styles.preview}>
-                <img src={formData.imagePreview || defaultProductImage} alt='Preview' />
+            <p className={styles.mediaNote}>
+              First image becomes <code>main.webp</code>. Additional images are saved sequentially as{' '}
+              <code>main_2.webp</code>, <code>main_3.webp</code>, ...
+            </p>
+            {(existingMedia.length > 0 || mediaUploads.length > 0) && (
+              <div className={styles.mediaGallery}>
+                {existingMedia.length > 0 && (
+                  <div>
+                    <p className={styles.mediaLabel}>Existing images</p>
+                    <div className={styles.mediaThumbGrid}>
+                      {existingMedia.map((media) => (
+                        <figure key={media.id} className={styles.mediaThumb}>
+                          <img src={media.url} alt={media.label} />
+                          <figcaption>{media.label}</figcaption>
+                        </figure>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {mediaUploads.length > 0 && (
+                  <div>
+                    <p className={styles.mediaLabel}>Pending uploads</p>
+                    <div className={styles.mediaThumbGrid}>
+                      {mediaUploads.map((media, index) => (
+                        <figure key={media.id} className={styles.mediaThumb}>
+                          <img src={media.dataUrl} alt={`Upload ${index + 1}`} />
+                          <figcaption>
+                            {index === 0 ? 'main.webp (cover)' : `main_${index + 1}.webp`}
+                          </figcaption>
+                          <button
+                            type='button'
+                            className={styles.mediaRemove}
+                            onClick={() => handleRemoveUpload(media.id)}
+                            aria-label='Remove image'
+                          >
+                            <FiX />
+                          </button>
+                        </figure>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
+            )}
+            <div className={styles.mediaUpload}>
               <div>
                 <strong>Upload product imagery</strong>
-                <span>PNG, JPG up to 5 MB</span>
+                <span>PNG, JPG, WEBP up to 5 MB. You can select multiple files.</span>
                 <div className={styles.uploadActions}>
                   <button type='button' onClick={handleImageBrowse}>
                     <FiUploadCloud />
-                    Add File
+                    Add Files
                   </button>
                   <span className={styles.fileHint}>
-                    {formData.imageFile ? formData.imageFile.name : 'No file selected'}
+                    {mediaUploads.length ? `${mediaUploads.length} file(s) ready` : 'No new files selected'}
                   </span>
                 </div>
               </div>
@@ -542,6 +731,7 @@ const AddProduct = () => {
                 className={styles.hiddenInput}
                 type='file'
                 accept='image/png,image/jpeg,image/webp'
+                multiple
                 onChange={handleImageChange}
               />
             </div>

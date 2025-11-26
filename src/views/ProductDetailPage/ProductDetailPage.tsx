@@ -105,20 +105,40 @@ export const ProductDetailPage = () => {
       
       const raw = typeof p.image_url === "string" ? p.image_url.trim() : "";
       const fromPid = getAdminMediaUrlByAny(pidLike);
-      let image = fromPid ?? '';
+      let image = fromPid ?? "";
       if (!image) {
-        if (/^https?:\/\//i.test(raw) || raw.startsWith('/')) {
+        if (/^https?:\/\//i.test(raw) || raw.startsWith("/")) {
           image = raw;
         } else if (/^pid\d+\//i.test(raw)) {
-          const [pidPart, filePart] = raw.split('/');
-          const built = getAdminMediaUrlByAny(pidPart, filePart || 'main.webp');
-          image = built || '';
+          const [pidPart, filePart] = raw.split("/");
+          const built = getAdminMediaUrlByAny(pidPart, filePart || "main.webp");
+          image = built || "";
         }
       }
       image = normalizePossibleMediaUrl(image) || "/images/image_1.png";
-      
+
+      // Build gallery URLs from DB values (PID/file or absolute URLs)
       const galleryRaw = Array.isArray(p.gallery) && p.gallery.length ? p.gallery : [image];
-      const gallery = galleryRaw.map((g) => normalizePossibleMediaUrl(g) || g);
+      const gallery = galleryRaw.map((g) => {
+        if (!g) return image;
+        const value = String(g).trim();
+        // Absolute URL or already admin/media → just normalize host
+        if (/^https?:\/\//i.test(value) || value.startsWith("/admin/media/")) {
+          return normalizePossibleMediaUrl(value) || value;
+        }
+        // Pattern like PID00001/main_2.webp or pid00001/gallery_1.webp
+        if (/^pid\d+\//i.test(value)) {
+          const [pidPart, filePart] = value.split("/");
+          const built = getAdminMediaUrlByAny(pidPart, filePart || "main.webp");
+          return normalizePossibleMediaUrl(built || "") || built || image;
+        }
+        // Fallback: if it looks like just a file under this product PID
+        if (pidLike && /^[\w.-]+\.(webp|jpg|jpeg|png)$/i.test(value)) {
+          const built = getAdminMediaUrlByAny(pidLike, value);
+          return normalizePossibleMediaUrl(built || "") || built || image;
+        }
+        return image;
+      });
       
       // Normalize category from API (could be label like "Bridal Gowns" or slug like "wedding")
       const apiCategory = p.category ? normalizeCategory(p.category) : fromSlug(slug);
@@ -297,16 +317,17 @@ export const ProductDetailPage = () => {
           <div className={styles.galleryMain}>
             <div className={styles.mainImageWrapper}>
               <img
-                src={buildFallbacks(selectedImage)[mainImgIndex] || selectedImage}
+                src={selectedImage || product.gallery[0] || product.image}
                 alt={product.name}
                 className={styles.mainImage}
-                onError={() => {
-                  const candidates = buildFallbacks(selectedImage);
-                  if (mainImgIndex + 1 < candidates.length) {
-                    setMainImgIndex(mainImgIndex + 1);
-                  } else if (candidates[candidates.length - 1] !== "/images/image_1.png") {
-                    setMainImgIndex(candidates.length); // placeholder
+                onError={(e) => {
+                  const el = e.currentTarget as HTMLImageElement;
+                  if (el.dataset.failedOnce === "1") {
+                    el.src = "/images/image_1.png";
+                    return;
                   }
+                  el.dataset.failedOnce = "1";
+                  el.src = "/images/image_1.png";
                 }}
               />
             </div>

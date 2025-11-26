@@ -70,14 +70,22 @@ export const categoryLabels: Record<Category, string> = {
 // Reverse mapping: category label (from API) -> category slug (frontend)
 export const categoryLabelToSlug: Record<string, Category> = {
   "Ao Dai Couture": "ao-dai",
+  "Ao Dai": "ao-dai",
   "Tailored Suiting": "vest",
+  Suiting: "vest",
+  Suits: "vest",
   "Bridal Gowns": "wedding",
+  "Bridal & Formal Dresses": "wedding",
   "Evening Dresses": "evening",
   "Conical Hats": "conical-hats",
   Accessories: "conical-hats",
   "Kidswear": "kidswear",
   "Gift Procession Sets": "gift-procession-sets",
   "Gift Procession": "gift-procession-sets",
+  "Lunar New Year Décor": "gift-procession-sets",
+  "Lunar New Year Decor": "gift-procession-sets",
+  "Ceremonial Attire": "ao-dai",
+  "Uniforms & Teamwear": "vest",
   // Also support common variations
   "ao-dai": "ao-dai",
   "vest": "vest",
@@ -86,17 +94,22 @@ export const categoryLabelToSlug: Record<string, Category> = {
   "conical-hats": "conical-hats",
   "kidswear": "kidswear",
   "gift-procession-sets": "gift-procession-sets",
+  "suits": "vest",
+  "bridal-formal-dresses": "wedding",
+  "lunar-new-year-decor": "gift-procession-sets",
+  "ceremonial-attire": "ao-dai",
+  "uniforms-teamwear": "vest",
 };
 
 // Category keywords for fuzzy matching (ordered by priority: longer/more specific first)
 const categoryKeywords: Record<Category, string[]> = {
-  wedding: ["bridal gown", "bridal gowns", "wedding gown", "wedding gowns", "bridal", "wedding"],
+  wedding: ["bridal gown", "bridal gowns", "wedding gown", "wedding gowns", "bridal", "wedding", "formal dress"],
   evening: ["evening dress", "evening dresses", "evening"],
-  "ao-dai": ["ao dai", "ao-dai", "aodai"],
-  vest: ["tailored suiting", "suiting", "tailored", "vest"],
+  "ao-dai": ["ao dai", "ao-dai", "aodai", "ceremonial attire"],
+  vest: ["tailored suiting", "suiting", "tailored", "vest", "suit", "suits", "uniforms", "teamwear"],
   "conical-hats": ["non la", "non-la", "conical hat", "conical hats", "accessory", "accessories"],
   kidswear: ["kidswear", "kids wear", "child", "children", "mini"],
-  "gift-procession-sets": ["procession", "gift set", "tráp cưới", "gift procession"],
+  "gift-procession-sets": ["procession", "gift set", "tráp cưới", "gift procession", "lunar new year", "decor"],
 };
 
 export const categorySlugs: Category[] = [

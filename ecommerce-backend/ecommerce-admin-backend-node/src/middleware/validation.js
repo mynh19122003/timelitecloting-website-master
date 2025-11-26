@@ -111,9 +111,28 @@ const productUpdateSchema = Joi.object({
 }).min(1);
 
 const variantCreateSchema = Joi.object({
-  variant_name: Joi.string().max(128).required()
+  variant_name: Joi.string().max(128).required(),
+  category_slug: Joi.string().max(64).required()
 });
 
-module.exports = { validate, validateQuery, loginSchema, changePasswordSchema, updateProfileSchema, ordersListSchema, orderStatusUpdateSchema, customersListSchema, customerUpdateSchema, productCreateSchema, productUpdateSchema, variantCreateSchema };
+const variantListQuerySchema = Joi.object({
+  category: Joi.string().max(64).optional()
+});
+
+module.exports = {
+  validate,
+  validateQuery,
+  loginSchema,
+  changePasswordSchema,
+  updateProfileSchema,
+  ordersListSchema,
+  orderStatusUpdateSchema,
+  customersListSchema,
+  customerUpdateSchema,
+  productCreateSchema,
+  productUpdateSchema,
+  variantCreateSchema,
+  variantListQuerySchema
+};
 
 

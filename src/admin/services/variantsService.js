@@ -1,8 +1,9 @@
 import { AdminApi } from '../api';
 
-export const listVariants = async () => {
+export const listVariants = async (categorySlug) => {
   try {
-    const res = await AdminApi.get('/variants');
+    const params = categorySlug ? { category: categorySlug } : undefined;
+    const res = await AdminApi.get('/variants', { params });
     return res.data?.data || [];
   } catch (error) {
     console.error('Failed to list variants:', error);
@@ -10,9 +11,9 @@ export const listVariants = async () => {
   }
 };
 
-export const createVariant = async (variantName) => {
+export const createVariant = async (variantName, categorySlug) => {
   try {
-    const res = await AdminApi.post('/variants', { variant_name: variantName });
+    const res = await AdminApi.post('/variants', { variant_name: variantName, category_slug: categorySlug });
     return res.data?.data || null;
   } catch (error) {
     console.error('Failed to create variant:', error);

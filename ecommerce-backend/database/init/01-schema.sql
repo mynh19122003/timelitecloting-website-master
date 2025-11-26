@@ -129,7 +129,11 @@ CREATE TABLE chat_sessions (
 DROP TABLE IF EXISTS product_variants;
 CREATE TABLE product_variants (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    variant_name VARCHAR(128) UNIQUE NOT NULL,
+    variant_name VARCHAR(128) NOT NULL,
+    category_slug VARCHAR(64) NOT NULL,
+    sort_order INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_variant_name (variant_name)
+    UNIQUE KEY uniq_variant_category (category_slug, variant_name),
+    INDEX idx_variant_name (variant_name),
+    INDEX idx_variant_category (category_slug, sort_order)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

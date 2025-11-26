@@ -27,32 +27,27 @@ const normalizeNavKey = (value: string): string =>
 
 const navLinkParamMap: NavLinkParamMap = {
   "ao-dai": {
-    "classic": { variant: "Classic" },
-    "modern-cut": { variant: "Modern cut" },
-    "minimal": { variant: "Minimal" },
-    "layered": { variant: "Layered" },
-    "daily-wear": { facet: "Daily wear" },
-    "engagement": { facet: "Engagement" },
-    "ceremony": { facet: "Ceremony" },
-    "new-ao-dai": { chip: "New Ao Dai" },
-    "best-sellers": { chip: "Best sellers" },
     "view-all-ao-dai": null,
-    "shop-ao-dai-capsule": { facet: "Ao Dai capsule" },
+    "shop-ao-dai-capsule": { facet: "Ao Dai Capsule" },
   },
-  "suiting": {
-    "view-all-suiting": null,
+  "suits": {
+    "view-all-suits": null,
   },
-  "bridal": {
-    "view-all-bridal": null,
+  "bridal-formal-dresses": {
+    "view-all-bridal-formal": null,
+    "explore-bridal": { facet: "Wedding Dresses" },
   },
-  "evening": {
-    "view-all-evening": null,
+  "accessories": {
+    "view-all-accessories": null,
   },
-  "kidswear": {
-    "plan-styling": { facet: "Custom Sibling Sets" },
+  "lunar-new-year-decor": {
+    "view-all-lunar-decor": null,
   },
-  "gift-procession-sets": {
-    "meet-the-team": { facet: "Meet the team" },
+  "ceremonial-attire": {
+    "view-all-ceremonial-attire": null,
+  },
+  "uniforms-teamwear": {
+    "view-all-uniforms": null,
   },
 };
 
@@ -223,7 +218,7 @@ export const Navbar = () => {
     }
     
     // Suiting links
-    if (category.includes("suiting")) {
+    if (category.includes("suit")) {
       const map: Record<string, string> = {
         "Full suits": t("nav.suiting.full.suits"),
         "Vests": t("nav.suiting.vests"),
@@ -255,7 +250,7 @@ export const Navbar = () => {
     }
     
     // Evening links
-    if (category.includes("evening")) {
+    if (category.includes("formal") || category.includes("evening")) {
       const map: Record<string, string> = {
         "Column": t("nav.evening.column"),
         "Mermaid": t("nav.evening.mermaid"),
@@ -272,7 +267,7 @@ export const Navbar = () => {
     }
     
     // Conical Hats links
-    if (category.includes("conical") || category.includes("hats")) {
+    if (category.includes("conical") || category.includes("hats") || category.includes("accessor")) {
       const map: Record<string, string> = {
         "Mother of Pearl": t("nav.hats.mother.of.pearl"),
         "Hand-Painted": t("nav.hats.hand.painted"),
@@ -307,7 +302,7 @@ export const Navbar = () => {
     }
     
     // Gift Procession Sets links
-    if (category.includes("gift") || category.includes("procession")) {
+    if (category.includes("gift") || category.includes("procession") || category.includes("lunar")) {
       const map: Record<string, string> = {
         "Eight Tray": t("nav.gift.eight.tray"),
         "Ten Tray": t("nav.gift.ten.tray"),
@@ -337,7 +332,7 @@ export const Navbar = () => {
     }
     
     // Suiting highlight
-    if (category.includes("suiting")) {
+    if (category.includes("suiting") || category.includes("suit")) {
       if (type === "title" && text === "Tailored for movement") return t("nav.suiting.tailored.title");
       if (type === "description" && text.includes("Lightweight structures")) return t("nav.suiting.tailored.description");
     }
@@ -365,7 +360,7 @@ export const Navbar = () => {
     }
     
     // Gift Procession Sets highlight
-    if (category.includes("gift") || category.includes("procession")) {
+    if (category.includes("gift") || category.includes("procession") || category.includes("lunar")) {
       if (type === "eyebrow" && text === "Concierge Team") return t("nav.gift.concierge.team");
       if (type === "title" && text === "Complete Planning") return t("nav.gift.complete.planning.title");
       if (type === "description" && text.includes("Full procession")) return t("nav.gift.complete.planning.description");

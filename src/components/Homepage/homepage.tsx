@@ -14,43 +14,43 @@ const heroFeatures = [
     category: "Ao Dai",
   },
   {
-    id: "suiting",
-    label: "Suiting",
+    id: "suits",
+    label: "Suits",
     image: "/images/image_2.png",
-    category: "Suiting",
+    category: "Suits",
   },
   {
-    id: "bridal-gowns",
-    label: "Bridal Gowns",
+    id: "bridal-formal",
+    label: "Bridal & Formal Dresses",
     image: "/images/image_3.png",
-    category: "Bridal Gowns",
+    category: "Bridal & Formal Dresses",
   },
 ];
 
 const curationItems = [
   {
-    id: "evening-couture",
-    label: "Evening Couture",
+    id: "accessories",
+    label: "Accessories",
     image: "/images/image_4.png",
-    category: "Evening Couture",
+    category: "Accessories",
   },
   {
-    id: "conical-hats",
-    label: "Conical Hats",
+    id: "lunar-decor",
+    label: "Lunar New Year Décor",
     image: "/images/image_5.png",
-    category: "Conical Hats",
+    category: "Lunar New Year Décor",
   },
   {
-    id: "kidswear",
-    label: "Kidswear",
+    id: "ceremonial-attire",
+    label: "Ceremonial Attire",
     image: "/images/image_6.png",
-    category: "Kidswear",
+    category: "Ceremonial Attire",
   },
   {
-    id: "gift-sets",
-    label: "Gift Procession Sets",
+    id: "uniforms",
+    label: "Uniforms & Teamwear",
     image: "/images/image_7.png",
-    category: "Gift Procession Sets",
+    category: "Uniforms & Teamwear",
   },
 ];
 

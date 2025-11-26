@@ -3,17 +3,15 @@
 import { useMemo } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { FiChevronDown, FiGrid, FiList, FiSliders } from "react-icons/fi";
-import { Header } from "../Header/header";
+import { Navbar } from "../layout/Navbar/Navbar";
 import { Footer } from "../Footer/Footer";
 import { useI18n } from "../../context/I18nContext";
-import { defaultCategorySlug, shopCatalog, shopNavMenu, toCategorySlug } from "./shop.data";
+import { defaultCategorySlug, shopCatalog, toCategorySlug } from "./shop.data";
 import ProductCard, { productCardMocks } from "../Productcard/Productcard";
 
 type ShopPageProps = {
   category?: string;
 };
-
-const navMenu = shopNavMenu;
 
 export default function ShopPage({ category }: ShopPageProps) {
   const { t } = useI18n();
@@ -45,7 +43,7 @@ export default function ShopPage({ category }: ShopPageProps) {
 
   return (
     <div className="shop-page">
-      <Header navMenu={navMenu} />
+      <Navbar />
       <section className="catalog">
         <nav className="catalog__breadcrumb" aria-label="Breadcrumb">
           <button type="button" onClick={() => navigate("/")}>

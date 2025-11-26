@@ -15,6 +15,14 @@ const changePasswordSchema = Joi.object({
   newPassword: Joi.string().min(6).required()
 });
 
+const contactSchema = Joi.object({
+  name: Joi.string().max(100).required(),
+  email: Joi.string().email().max(255).required(),
+  phone: Joi.string().max(32).allow('', null),
+  eventDate: Joi.string().max(50).allow('', null),
+  message: Joi.string().max(2000).required()
+});
+
 const orderSchema = Joi.object({
   items: Joi.array().items(
     Joi.object({
@@ -83,5 +91,6 @@ module.exports = {
   registerSchema,
   loginSchema,
   changePasswordSchema,
-  orderSchema
+  orderSchema,
+  contactSchema
 };

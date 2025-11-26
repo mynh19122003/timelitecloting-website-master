@@ -1,11 +1,8 @@
 "use client";
 
 import { FiStar } from "react-icons/fi";
-import { Header } from "../Header/header";
-import { shopNavMenu } from "../Shop/shop.data";
+import { Navbar } from "../layout/Navbar/Navbar";
 import { productDetailStyles } from "./ProductDetail.styles";
-
-const navMenu = shopNavMenu;
 
 const galleryImages = [
   "https://images.macysassets.com/is/image/MCY/products/3/optimized/21522093_web.jpg?wid=900&qlt=90",
@@ -23,7 +20,7 @@ export default function ProductDetail() {
 
   return (
     <>
-      <Header navMenu={navMenu} />
+      <Navbar />
       <div className="product-detail">
         <style>{productDetailStyles}</style>
 

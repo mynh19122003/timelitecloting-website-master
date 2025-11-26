@@ -100,21 +100,22 @@ export const API_CONFIG = {
   
   // API endpoints
   ENDPOINTS: {
-    // User endpoints
-    LOGIN: '/api/node/users/login',
-    REGISTER: '/api/node/users/register',
-    PROFILE: '/api/node/users/profile',
-    CHANGE_PASSWORD: '/api/node/users/change-password',
-    FORGOT_PASSWORD: '/api/node/users/forgot-password',
-    RESET_PASSWORD: '/api/node/users/reset-password',
+    // User endpoints (use PHP auth in current setup to avoid Node 404s)
+    LOGIN: '/api/php/users/login',
+    REGISTER: '/api/php/users/register',
+    PROFILE: '/api/php/users/profile',
+    CHANGE_PASSWORD: '/api/php/users/change-password',
+    FORGOT_PASSWORD: '/api/php/users/forgot-password',
+    RESET_PASSWORD: '/api/php/users/reset-password',
     
     // Product endpoints
     PRODUCTS: '/api/php/products',
     PRODUCT_DETAIL: '/api/php/products',
     
-    // Order endpoints
-    ORDERS: '/api/node/orders',
-    ORDER_HISTORY: '/api/node/orders/history',
+    // Order endpoints (route directly to PHP backend)
+    ORDERS: '/api/php/orders',
+    ORDER_HISTORY: '/api/php/orders/history',
+    CONTACT: '/api/contact',
     
     // Fallback PHP endpoints
     PHP: {

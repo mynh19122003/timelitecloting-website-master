@@ -1,10 +1,57 @@
+import { useState, ChangeEvent, FormEvent } from "react";
 import { FiMail, FiMapPin, FiPhone } from "react-icons/fi";
 import { ValueProps } from "../../components/ui/ValueProps";
 import { useI18n } from "../../context/I18nContext";
+import { useToast } from "../../context/ToastContext";
+import ApiService, { ApiError } from "../../services/api";
 import styles from "./ContactPage.module.css";
 
 export const ContactPage = () => {
   const { t } = useI18n();
+  const { showToast } = useToast();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    eventDate: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      showToast(t("contact.submit.required"), "error");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await ApiService.submitContactRequest(formData);
+      showToast(t("contact.submit.success"), "success");
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        eventDate: "",
+        message: "",
+      });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof ApiError ? error.message : t("contact.submit.error");
+      showToast(errorMessage, "error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   
   return (
     <div className={styles.page}>
@@ -68,24 +115,53 @@ export const ContactPage = () => {
           </div>
 
           <div className={styles.formCard}>
-            <form className={styles.form}>
+            <form className={styles.form} onSubmit={handleSubmit}>
               <div>
                 <label className={styles.label}>{t("contact.name")}</label>
-                <input type="text" className={styles.input} placeholder={t("contact.name.placeholder")} />
+                <input
+                  type="text"
+                  name="name"
+                  className={styles.input}
+                  placeholder={t("contact.name.placeholder")}
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                />
               </div>
               <div className={styles.twoCol}>
                 <div>
                   <label className={styles.label}>{t("contact.email")}</label>
-                  <input type="email" className={styles.input} placeholder={t("contact.email.placeholder")} />
+                  <input
+                    type="email"
+                    name="email"
+                    className={styles.input}
+                    placeholder={t("contact.email.placeholder")}
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
                 <div>
                   <label className={styles.label}>{t("contact.phone")}</label>
-                  <input type="tel" className={styles.input} placeholder={t("contact.phone.placeholder")} />
+                  <input
+                    type="tel"
+                    name="phone"
+                    className={styles.input}
+                    placeholder={t("contact.phone.placeholder")}
+                    value={formData.phone}
+                    onChange={handleChange}
+                  />
                 </div>
               </div>
               <div>
                 <label className={styles.label}>{t("contact.event.date")}</label>
-                <input type="date" className={styles.input} />
+                <input
+                  type="date"
+                  name="eventDate"
+                  className={styles.input}
+                  value={formData.eventDate}
+                  onChange={handleChange}
+                />
               </div>
               <div>
                 <label className={styles.label}>{t("contact.message")}</label>
@@ -93,10 +169,14 @@ export const ContactPage = () => {
                   rows={5}
                   className={styles.textArea}
                   placeholder={t("contact.message.placeholder")}
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  required
                 />
               </div>
-              <button type="submit" className={styles.submitButton}>
-                {t("contact.submit.request")}
+              <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
+                {isSubmitting ? t("contact.submit.loading") : t("contact.submit.request")}
               </button>
             </form>
           </div>

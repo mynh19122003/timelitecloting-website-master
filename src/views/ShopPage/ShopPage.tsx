@@ -18,12 +18,77 @@ import {
 
 const slugToCategoryMap: Record<string, Category> = {
   [toCategorySlug("Ao Dai")]: "ao-dai",
-  [toCategorySlug("Suiting")]: "vest",
-  [toCategorySlug("Bridal Gowns")]: "wedding",
-  [toCategorySlug("Evening Couture")]: "evening",
-  [toCategorySlug("Conical Hats")]: "conical-hats",
+  [toCategorySlug("Suits")]: "vest",
+  [toCategorySlug("Bridal & Formal Dresses")]: "wedding",
+  [toCategorySlug("Accessories")]: "conical-hats",
+  [toCategorySlug("Lunar New Year Décor")]: "gift-procession-sets",
+  [toCategorySlug("Ceremonial Attire")]: "ao-dai",
+  [toCategorySlug("Uniforms & Teamwear")]: "vest",
   [toCategorySlug("Kidswear")]: "kidswear",
   [toCategorySlug("Gift Procession Sets")]: "gift-procession-sets",
+  [toCategorySlug("Evening Couture")]: "evening",
+  [toCategorySlug("Suiting")]: "vest",
+};
+
+// Curated variant names per category, aligned with admin variants & navbar
+const VARIANTS_BY_CATEGORY_SLUG: Record<string, string[]> = {
+  [toCategorySlug("Ao Dai")]: [
+    "Ao Dai (All)",
+    "Bridal Ao Dai",
+    "Designer Ao Dai (Women)",
+    "Traditional Ao Dai (Women)",
+    "Modern Ao Dai (Women)",
+    "Ceremonial Nhạc Bình (Women)",
+    "Five-Panel Ao Dai (Women)",
+    "Girls’ Ao Dai",
+    "Mother & Daughter Matching Ao Dai",
+    "Modern Ao Dai (Men)",
+    "Designer Ao Dai (Men)",
+    "Five-Panel Ao Dai (Men)",
+    "Ceremonial Nhạc Bình (Men)",
+    "Father & Son Matching Ao Dai",
+  ],
+  [toCategorySlug("Suits")]: ["Men’s Suits", "Women’s Suits"],
+  [toCategorySlug("Bridal & Formal Dresses")]: [
+    "Wedding Dresses",
+    "Party & Gala Dresses",
+    "Pageant Dresses",
+    "Bridesmaid Dresses",
+  ],
+  [toCategorySlug("Accessories")]: [
+    "Conical Hats",
+    "Evening Bags & Clutches",
+    "Wooden Sandals",
+    "Statement Collars",
+    "Traditional Turbans",
+    "Heels & Dress Shoes",
+  ],
+  [toCategorySlug("Lunar New Year Décor")]: [
+    "Backdrops & Photo Walls",
+    "Yellow Mai Blossoms",
+    "Peach Blossoms",
+    "Calligraphy Panels",
+    "Red Envelopes",
+    "Lanterns",
+  ],
+  [toCategorySlug("Ceremonial Attire")]: [
+    "Women’s Temple Robes",
+    "Women’s Pilgrimage Ao Dai",
+    "Women’s “Ba Ba” Sets",
+    "Girls’ “Ba Ba” Sets",
+    "Men’s Casual “Ba Ba”",
+    "Men’s “Ba Ba” Sets",
+    "Men’s Temple Ao Dai",
+  ],
+  [toCategorySlug("Uniforms & Teamwear")]: [
+    "School Uniforms",
+    "Choir & Church Uniforms",
+    "Youth Group / Team Uniforms",
+    "Restaurant Uniforms",
+    "Retail Uniforms",
+    "Factory & Workshop Uniforms",
+    "Student Uniforms",
+  ],
 };
 
 type ShopPageProps = {
@@ -259,9 +324,13 @@ export const ShopPage = ({ category }: ShopPageProps) => {
         let page = 1;
         const aggregated: ApiProduct[] = [];
         const categoryParam = slug !== defaultCategorySlug ? slug : undefined;
+        const variantParam = selectedVariant || undefined;
 
         while (true) {
-          const response = await ApiService.getProducts({ page, limit: pageSize, category: categoryParam }, false);
+          const response = await ApiService.getProducts(
+            { page, limit: pageSize, category: categoryParam, variant: variantParam },
+            false
+          );
           const pageProducts = (response?.products ?? []) as ApiProduct[];
           aggregated.push(...pageProducts);
 
@@ -312,21 +381,12 @@ export const ShopPage = ({ category }: ShopPageProps) => {
     };
   }, [slug]);
 
-  // Get available variants for current category
+  // Get available variants for current category:
+  // use curated list so it always matches navbar & admin variant options
   const availableVariants = useMemo(() => {
-    const targetCategory = categoryFromSlug(slug);
-    
-    if (!targetCategory) return [];
-    
-    const categoryProducts = allProducts.filter((p) => p.category === targetCategory);
-    const variants = new Set<string>();
-    categoryProducts.forEach((p) => {
-      if (p.variant) {
-        variants.add(p.variant);
-      }
-    });
-    return Array.from(variants).sort();
-  }, [allProducts, slug]);
+    const categoryKey = toCategorySlug(readableCategory);
+    return VARIANTS_BY_CATEGORY_SLUG[categoryKey] ?? [];
+  }, [readableCategory]);
 
   // Get available filter options for current category
   const availableFilterOptions = useMemo(() => {
@@ -415,18 +475,6 @@ export const ShopPage = ({ category }: ShopPageProps) => {
     }
     if (filters.embellishment) {
       filtered = filtered.filter((p) => p.embellishment === filters.embellishment);
-    }
-
-    // Filter by facet (search)
-    if (facet) {
-      const query = facet.toLowerCase();
-      filtered = filtered.filter(
-        (product) =>
-          product.name.toLowerCase().includes(query) ||
-          product.shortDescription.toLowerCase().includes(query) ||
-          product.description.toLowerCase().includes(query) ||
-          product.tags.some((tag) => tag.toLowerCase().includes(query))
-      );
     }
 
     // Sort
@@ -520,12 +568,26 @@ export const ShopPage = ({ category }: ShopPageProps) => {
     const isActive = selectedChip === chip;
     const newChip = isActive ? null : chip;
     setSelectedChip(newChip);
+
     const params = new URLSearchParams(searchParams.toString());
+
     if (newChip) {
+      // Set readable facet for breadcrumb
+      params.set("facet", newChip);
       params.set("chip", newChip);
+
+      // Nếu chip này trùng với một biến thể đã được define, tự động chọn luôn variant
+      if (availableVariants.includes(newChip)) {
+        setSelectedVariant(newChip);
+        params.set("variant", newChip);
+      }
     } else {
+      params.delete("facet");
       params.delete("chip");
+      params.delete("variant");
+      setSelectedVariant(null);
     }
+
     navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
   };
 
@@ -551,20 +613,9 @@ export const ShopPage = ({ category }: ShopPageProps) => {
           <h1>{readableCategory}</h1>
           <p>{categorySubtitle}</p>
         </header>
-        <div className={styles.chips} role="tablist" aria-label="Sub categories">
-          {catalog.chips.map((chip) => (
-            <button
-              key={chip}
-              type="button"
-              className={`${styles.chip} ${selectedChip === chip ? styles.chipActive : ""}`}
-              onClick={() => handleChipClick(chip)}
-            >
-              {translateChip(chip)}
-            </button>
-          ))}
-        </div>
         
-        {availableVariants.length > 0 && (
+        {/* Chỉ hiển thị bộ lọc biến thể ở cấp category chính (không có facet con) */}
+        {availableVariants.length > 0 && !facet && (
           <div className={styles.variantFilters} role="group" aria-label="Variant filters">
             <button
               type="button"
