@@ -8,25 +8,16 @@ export const headerStyles = /* css */ `
     transition: gap 0.2s ease;
   }
 
-  .header--dropdown-open {
-    gap: 0.75rem;
-  }
-
   .header__top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
-    max-width: 1200px;
     margin: 0 auto;
     padding: 0 1.5rem;
     transition: gap 0.2s ease, padding 0.2s ease;
   }
 
-  .header--dropdown-open .header__top {
-    gap: 1rem;
-    padding: 0.5rem 0;
-  }
+  /* When dropdown mở, giữ nguyên layout, không thu nhỏ header */
 
   .header__brand {
     display: flex;
@@ -55,12 +46,7 @@ export const headerStyles = /* css */ `
     z-index: 1;
   }
 
-  .header--dropdown-open .header__brand-mark {
-    width: 56px;
-    height: 56px;
-    min-width: 56px;
-    min-height: 56px;
-  }
+  /* Bỏ hiệu ứng thu nhỏ logo khi hover nav */
 
   .header__brand-logo {
     width: 100%;
@@ -91,9 +77,7 @@ export const headerStyles = /* css */ `
     min-width: fit-content;
   }
 
-  .header--dropdown-open .header__brand-name {
-    font-size: 1.4rem;
-  }
+  /* Bỏ hiệu ứng thu nhỏ chữ brand khi hover nav */
 
   .header__search {
     display: flex;
@@ -107,13 +91,11 @@ export const headerStyles = /* css */ `
     width: 100%;
     min-width: 0;
     flex: 1 1 0;
-    max-width: 480px;
-    margin: 0 1rem;
+    max-width: 780px;
+    margin: 0 1.25rem;
   }
 
-  .header--dropdown-open .header__search {
-    padding: 0.5rem 0.8rem;
-  }
+  /* Giữ nguyên kích thước ô search khi hover nav */
 
   .header__search input {
     border: none;
@@ -128,6 +110,39 @@ export const headerStyles = /* css */ `
     align-items: center;
     gap: 0.5rem;
     flex-shrink: 0;
+  }
+
+  .header__mobile-toggle {
+    display: none;
+    align-items: center;
+    gap: 0.35rem;
+    border: 1px solid #e1e1e1;
+    background: #fff;
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #4a3e2b;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .header__mobile-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 150;
+  }
+
+  .header__mobile-overlay--visible {
+    opacity: 1;
+    pointer-events: all;
   }
 
   .header__action,
@@ -162,9 +177,7 @@ export const headerStyles = /* css */ `
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
   }
 
-  .header--dropdown-open .header__nav-row {
-    padding: 0.75rem 0 1rem;
-  }
+  /* Không thay đổi padding nav-row khi dropdown mở */
 
   .header__nav {
     display: flex;
@@ -411,5 +424,156 @@ export const headerStyles = /* css */ `
     font-size: 0.75rem;
     cursor: pointer;
     color: #000;
+  }
+
+  @media (max-width: 1200px) {
+    .header__top {
+      padding: 0 1rem;
+      gap: 1.5rem;
+    }
+
+    .header__nav {
+      gap: 1.5rem;
+      max-width: 100%;
+      padding: 0 1rem;
+    }
+  }
+
+  @media (max-width: 992px) {
+    .header__brand-name {
+      font-size: 1.35rem;
+    }
+
+    .header__brand-mark {
+      width: 60px;
+      height: 60px;
+    }
+
+    .header__search {
+      max-width: 100%;
+      margin: 0 0.75rem;
+    }
+
+    .header__actions {
+      gap: 0.35rem;
+    }
+
+    .header__nav {
+      gap: 1.25rem;
+      font-size: 0.9rem;
+      letter-spacing: 0.14em;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .header__top {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.85rem;
+      padding: 0 1rem;
+    }
+
+    .header__brand {
+      justify-content: center;
+      order: 1;
+    }
+
+    .header__search {
+      margin: 0;
+      width: 100%;
+      order: 2;
+    }
+
+    .header__actions {
+      width: 100%;
+      justify-content: space-evenly;
+      order: 3;
+    }
+
+    .header__mobile-toggle {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: auto;
+      align-self: center;
+      padding: 0.5rem 1.5rem;
+      border-radius: 999px;
+      background: #fdf7ef;
+      border-color: #d4c5a9;
+      color: #4a3e2b;
+      margin-top: 0.25rem;
+      order: 4;
+    }
+
+    .header__nav-row {
+      display: none;
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(80vw, 320px);
+      padding: 1.5rem 1.25rem 2rem;
+      background: #fff;
+      box-shadow: -6px 0 24px rgba(0, 0, 0, 0.15);
+      overflow-y: auto;
+      z-index: 200;
+      border: none;
+      border-radius: 0;
+    }
+
+    .header__nav-row::before {
+      content: "Menu";
+      display: block;
+      font-size: 0.9rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #b48a58;
+      margin-bottom: 1rem;
+    }
+
+    .header--mobile-open .header__nav-row,
+    .header__nav-row--mobile-open {
+      display: block;
+    }
+
+    .header__nav {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+      font-size: 0.92rem;
+      letter-spacing: 0.08em;
+      white-space: normal;
+      padding: 0;
+    }
+
+    .header__mega {
+      display: none !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header__brand-mark {
+      width: 52px;
+      height: 52px;
+    }
+
+    .header__brand-name {
+      font-size: 1.2rem;
+    }
+
+    .header__actions {
+      gap: 0.65rem;
+      justify-content: center;
+    }
+
+    .header__nav {
+      gap: 0.75rem;
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+    }
+
+    .header__search {
+      padding: 0.45rem 0.85rem;
+    }
   }
 `;

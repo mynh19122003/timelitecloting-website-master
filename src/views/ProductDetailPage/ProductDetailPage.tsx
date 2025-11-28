@@ -116,7 +116,7 @@ export const ProductDetailPage = () => {
         }
       }
       image = normalizePossibleMediaUrl(image) || "/images/image_1.png";
-
+      
       // Build gallery URLs from DB values (PID/file or absolute URLs)
       const galleryRaw = Array.isArray(p.gallery) && p.gallery.length ? p.gallery : [image];
       const gallery = galleryRaw.map((g) => {
@@ -144,6 +144,12 @@ export const ProductDetailPage = () => {
       const apiCategory = p.category ? normalizeCategory(p.category) : fromSlug(slug);
       const finalCategory = apiCategory !== "other" ? apiCategory : fromSlug(slug);
       
+      const rawSizes = Array.isArray(p.sizes) ? p.sizes : (safeParseArray(p.sizes) || [])
+      const normalizedSizes = rawSizes
+        .map((size) => (typeof size === "string" ? size.trim() : String(size ?? "")))
+        .filter((size) => size.length > 0)
+      const safeSizes = normalizedSizes.length > 0 ? normalizedSizes : ["One Size"]
+      
       return {
         id: slug ?? String(p.id),
         pid,
@@ -154,7 +160,7 @@ export const ProductDetailPage = () => {
         price: Number(p.price ?? 0),
         originalPrice: p.original_price != null ? Number(p.original_price) : undefined,
         colors: Array.isArray(p.colors) ? p.colors : (safeParseArray(p.colors) || []),
-        sizes: Array.isArray(p.sizes) ? p.sizes : (safeParseArray(p.sizes) || ["S", "M", "L"]),
+        sizes: safeSizes,
         image,
         gallery,
         rating: Number(p.rating ?? 0),

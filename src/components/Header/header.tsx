@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiSearch } from "react-icons/fi";
-import { PiPackageLight, PiShoppingBagLight, PiUserCircleLight } from "react-icons/pi";
+import { FiMenu, FiX } from "react-icons/fi";
+import { PiPackageLight, PiShoppingCartSimpleLight, PiUserCircleLight } from "react-icons/pi";
 import { useCart } from "../../context/CartContext";
 import { getAuthStatus } from "../../utils/auth";
 import { useI18n } from "../../context/I18nContext";
@@ -18,6 +19,7 @@ type HeaderProps = {
 
 export function Header({ navMenu }: HeaderProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const { itemCount, openCart } = useCart();
   const navigate = useNavigate();
   const isAuthenticated = getAuthStatus();
@@ -236,6 +238,7 @@ export function Header({ navMenu }: HeaderProps) {
 
   const closeMenu = () => {
     setActiveIndex(null);
+    setIsMobileNavOpen(false);
   };
 
   const handleAccountClick = () => {
@@ -246,10 +249,23 @@ export function Header({ navMenu }: HeaderProps) {
     }
   };
 
+  const toggleMobileNav = () => {
+    setIsMobileNavOpen((prev) => !prev);
+  };
+
+  const headerClassNames = ["header"];
+  if (activeIndex !== null) headerClassNames.push("header--dropdown-open");
+  if (isMobileNavOpen) headerClassNames.push("header--mobile-open");
+
+  const handleNavigateToItem = (item: ShopNavItem) => {
+    navigate(getNavItemPath(item));
+    closeMenu();
+  };
+
   return (
     <>
       <style>{headerStyles}</style>
-      <header className={`header${activeIndex !== null ? " header--dropdown-open" : ""}`}>
+      <header className={headerClassNames.join(" ")}>
         <div className="header__top">
           <div className="header__brand">
             <span className="header__brand-mark">
@@ -276,7 +292,7 @@ export function Header({ navMenu }: HeaderProps) {
               <PiUserCircleLight size={22} />
             </button>
             <button className="header__icon" aria-label={t("header.shopping.bag")} onClick={openCart}>
-              <PiShoppingBagLight size={22} />
+              <PiShoppingCartSimpleLight size={22} />
               {itemCount > 0 && (
                 <span style={{
                   position: "absolute",
@@ -298,8 +314,18 @@ export function Header({ navMenu }: HeaderProps) {
               )}
             </button>
           </div>
+          <button
+            type="button"
+            className="header__mobile-toggle"
+            aria-label={isMobileNavOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMobileNavOpen}
+            onClick={toggleMobileNav}
+          >
+            {isMobileNavOpen ? <FiX size={22} /> : <FiMenu size={22} />}
+            <span>{isMobileNavOpen ? "Close" : "Menu"}</span>
+          </button>
         </div>
-        <div className="header__nav-row" onMouseLeave={closeMenu}>
+        <div className={`header__nav-row${isMobileNavOpen ? " header__nav-row--mobile-open" : ""}`} onMouseLeave={closeMenu}>
           <nav className="header__nav" aria-label="Primary">
             {navMenu.map((item, index) => {
               const hasDropdown =
@@ -323,7 +349,7 @@ export function Header({ navMenu }: HeaderProps) {
                     aria-expanded={isActive && hasDropdown}
                     aria-controls={hasDropdown ? `mega-${index}` : undefined}
                     onClick={() => {
-                      navigate(getNavItemPath(item));
+                      handleNavigateToItem(item);
                       if (!hasDropdown) {
                         closeMenu();
                       }
@@ -365,8 +391,7 @@ export function Header({ navMenu }: HeaderProps) {
                               type="button"
                               className="header__mega-link"
                               onClick={() => {
-                                navigate(getNavItemPath(activeItem));
-                                closeMenu();
+                                handleNavigateToItem(activeItem);
                               }}
                             >
                               {translateLink(entry, activeItem.label)}
@@ -387,8 +412,7 @@ export function Header({ navMenu }: HeaderProps) {
                               type="button"
                               className="header__mega-link header__mega-link--quick"
                               onClick={() => {
-                                navigate(getNavItemPath(activeItem));
-                                closeMenu();
+                                handleNavigateToItem(activeItem);
                               }}
                             >
                               {translateLink(link, activeItem.label)}
@@ -413,8 +437,7 @@ export function Header({ navMenu }: HeaderProps) {
                           type="button"
                           className="header__mega-cta"
                           onClick={() => {
-                            navigate(getNavItemPath(activeItem));
-                            closeMenu();
+                            handleNavigateToItem(activeItem);
                           }}
                         >
                           {translateHighlight(activeItem.highlight.cta, activeItem.label, "cta")}
@@ -428,8 +451,7 @@ export function Header({ navMenu }: HeaderProps) {
                               type="button"
                               className="header__mega-note-cta"
                               onClick={() => {
-                                navigate(getNavItemPath(activeItem));
-                                closeMenu();
+                                handleNavigateToItem(activeItem);
                               }}
                             >
                               {activeItem.highlight.noteCta}

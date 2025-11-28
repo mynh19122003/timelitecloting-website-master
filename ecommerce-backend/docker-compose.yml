@@ -106,6 +106,36 @@ services:
       - admin_node_data:/data
     depends_on:
       - mysql
+      - backend-node
+    networks:
+      - ecommerce_network
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: ecommerce-gateway
+    restart: always
+    ports:
+      - "3002:80"
+    depends_on:
+      - backend-node
+      - backend-php
+      - ecommerce-admin-backend-node
+    networks:
+      - ecommerce_network
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: ecommerce_phpmyadmin
+    restart: always
+    ports:
+      - "3003:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    depends_on:
+      - mysql
     networks:
       - ecommerce_network
 

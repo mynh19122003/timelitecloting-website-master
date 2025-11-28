@@ -85,9 +85,49 @@ const SHIPPING_METHODS = [
   { id: 'usps_express', name: 'USPS Priority Mail Express', price: 58.35, time: '1 business day' },
 ];
 
-const FREE_SHIPPING_ID = 'free_shipping';
 const DEFAULT_SHIPPING_METHOD = SHIPPING_METHODS[0].id;
 const SUPPORTED_COUNTRIES = ["US", "CA"];
+
+const digitsOnly = (value: string) => value.replace(/\D/g, "");
+
+const formatCardNumber = (value: string) => {
+  const digits = digitsOnly(value).slice(0, 19);
+  return digits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+};
+
+const formatExpiry = (value: string) => {
+  const digits = digitsOnly(value).slice(0, 4);
+  if (digits.length === 0) return "";
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, 2)} / ${digits.slice(2)}`;
+};
+
+const passesLuhnCheck = (value: string) => {
+  let sum = 0;
+  let shouldDouble = false;
+  for (let i = value.length - 1; i >= 0; i -= 1) {
+    let digit = parseInt(value.charAt(i), 10);
+    if (Number.isNaN(digit)) return false;
+    if (shouldDouble) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+    sum += digit;
+    shouldDouble = !shouldDouble;
+  }
+  return sum % 10 === 0;
+};
+
+const parseCardExpiry = (value: string) => {
+  const match = value.match(/^(\d{2})\s*\/\s*(\d{2})$/);
+  if (!match) return null;
+  const month = Number(match[1]);
+  const year = Number(match[2]);
+  if (month < 1 || month > 12) return null;
+  const fullYear = 2000 + year;
+  const expiryDate = new Date(fullYear, month, 0, 23, 59, 59, 999);
+  return { month, year: fullYear, expiryDate };
+};
 
 type CheckoutLocationState = {
   directPurchase?: CartItem;
@@ -228,6 +268,14 @@ export const CheckoutPage = () => {
     } else if (name === 'email') {
       // No spaces in email
       sanitizedValue = value.replace(/\s/g, '').toLowerCase();
+    } else if (name === 'cardNumber') {
+      sanitizedValue = formatCardNumber(value);
+    } else if (name === 'cardExpiry') {
+      sanitizedValue = formatExpiry(value);
+    } else if (name === 'cardCvc') {
+      sanitizedValue = digitsOnly(value).slice(0, 4);
+    } else if (name === 'cardName') {
+      sanitizedValue = value.replace(/[^a-zA-Z\s'-]/g, '').toUpperCase();
     }
 
     setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
@@ -301,34 +349,13 @@ export const CheckoutPage = () => {
 
   // Calculate shipping cost
   const getShippingCost = () => {
-    if (formData.shippingMethod === FREE_SHIPPING_ID) return 0;
     const method = SHIPPING_METHODS.find(m => m.id === formData.shippingMethod);
     return method ? method.price : 0;
   };
 
-  const qualifiesForFreeShipping = total >= 99;
   const shippingCost = getShippingCost();
   const finalTotal = total + shippingCost;
-
-  useEffect(() => {
-    if (qualifiesForFreeShipping) {
-      setFormData(prev => (prev.shippingMethod === FREE_SHIPPING_ID ? prev : { ...prev, shippingMethod: FREE_SHIPPING_ID }));
-    } else {
-      setFormData(prev => (prev.shippingMethod !== FREE_SHIPPING_ID ? prev : { ...prev, shippingMethod: DEFAULT_SHIPPING_METHOD }));
-    }
-  }, [qualifiesForFreeShipping]);
-
-  const shippingOptions = qualifiesForFreeShipping
-    ? [
-        {
-          id: FREE_SHIPPING_ID,
-          name: t("checkout.shipping.freeOption"),
-          time: t("checkout.shipping.freeOption.description"),
-          price: 0
-        },
-        ...SHIPPING_METHODS
-      ]
-    : SHIPPING_METHODS;
+  const shippingOptions = SHIPPING_METHODS;
 
   const sanitizePhoneNumber = (value: string) => value.replace(/[^\d+]/g, "");
 
@@ -472,6 +499,44 @@ export const CheckoutPage = () => {
         }
       }
 
+      if (formData.paymentMethod === 'credit_card') {
+        const cardNameTrimmed = formData.cardName.trim();
+        const cardDigits = digitsOnly(formData.cardNumber);
+        const expiryInfo = parseCardExpiry(formData.cardExpiry.trim());
+        const cvcDigits = digitsOnly(formData.cardCvc);
+
+        if (cardNameTrimmed.length < 2) {
+          setError('Please enter the name printed on your card.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        if (cardDigits.length < 13 || cardDigits.length > 19 || !passesLuhnCheck(cardDigits)) {
+          setError('Please enter a valid card number (13‑19 digits).');
+          setIsSubmitting(false);
+          return;
+        }
+
+        if (!expiryInfo) {
+          setError('Expiration date must follow MM / YY format.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        const now = new Date();
+        if (expiryInfo.expiryDate < now) {
+          setError('This card appears to be expired.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        if (!/^\d{3,4}$/.test(cvcDigits)) {
+          setError('Security code must be 3 or 4 digits.');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const billingStreetLine = billingData.billingApartment
         ? `${billingData.billingStreetAddress}, ${billingData.billingApartment}`
         : billingData.billingStreetAddress;
@@ -496,6 +561,8 @@ export const CheckoutPage = () => {
       console.log('=========================================\n');
 
       // Build items with products_id (PID) or product_slug fallback
+      const DEFAULT_SIZE_LABEL = "One Size";
+
       type OrderItemPayload = {
         quantity: number;
         color: string;
@@ -521,14 +588,26 @@ export const CheckoutPage = () => {
           throw new Error(`Item #${index + 1} (${item.name}) has invalid quantity: ${item.quantity}`);
         }
 
-        if (!item.color || !item.size) {
-          throw new Error(`Item #${index + 1} (${item.name}) is missing color or size`);
+        if (!item.color) {
+          throw new Error(`Item #${index + 1} (${item.name}) is missing color`);
+        }
+
+        const resolvedSize =
+          typeof item.size === "string" && item.size.trim().length > 0
+            ? item.size.trim()
+            : DEFAULT_SIZE_LABEL;
+
+        if (!item.size) {
+          console.warn(
+            `[Checkout] Item ${item.name} has no size. Using fallback "${resolvedSize}".`,
+            item,
+          );
         }
 
         const base: OrderItemPayload = {
           quantity: item.quantity,
           color: item.color,
-          size: item.size
+          size: resolvedSize,
         };
 
         // Priority 1: Use pid (products_id) from cart item if available
@@ -864,9 +943,7 @@ export const CheckoutPage = () => {
                         <span className={styles.shippingTime}>{method.time}</span>
                       </div>
                     </div>
-                    <span className={styles.shippingPrice}>
-                      {method.id === FREE_SHIPPING_ID ? t("cart.complimentary") : formatCurrency(method.price)}
-                    </span>
+                    <span className={styles.shippingPrice}>{formatCurrency(method.price)}</span>
                   </label>
                 ))}
               </div>

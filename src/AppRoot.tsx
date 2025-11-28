@@ -17,8 +17,6 @@ const ProductsPage = lazy(() => import("./views/ProductsPage").then(m => ({ defa
 const ProductDetailPage = lazy(() => import("./views/ProductDetailPage").then(m => ({ default: m.ProductDetailPage })));
 const CartPage = lazy(() => import("./views/CartPage").then(m => ({ default: m.CartPage })));
 const CheckoutPage = lazy(() => import("./views/CheckoutPage").then(m => ({ default: m.CheckoutPage })));
-const ContactPage = lazy(() => import("./views/ContactPage").then(m => ({ default: m.ContactPage })));
-const AboutPage = lazy(() => import("./views/AboutPage").then(m => ({ default: m.AboutPage })));
 const LoginPage = lazy(() => import("./views/LoginPage").then(m => ({ default: m.LoginPage })));
 const RegisterPage = lazy(() => import("./views/RegisterPage").then(m => ({ default: m.RegisterPage })));
 const ProfilePage = lazy(() => import("./views/ProfilePage").then(m => ({ default: m.ProfilePage })));
@@ -75,8 +73,6 @@ export default function AppRoot() {
                   <Route path="/product/:id" element={<Suspense fallback={<PageLoader />}><ProductDetailPage /></Suspense>} />
                   <Route path="/cart" element={<Suspense fallback={<PageLoader />}><CartPage /></Suspense>} />
                   <Route path="/checkout" element={<Suspense fallback={<PageLoader />}><CheckoutPage /></Suspense>} />
-                  <Route path="/contact" element={<Suspense fallback={<PageLoader />}><ContactPage /></Suspense>} />
-                  <Route path="/about" element={<Suspense fallback={<PageLoader />}><AboutPage /></Suspense>} />
                   <Route path="/login" element={<Suspense fallback={<PageLoader />}><LoginPage /></Suspense>} />
                   <Route path="/register" element={<Suspense fallback={<PageLoader />}><RegisterPage /></Suspense>} />
                   <Route path="/profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />

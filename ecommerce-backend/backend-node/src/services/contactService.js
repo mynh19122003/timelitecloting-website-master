@@ -97,9 +97,40 @@ class ContactService {
   }
 
   async sendContactRequest(payload) {
-    this.ensureTransport();
-    const toEmail = process.env.CONTACT_TO_EMAIL || 'henry@timeliteclothing.com';
-    const fromEmail = process.env.CONTACT_FROM_EMAIL || process.env.CONTACT_SMTP_USER;
+    const toEmail = process.env.CONTACT_TO_EMAIL || 'zeddatgaming1@gmail.com';
+    const fromEmail = process.env.CONTACT_FROM_EMAIL || process.env.CONTACT_SMTP_USER || 'no-reply@timeliteclothing.com';
+
+    const summarizedPayload = {
+      name: payload.name,
+      email: payload.email,
+      phone: payload.phone || null,
+      eventDate: payload.eventDate || null,
+      messagePreview: (payload.message || '').slice(0, 120),
+    };
+
+    const logContext = {
+      to: toEmail,
+      from: fromEmail,
+      payload: summarizedPayload,
+    };
+
+    try {
+      this.ensureTransport();
+    } catch (error) {
+      console.warn('[ContactService] SMTP not configured, logging request only', {
+        ...logContext,
+        reason: error.message,
+      });
+
+      return {
+        success: true,
+        deliveredTo: toEmail,
+        simulated: true,
+        reason: error.message,
+      };
+    }
+
+    console.log('[ContactService] Preparing contact email', logContext);
 
     const mailOptions = {
       to: toEmail,
@@ -110,18 +141,29 @@ class ContactService {
       html: this.formatHtml(payload),
     };
 
-    await this.transporter.sendMail(mailOptions);
+    try {
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log('[ContactService] Contact request forwarded to concierge inbox', {
+        to: toEmail,
+        replyTo: payload.email,
+        name: payload.name,
+        messageId: info?.messageId,
+        envelope: info?.envelope,
+      });
 
-    console.log('[ContactService] Contact request forwarded to concierge inbox', {
-      to: toEmail,
-      replyTo: payload.email,
-      name: payload.name,
-    });
-
-    return {
-      success: true,
-      deliveredTo: toEmail,
-    };
+      return {
+        success: true,
+        deliveredTo: toEmail,
+        messageId: info?.messageId,
+      };
+    } catch (error) {
+      console.error('[ContactService] Failed to send contact email', {
+        ...logContext,
+        error: error?.message,
+        stack: error?.stack,
+      });
+      throw error;
+    }
   }
 }
 

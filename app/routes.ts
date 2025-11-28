@@ -18,8 +18,6 @@
 export const STOREFRONT_ROUTES = [
   { slug: [] }, // Home page - root path
   { slug: ['shop'] },
-  { slug: ['about'] },
-  { slug: ['contact'] },
   { slug: ['cart'] },
   { slug: ['checkout'] },
   { slug: ['profile'] },

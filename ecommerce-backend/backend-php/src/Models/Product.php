@@ -401,7 +401,7 @@ class Product
                 throw new \Exception('ERR_PRODUCT_NOT_FOUND');
             }
 
-            if ($product['stock'] < $quantity) {
+            if ((int)$product['stock'] < $quantity) {
                 throw new \Exception('ERR_INSUFFICIENT_STOCK');
             }
 
@@ -413,9 +413,35 @@ class Product
 
     public function updateStock(int $productId, int $quantity): bool
     {
+        if ($quantity <= 0) {
+            return true;
+        }
+
         try {
             $stmt = $this->db->prepare(
-                'UPDATE products SET stock = stock - ? WHERE id = ?'
+                'UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?'
+            );
+            $stmt->execute([$quantity, $productId, $quantity]);
+
+            if ($stmt->rowCount() === 0) {
+                throw new \Exception('ERR_INSUFFICIENT_STOCK');
+            }
+
+            return true;
+        } catch (PDOException $e) {
+            throw new \Exception('ERR_UPDATE_STOCK_FAILED');
+        }
+    }
+
+    public function restoreStock(int $productId, int $quantity): bool
+    {
+        if ($quantity <= 0) {
+            return true;
+        }
+
+        try {
+            $stmt = $this->db->prepare(
+                'UPDATE products SET stock = stock + ? WHERE id = ?'
             );
             return $stmt->execute([$quantity, $productId]);
         } catch (PDOException $e) {

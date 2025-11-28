@@ -139,10 +139,13 @@ class OrderService {
 
       // Deduct stock per item
       for (const ni of normalizedItems) {
-        await connection.execute(
-          'UPDATE products SET stock = stock - ? WHERE id = ?',
-          [ni.qty, ni.productId]
+        const [updateResult] = await connection.execute(
+          'UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?',
+          [ni.qty, ni.productId, ni.qty]
         );
+        if (!updateResult || (typeof updateResult.affectedRows === 'number' && updateResult.affectedRows === 0)) {
+          throw new Error('ERR_INSUFFICIENT_STOCK');
+        }
       }
 
       await connection.commit();

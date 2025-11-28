@@ -3,7 +3,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiSearch } from "react-icons/fi";
-import { PiPackageLight, PiShoppingBagLight, PiUserCircleLight } from "react-icons/pi";
+import { FiMenu, FiX } from "react-icons/fi";
+import { PiPackageLight, PiShoppingCartSimpleLight, PiUserCircleLight } from "react-icons/pi";
 import { useCart } from "../../../context/CartContext";
 import {
   clearAuthStatus,
@@ -53,6 +54,7 @@ const navLinkParamMap: NavLinkParamMap = {
 
 export const Navbar = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(() => getAuthStatus());
   const [searchQuery, setSearchQuery] = useState("");
   const { itemCount, openCart } = useCart();
@@ -139,10 +141,15 @@ export const Navbar = () => {
     return `${pathname}${queryString ? `?${queryString}` : ""}`;
   };
 
+  const closeAllMenus = () => {
+    setActiveIndex(null);
+    setIsMobileNavOpen(false);
+  };
+
   const navigateToItem = (item: ShopNavItem, extraParams?: Record<string, string>) => {
     const target = buildShopDestination(item, extraParams);
     navigate(target);
-    setActiveIndex(null);
+    closeAllMenus();
   };
 
   const getNavLinkParams = (itemLabel: string, linkLabel: string): Record<string, string> | undefined => {
@@ -370,10 +377,22 @@ export const Navbar = () => {
     return text;
   };
 
+  const toggleMobileNav = () => {
+    setIsMobileNavOpen((prev) => !prev);
+  };
+
+  const headerClassNames = ["header"];
+  if (activeIndex !== null) {
+    headerClassNames.push("header--dropdown-open");
+  }
+  if (isMobileNavOpen) {
+    headerClassNames.push("header--mobile-open");
+  }
+
   return (
     <>
       <style>{headerStyles}</style>
-      <header className="header">
+      <header className={headerClassNames.join(" ")}>
         <div className="header__top">
           <div className="header__brand">
             <span className="header__brand-mark">
@@ -405,7 +424,7 @@ export const Navbar = () => {
               <PiUserCircleLight size={18} />
             </button>
             <button className="header__icon" aria-label={t("header.shopping.bag")} onClick={openCart}>
-              <PiShoppingBagLight size={18} />
+              <PiShoppingCartSimpleLight size={18} />
               {itemCount > 0 && (
                 <span style={{
                   position: "absolute",
@@ -443,8 +462,21 @@ export const Navbar = () => {
               </button>
             )}
           </div>
+          <button
+            type="button"
+            className="header__mobile-toggle"
+            aria-label={isMobileNavOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMobileNavOpen}
+            onClick={toggleMobileNav}
+          >
+            {isMobileNavOpen ? <FiX size={20} /> : <FiMenu size={20} />}
+            <span>{isMobileNavOpen ? "Close" : "Menu"}</span>
+          </button>
         </div>
-        <div className="header__nav-row" ref={navRowRef}>
+        <div
+          className={`header__nav-row${isMobileNavOpen ? " header__nav-row--mobile-open" : ""}`}
+          ref={navRowRef}
+        >
           <nav className="header__nav" aria-label="Primary">
             {shopNavMenu.map((item: ShopNavItem, index) => {
               const hasDropdown =
@@ -576,6 +608,11 @@ export const Navbar = () => {
             );
           })()}
         </div>
+        <div
+          className={`header__mobile-overlay${isMobileNavOpen ? " header__mobile-overlay--visible" : ""}`}
+          onClick={closeAllMenus}
+          aria-hidden={!isMobileNavOpen}
+        />
       </header>
     </>
   );
