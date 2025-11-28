@@ -1,6 +1,12 @@
 const express = require('express');
 const productsController = require('../controllers/productsController');
-const { validate, productCreateSchema, productUpdateSchema } = require('../middleware/validation');
+const {
+  validate,
+  productCreateSchema,
+  productUpdateSchema,
+  bulkProductCreateSchema,
+  bulkProductDeleteSchema
+} = require('../middleware/validation');
 
 const router = express.Router();
 
@@ -22,6 +28,12 @@ router.get('/categories', (req, res, next) => {
 
 // Create (upload) new product
 router.post('/', validate(productCreateSchema), productsController.create);
+
+// Bulk create products - MUST be before /:id route to avoid conflict
+router.post('/bulk', validate(bulkProductCreateSchema), productsController.bulkCreate);
+
+// Bulk delete products - MUST be before /:id route to avoid conflict
+router.delete('/bulk', validate(bulkProductDeleteSchema), productsController.bulkDelete);
 
 // Get product detail by products_id (PID...) hoặc id số
 // This route must be after /tags to avoid conflict

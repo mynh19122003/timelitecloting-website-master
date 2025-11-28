@@ -340,6 +340,182 @@
   gap: 20px;
 }
 
+.modeToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border-radius: 999px;
+  padding: 6px;
+  width: fit-content;
+  margin: 8px 0 24px;
+}
+
+.modeButton {
+  border: none;
+  background: transparent;
+  color: #475569;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.modeButtonActive {
+  background: #ffffff;
+  color: #1d4ed8;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.1);
+}
+
+.bulkBody {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.bulkHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.bulkHeaderActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bulkCardStack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.bulkCard {
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 18px;
+  padding: 20px;
+  background: #fdfdfd;
+  box-shadow: 0 20px 36px -32px rgba(15, 23, 42, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.bulkCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.bulkCardEyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+}
+
+.bulkCardActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bulkGhostButton,
+.bulkDangerButton {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.bulkGhostButton:hover {
+  background: rgba(148, 163, 184, 0.15);
+}
+
+.bulkDangerButton {
+  border-color: rgba(248, 113, 113, 0.5);
+  color: #dc2626;
+}
+
+.bulkDangerButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.bulkDangerButton:not(:disabled):hover {
+  background: rgba(248, 113, 113, 0.15);
+}
+
+.bulkMediaUpload {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 1px dashed rgba(148, 163, 184, 0.45);
+  border-radius: 16px;
+  padding: 16px;
+  background: #f8fafc;
+}
+
+.bulkTags {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tagPills span button {
+  background: none;
+  border: none;
+  color: #475569;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  margin-left: 6px;
+}
+
+.helperText {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+}
+
+.previewGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.previewItem {
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  padding: 16px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.previewItem strong {
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.previewMeta {
+  font-size: 13px;
+  color: #475569;
+}
+
 .card {
   background: #ffffff;
   border-radius: 18px;

@@ -1,4 +1,5 @@
 import { AdminApi, PublicApi } from '../api'
+import { deleteMethod } from '../api/admin'
 import { getApiBaseUrl } from '../api/config'
 import PublicApiClient from '../api/public'
 
@@ -45,6 +46,9 @@ const normalizeUiProduct = (apiProduct = {}, fallbackImage = '') => {
   const stockTone = stockOnHand <= 0 ? 'danger' : stockOnHand < 150 ? 'warning' : 'success'
   const stockLabel = stockOnHand <= 0 ? 'out of stock' : stockOnHand < 150 ? 'low stock' : 'in stock'
   const rating = toNumber(apiProduct.rating, 0)
+  
+  // Preserve products_id for bulk operations
+  const productsId = apiProduct.products_id || apiProduct.product_id || null
 
   // Parse colors if backend returns JSON string from MySQL JSON column
   let parsedColors = []
@@ -88,6 +92,8 @@ const normalizeUiProduct = (apiProduct = {}, fallbackImage = '') => {
   
   return {
     id: productId,
+    products_id: productsId, // Preserve products_id for bulk delete
+    product_id: productsId, // Also preserve as product_id for compatibility
     name: apiProduct.name || 'Untitled product',
     sku: rawId ? String(rawId) : '',
     image: resolvedImage,
@@ -239,6 +245,40 @@ export const createProduct = async (formData = {}) => {
   }
 }
 
+export const bulkCreateProducts = async (productsArray) => {
+  const payload = {
+    products: productsArray.map((product) => ({
+      name: product.name,
+      description: product.description || '',
+      color: product.color || '',
+      category: product.category || '',
+      variant: product.variant || '',
+      inventory: Number(product.inventory) || 0,
+      price: Number(product.price) || 0,
+      status: product.status || 'published',
+      rating: Number(product.rating) || 0,
+      sizes: product.sizes || [],
+      tags: product.tags || [],
+      imagePreview: product.imagePreview || '',
+      mediaUploads: product.mediaUploads || []
+    }))
+  }
+
+  try {
+    const res = await AdminApi.post('/products/bulk', payload)
+    return res?.data?.data || res?.data || {}
+  } catch (error) {
+    console.error('[bulkCreateProducts] API call failed:', {
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
+      error: error?.response?.data?.error,
+      message: error?.response?.data?.message
+    })
+    throw error
+  }
+}
+
 export const getProduct = async (idOrCode) => {
   if (!idOrCode) throw new Error('Missing product id')
   const res = await AdminApi.get(`/products/${encodeURIComponent(idOrCode)}`)
@@ -366,6 +406,63 @@ export const updateProduct = async (idOrCode, formData = {}) => {
   }
 }
 
+export const deleteProduct = async (idOrCode) => {
+  if (!idOrCode) throw new Error('Missing product id')
+
+  const safeId = encodeURIComponent(String(idOrCode).trim())
+
+  try {
+    const res = await AdminApi.del(`/products/${safeId}`)
+    return res?.data || { success: true }
+  } catch (error) {
+    console.error('[deleteProduct] API call failed:', {
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
+      message: error?.response?.data?.message,
+      url: error?.config?.url,
+      baseURL: error?.config?.baseURL
+    })
+
+    if (error?.response?.status === 404) {
+      throw new Error('Sản phẩm không tồn tại hoặc đã bị xoá.')
+    }
+
+    if (error?.response?.status === 401) {
+      throw new Error('Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.')
+    }
+
+    if (error?.response?.status === 403) {
+      throw new Error('Tài khoản hiện không có quyền xoá sản phẩm.')
+    }
+
+    throw new Error(error?.response?.data?.message || 'Xoá sản phẩm thất bại. Vui lòng thử lại.')
+  }
+}
+
+export const bulkDeleteProducts = async (productIds) => {
+  const payload = {
+    productIds: productIds.map((id) => String(id).trim()).filter(Boolean)
+  }
+
+  console.log('[bulkDeleteProducts] Sending payload:', JSON.stringify(payload, null, 2))
+
+  try {
+    // Use axios.delete with data in config
+    const res = await deleteMethod('/products/bulk', payload)
+    return res?.data?.data || res?.data || {}
+  } catch (error) {
+    console.error('[bulkDeleteProducts] API call failed:', {
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
+      error: error?.response?.data?.error,
+      message: error?.response?.data?.message
+    })
+    throw error
+  }
+}
+
 export const listProducts = async ({ page = 1, limit = 1000, search = '', category = '' } = {}) => {
   try {
     const res = await AdminApi.get('/products', {
@@ -461,6 +558,9 @@ export const getCategories = async () => {
 
 export default {
   createProduct,
+  bulkCreateProducts,
+  deleteProduct,
+  bulkDeleteProducts,
   getProduct,
   listProducts,
   updateProduct,

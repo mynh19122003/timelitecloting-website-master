@@ -44,6 +44,13 @@ const parseInventoryCount = (payload, fallback) => {
 
 const ID_PRIORITY_KEYS = ['id', 'product_id', 'products_id', 'productId', 'sku', 'code', 'value']
 
+const normalizeProductIdForApi = (value) => {
+  if (value == null) return ''
+  const raw = String(value).trim()
+  if (!raw) return ''
+  return raw.replace(/^PRD-/, '')
+}
+
 const resolvePrimitiveId = (value, depth = 0) => {
   if (value == null || depth > 4) return ''
   if (typeof value === 'string' || typeof value === 'number') return String(value)
@@ -122,6 +129,9 @@ const Products = () => {
   const [query, setQuery] = useState('')
   const [filterCategory, setFilterCategory] = useState('All')
   const [page, setPage] = useState(1)
+  const [deletingId, setDeletingId] = useState('')
+  const [selectedIds, setSelectedIds] = useState(new Set())
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
   const pageSize = 5
 
   useEffect(() => {
@@ -180,8 +190,60 @@ const Products = () => {
     return filtered.slice(start, start + pageSize)
   }, [filtered, page, pageSize])
 
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      const allIds = new Set(paginated.map((row) => {
+        // Try to get products_id directly first, then fallback to extractProductId
+        const id = row.products_id || row.product_id || extractProductId(row)
+        return id ? normalizeProductIdForApi(id) : null
+      }).filter(Boolean))
+      setSelectedIds(allIds)
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const handleSelectOne = (productId, checked) => {
+    setSelectedIds((prev) => {
+      const newSelected = new Set(prev)
+      if (checked) {
+        newSelected.add(productId)
+      } else {
+        newSelected.delete(productId)
+      }
+      return newSelected
+    })
+  }
+
+  const isAllSelected = paginated.length > 0 && paginated.every((row) => {
+    // Try to get products_id directly first, then fallback to extractProductId
+    const id = row.products_id || row.product_id || extractProductId(row)
+    const apiId = id ? normalizeProductIdForApi(id) : null
+    return apiId && selectedIds.has(apiId)
+  })
+
   const columns = [
-    { key: 'select', label: '', width: '40px', render: () => <input type="checkbox" /> },
+    {
+      key: 'select',
+      label: '',
+      width: '40px',
+      render: (_, row) => {
+        // Try to get products_id directly first, then fallback to extractProductId
+        let productId = row.products_id || row.product_id || extractProductId(row)
+        const apiId = productId ? normalizeProductIdForApi(productId) : null
+        if (!apiId) {
+          console.warn('[Products] Cannot extract product ID from row:', row)
+          return null
+        }
+        return (
+          <input
+            type="checkbox"
+            checked={selectedIds.has(apiId)}
+            onChange={(e) => handleSelectOne(apiId, e.target.checked)}
+          />
+        )
+      }
+    },
     {
       key: 'product',
       label: 'Product',
@@ -232,8 +294,13 @@ const Products = () => {
             >
               <FaEdit /> Edit
             </button>
-            <button type="button" className={styles.deleteButton} onClick={() => handleDelete(productId)}>
-              <FaTrash /> Delete
+            <button
+              type="button"
+              className={styles.deleteButton}
+              onClick={() => handleDelete(productId)}
+              disabled={deletingId === productId}
+            >
+              <FaTrash /> {deletingId === productId ? 'Deleting…' : 'Delete'}
             </button>
           </div>
         )
@@ -241,13 +308,84 @@ const Products = () => {
     }
   ]
 
-  function handleDelete(id) {
+  async function handleDelete(id) {
     if (!window.confirm('Delete this product?')) return
+
     const productId = extractProductId({ id }) || (typeof id === 'string' ? id : String(id || ''))
-    setProducts((prev) => prev.filter((p) => {
-      const pId = extractProductId(p) || (typeof p.id === 'string' ? p.id : String(p.id || ''))
-      return pId !== productId
-    }))
+    const apiId = normalizeProductIdForApi(productId)
+
+    if (!apiId) {
+      window.alert('Không xác định được mã sản phẩm để xoá.')
+      return
+    }
+
+    try {
+      setError('')
+      setDeletingId(productId)
+      await productsService.deleteProduct(apiId)
+      setProducts((prev) =>
+        prev.filter((p) => {
+          const currentId = extractProductId(p) || (typeof p.id === 'string' ? p.id : String(p.id || ''))
+          const normalizedCurrentId = normalizeProductIdForApi(currentId)
+          return normalizedCurrentId !== apiId && currentId !== productId
+        })
+      )
+      setSelectedIds((prev) => {
+        const newSet = new Set(prev)
+        newSet.delete(apiId)
+        return newSet
+      })
+    } catch (err) {
+      console.error('[Products] delete failed', err)
+      const message = err?.message || 'Failed to delete product'
+      setError(message)
+      window.alert(message)
+    } finally {
+      setDeletingId('')
+    }
+  }
+
+  async function handleBulkDelete() {
+    if (selectedIds.size === 0) {
+      window.alert('Vui lòng chọn ít nhất một sản phẩm để xoá.')
+      return
+    }
+
+    const count = selectedIds.size
+    if (!window.confirm(`Bạn có chắc chắn muốn xoá ${count} sản phẩm đã chọn?`)) return
+
+    try {
+      setError('')
+      setIsBulkDeleting(true)
+      const productIdsArray = Array.from(selectedIds)
+      console.log('[Products] Bulk delete - Selected IDs:', productIdsArray)
+      const result = await productsService.bulkDeleteProducts(productIdsArray)
+
+      if (result.failedCount > 0) {
+        const failedMessages = result.failed.map((f) => `Product ${f.productId}: ${f.error}`).join('\n')
+        window.alert(`Đã xoá ${result.successCount} sản phẩm. Lỗi:\n${failedMessages}`)
+      } else {
+        window.alert(`Đã xoá thành công ${result.successCount} sản phẩm!`)
+      }
+
+      // Remove deleted products from UI
+      setProducts((prev) =>
+        prev.filter((p) => {
+          const currentId = extractProductId(p)
+          const apiId = currentId ? normalizeProductIdForApi(currentId) : null
+          return !apiId || !selectedIds.has(apiId)
+        })
+      )
+
+      setSelectedIds(new Set())
+    } catch (err) {
+      console.error('[Products] bulk delete failed', err)
+      const message = err?.response?.data?.message || err?.message || 'Failed to delete products'
+      setError(message)
+      window.alert(message)
+    } finally {
+      setIsBulkDeleting(false)
+    }
   }
 
   function handleExport() {
@@ -270,6 +408,16 @@ const Products = () => {
       <div className={styles.headerRow}>
         <h2>Products</h2>
         <div className={styles.headerActions}>
+          {selectedIds.size > 0 && (
+            <Button
+              variant="danger"
+              onClick={handleBulkDelete}
+              disabled={isBulkDeleting}
+              title={`Delete ${selectedIds.size} selected product(s)`}
+            >
+              <FaTrash /> {isBulkDeleting ? 'Deleting…' : `Delete ${selectedIds.size} selected`}
+            </Button>
+          )}
           <Button variant="ghost" onClick={handleExport} title="Export">
             <FaFileExport /> Export
           </Button>
@@ -302,7 +450,21 @@ const Products = () => {
       {loading ? (
         <div className={styles.loading}>Loading products…</div>
       ) : (
+        <>
+          {paginated.length > 0 && (
+            <div style={{ padding: '8px 16px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input
+                type="checkbox"
+                checked={isAllSelected}
+                onChange={(e) => handleSelectAll(e.target.checked)}
+              />
+              <span style={{ fontSize: '14px', color: '#6b7280' }}>
+                {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select all'}
+              </span>
+            </div>
+          )}
         <DataTable columns={columns} data={paginated} emptyState="No products found" />
+        </>
       )}
 
       <div className={styles.pagerRow}>

@@ -183,6 +183,287 @@ class ProductsService {
     return this.getByIdOrCode(productId);
   }
 
+  generateSlug(name) {
+    if (!name) return '';
+    return String(name)
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '')
+      .slice(0, 255);
+  }
+
+  async getByIdOrCodeWithConnection(connection, idOrCode) {
+    const idStr = String(idOrCode);
+    const tryId = Number.isNaN(parseInt(idStr, 10)) ? null : parseInt(idStr, 10);
+
+    const [byCode] = await connection.execute(
+      'SELECT * FROM products WHERE products_id = ? LIMIT 1',
+      [idStr]
+    );
+    if (byCode && byCode.length > 0) {
+      return byCode[0];
+    }
+
+    if (tryId !== null) {
+      const [byPk] = await connection.execute(
+        'SELECT * FROM products WHERE id = ? LIMIT 1',
+        [tryId]
+      );
+      if (byPk && byPk.length > 0) {
+        return byPk[0];
+      }
+    }
+
+    throw new Error('ERR_PRODUCT_NOT_FOUND');
+  }
+
+  async generateNextProductIdWithConnection(connection) {
+    const [rows] = await connection.execute(
+      "SELECT products_id FROM products WHERE products_id LIKE 'PID%' ORDER BY products_id DESC LIMIT 1"
+    );
+    let nextNum = 1;
+    if (rows && rows.length > 0 && rows[0].products_id) {
+      const last = String(rows[0].products_id);
+      const numeric = parseInt(last.replace(/[^0-9]/g, ''), 10);
+      if (!Number.isNaN(numeric)) nextNum = numeric + 1;
+    }
+    return `PID${String(nextNum).padStart(5, '0')}`;
+  }
+
+  async bulkCreateProducts(productsArray) {
+    const results = {
+      success: [],
+      failed: [],
+      successCount: 0,
+      failedCount: 0
+    };
+
+    console.log('[BulkCreate] ========================================');
+    console.log('[BulkCreate] Starting bulk create with', productsArray?.length || 0, 'products');
+
+    if (!Array.isArray(productsArray) || productsArray.length === 0) {
+      console.log('[BulkCreate] Invalid or empty products array');
+      return results;
+    }
+
+    // Generate tất cả product IDs trước khi bắt đầu transaction
+    // Query database một lần để lấy ID cuối cùng
+    console.log('[BulkCreate] Querying database for last product ID...');
+    const [lastIdRows] = await pool.execute(
+      "SELECT products_id FROM products WHERE products_id LIKE 'PID%' ORDER BY CAST(SUBSTRING(products_id, 4) AS UNSIGNED) DESC LIMIT 1"
+    );
+    
+    console.log('[BulkCreate] Query result:', JSON.stringify(lastIdRows, null, 2));
+    
+    let startNum = 1;
+    if (lastIdRows && lastIdRows.length > 0 && lastIdRows[0].products_id) {
+      const last = String(lastIdRows[0].products_id);
+      console.log('[BulkCreate] Last product ID string:', last);
+      const numeric = parseInt(last.replace(/[^0-9]/g, ''), 10);
+      console.log('[BulkCreate] Parsed numeric:', numeric);
+      if (!Number.isNaN(numeric) && numeric > 0) {
+        startNum = numeric + 1;
+      }
+    }
+    
+    console.log('[BulkCreate] Last product ID found:', lastIdRows?.[0]?.products_id || 'None');
+    console.log('[BulkCreate] Starting from PID number:', startNum);
+
+    // Generate IDs cho tất cả sản phẩm (kiểm tra duplicate sẽ được thực hiện trong transaction)
+    const productIds = [];
+    for (let i = 0; i < productsArray.length; i++) {
+      const pid = `PID${String(startNum + i).padStart(5, '0')}`;
+      productIds.push(pid);
+      console.log(`[BulkCreate] Generated ID for product #${i + 1}: ${pid}`);
+    }
+    
+    console.log('[BulkCreate] Final product IDs:', JSON.stringify(productIds, null, 2));
+
+    // Sử dụng transaction để đảm bảo tính toàn vẹn
+    console.log('[BulkCreate] Starting transaction...');
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      for (let i = 0; i < productsArray.length; i++) {
+        const productData = productsArray[i];
+        let productId = productIds[i];
+        console.log(`[BulkCreate] Processing product #${i + 1} (${productId}): ${productData.name || 'Unknown'}`);
+        
+        try {
+          // Check và fix duplicate ID trong transaction
+          let retryCount = 0;
+          let isDuplicate = true;
+          while (isDuplicate && retryCount < 10) {
+            const [existing] = await connection.execute(
+              'SELECT products_id FROM products WHERE products_id = ? LIMIT 1',
+              [productId]
+            );
+            
+            if (existing && existing.length > 0) {
+              console.log(`[BulkCreate][Product #${i + 1}] ⚠️ Product ID ${productId} already exists, generating new ID...`);
+              const currentNum = parseInt(productId.replace(/[^0-9]/g, ''), 10);
+              const newNum = currentNum + 1;
+              productId = `PID${String(newNum).padStart(5, '0')}`;
+              retryCount++;
+              console.log(`[BulkCreate][Product #${i + 1}] New product ID: ${productId} (retry ${retryCount})`);
+            } else {
+              isDuplicate = false;
+            }
+          }
+          
+          if (isDuplicate) {
+            throw new Error(`Failed to generate unique product ID after ${retryCount} retries`);
+          }
+          
+          console.log(`[BulkCreate][Product #${i + 1}] Using product ID: ${productId}`);
+          // Log input data
+          console.log(`[BulkCreate][Product #${i + 1}] Input data:`, {
+            name: productData.name,
+            price: productData.price,
+            inventory: productData.inventory,
+            category: productData.category,
+            color: productData.color,
+            description: productData.description?.substring(0, 50) + '...',
+            hasImagePreview: Boolean(productData.imagePreview),
+            mediaUploadsCount: productData.mediaUploads?.length || 0,
+            sizes: productData.sizes,
+            tags: productData.tags
+          });
+
+          // 2. Process main image
+          let imagePath = null;
+          if (productData.imagePreview) {
+            console.log(`[BulkCreate][Product #${i + 1}] Processing main image...`);
+            imagePath = await this.saveImageForProduct(productId, productData.imagePreview, 'main');
+            console.log(`[BulkCreate][Product #${i + 1}] Main image saved:`, imagePath);
+          } else {
+            console.log(`[BulkCreate][Product #${i + 1}] No main image provided`);
+          }
+
+          // 3. Process gallery images
+          let galleryJson = null;
+          if (productData.mediaUploads && productData.mediaUploads.length > 0) {
+            console.log(`[BulkCreate][Product #${i + 1}] Processing ${productData.mediaUploads.length} gallery images...`);
+            const saved = [];
+            for (let idx = 0; idx < productData.mediaUploads.length; idx++) {
+              const b64 = productData.mediaUploads[idx].dataUrl;
+              // eslint-disable-next-line no-await-in-loop
+              const rel = await this.saveImageForProduct(productId, b64, `main_${idx + 2}`);
+              if (rel) saved.push(rel);
+            }
+            galleryJson = JSON.stringify(saved);
+            console.log(`[BulkCreate][Product #${i + 1}] Gallery images saved:`, saved.length);
+          }
+
+          // 4. Normalize data
+          const slug = this.generateSlug(productData.name);
+          const colors = productData.color ? JSON.stringify([productData.color]) : null;
+          const sizes = this.parseMaybeJson(productData.sizes);
+          const tags = this.parseMaybeJson(productData.tags);
+
+          console.log(`[BulkCreate][Product #${i + 1}] Normalized data:`, {
+            slug,
+            colors,
+            sizes: sizes ? JSON.parse(sizes) : null,
+            tags: tags ? JSON.parse(tags) : null
+          });
+
+          // 5. Insert into database
+          const sql = `INSERT INTO products
+            (products_id, slug, name, category, variant, short_description, description, price, original_price,
+             stock, colors, sizes, image_url, gallery, rating, reviews, tags, is_featured, is_new)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+
+          const params = [
+            productId,
+            slug || null,
+            productData.name || null,
+            productData.category || null,
+            productData.variant || null,
+            null, // short_description
+            productData.description || null,
+            productData.price ?? null,
+            null, // original_price
+            productData.inventory ?? 0,
+            colors,
+            sizes,
+            imagePath,
+            galleryJson,
+            productData.rating ?? null,
+            null, // reviews
+            tags,
+            0, // is_featured
+            0  // is_new
+          ];
+
+          console.log(`[BulkCreate][Product #${i + 1}] Inserting into database...`);
+          await connection.execute(sql, params);
+          console.log(`[BulkCreate][Product #${i + 1}] Insert successful`);
+
+          // 6. Fetch created product using transaction connection
+          console.log(`[BulkCreate][Product #${i + 1}] Fetching created product...`);
+          const created = await this.getByIdOrCodeWithConnection(connection, productId);
+          console.log(`[BulkCreate][Product #${i + 1}] Product fetched successfully`);
+          
+          results.success.push({
+            index: i,
+            productId,
+            data: created
+          });
+          results.successCount++;
+          console.log(`[BulkCreate][Product #${i + 1}] ✅ SUCCESS`);
+        } catch (err) {
+          console.error(`[BulkCreate][Product #${i + 1}] ❌ FAILED:`, err.message);
+          console.error(`[BulkCreate][Product #${i + 1}] Error stack:`, err.stack);
+          console.error(`[BulkCreate][Product #${i + 1}] Error details:`, {
+            code: err.code,
+            errno: err.errno,
+            sqlState: err.sqlState,
+            sqlMessage: err.sqlMessage
+          });
+          
+          results.failed.push({
+            index: i,
+            productName: productData.name || 'Unknown',
+            error: err.message
+          });
+          results.failedCount++;
+          // Tiếp tục xử lý sản phẩm tiếp theo, không rollback toàn bộ
+        }
+      }
+
+      // Commit transaction nếu có ít nhất 1 sản phẩm thành công
+      if (results.successCount > 0) {
+        console.log(`[BulkCreate] Committing transaction (${results.successCount} success, ${results.failedCount} failed)...`);
+        await connection.commit();
+        console.log('[BulkCreate] Transaction committed');
+      } else {
+        console.log('[BulkCreate] Rolling back transaction (no successful products)...');
+        await connection.rollback();
+        console.log('[BulkCreate] Transaction rolled back');
+      }
+
+      console.log('[BulkCreate] Final results:', {
+        successCount: results.successCount,
+        failedCount: results.failedCount
+      });
+      console.log('[BulkCreate] ========================================');
+
+      return results;
+    } catch (err) {
+      console.error('[BulkCreate] Transaction error:', err.message);
+      console.error('[BulkCreate] Rolling back transaction...');
+      await connection.rollback();
+      console.error('[BulkCreate] ========================================');
+      throw err;
+    } finally {
+      connection.release();
+    }
+  }
+
   async listProducts(query) {
     const page = Math.max(parseInt(query.page, 10) || 1, 1);
     const limit = Math.min(Math.max(parseInt(query.limit, 10) || 20, 1), 100);
@@ -361,6 +642,74 @@ class ProductsService {
     }
 
     return { success: true };
+  }
+
+  async bulkDeleteProducts(productIds) {
+    const results = {
+      success: [],
+      failed: [],
+      successCount: 0,
+      failedCount: 0
+    };
+
+    console.log('[BulkDelete] ========================================');
+    console.log('[BulkDelete] Starting bulk delete with', productIds?.length || 0, 'product IDs');
+    console.log('[BulkDelete] Product IDs array:', JSON.stringify(productIds, null, 2));
+
+    if (!Array.isArray(productIds) || productIds.length === 0) {
+      console.log('[BulkDelete] Invalid or empty product IDs array');
+      return results;
+    }
+
+    for (let i = 0; i < productIds.length; i++) {
+      const productId = productIds[i];
+      console.log(`[BulkDelete] Processing product #${i + 1}: ${productId} (type: ${typeof productId})`);
+      try {
+        // Try to get product first to verify it exists
+        console.log(`[BulkDelete] Looking up product: ${productId}`);
+        const product = await this.getByIdOrCode(productId);
+        console.log(`[BulkDelete] Found product:`, {
+          id: product.id,
+          products_id: product.products_id,
+          name: product.name
+        });
+        
+        // Use products_id for deletion
+        const actualProductId = product.products_id || productId;
+        console.log(`[BulkDelete] Deleting product with ID: ${actualProductId}`);
+        await this.deleteProduct(actualProductId);
+        
+        results.success.push({
+          index: i,
+          productId: actualProductId
+        });
+        results.successCount++;
+        console.log(`[BulkDelete] ✅ Product #${i + 1} (${actualProductId}) deleted successfully`);
+      } catch (err) {
+        console.error(`[BulkDelete] ❌ Failed to delete product #${i + 1} (${productId}):`, err.message);
+        console.error(`[BulkDelete] Error details:`, {
+          code: err.code,
+          errno: err.errno,
+          sqlState: err.sqlState,
+          sqlMessage: err.sqlMessage,
+          stack: err.stack
+        });
+        results.failed.push({
+          index: i,
+          productId,
+          error: err.message
+        });
+        results.failedCount++;
+      }
+    }
+
+    console.log('[BulkDelete] Final results:', {
+      successCount: results.successCount,
+      failedCount: results.failedCount
+    });
+    console.log('[BulkDelete] ========================================');
+
+    return results;
   }
 
   async getAllTags() {

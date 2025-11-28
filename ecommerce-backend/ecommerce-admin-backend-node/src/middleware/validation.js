@@ -119,6 +119,47 @@ const variantListQuerySchema = Joi.object({
   category: Joi.string().max(64).optional()
 });
 
+// Bulk Products
+const bulkProductCreateSchema = Joi.object({
+  products: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().max(255).required(),
+        description: Joi.string().allow('', null).optional(),
+        color: Joi.string().max(128).optional(),
+        category: Joi.string().max(64).allow('', null).optional(),
+        variant: Joi.string().max(128).allow('', null).optional(),
+        inventory: Joi.number().integer().min(0).required(),
+        price: Joi.number().required(),
+        status: Joi.string().valid('published', 'draft', 'archived').optional(),
+        rating: Joi.number().allow(null).optional(),
+        sizes: Joi.alternatives().try(Joi.array().items(Joi.string()), Joi.string()).optional(),
+        tags: Joi.alternatives().try(Joi.array().items(Joi.string()), Joi.string()).optional(),
+        imagePreview: Joi.string().allow('', null).optional(), // base64
+        mediaUploads: Joi.array()
+          .items(
+            Joi.object({
+              id: Joi.string().optional(),
+              name: Joi.string().optional(),
+              dataUrl: Joi.string().required() // base64
+            })
+          )
+          .optional()
+      })
+    )
+    .min(1)
+    .max(100) // Giới hạn tối đa 100 sản phẩm mỗi lần
+    .required()
+});
+
+const bulkProductDeleteSchema = Joi.object({
+  productIds: Joi.array()
+    .items(Joi.string().required())
+    .min(1)
+    .max(100) // Giới hạn tối đa 100 sản phẩm mỗi lần
+    .required()
+});
+
 module.exports = {
   validate,
   validateQuery,
@@ -132,7 +173,9 @@ module.exports = {
   productCreateSchema,
   productUpdateSchema,
   variantCreateSchema,
-  variantListQuerySchema
+  variantListQuerySchema,
+  bulkProductCreateSchema,
+  bulkProductDeleteSchema
 };
 
 
