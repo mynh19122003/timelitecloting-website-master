@@ -3,6 +3,7 @@ const http = require('http');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 require('dotenv').config();
 
 const { testConnection, shouldSkipDb } = require('./config/database');
@@ -215,6 +216,25 @@ app.use('/admin/customers', customersRoutes);
 app.use('/admin/products', productsRoutes);
 app.use('/admin/variants', variantsRoutes);
 app.use('/admin/conversations', conversationsRoutes);
+
+// Proxy PHP APIs for client usage hitting this service directly
+// Forward to gateway (nginx) which routes to PHP-FPM
+const phpProxyTarget = process.env.PHP_PROXY_TARGET || 'http://gateway';
+app.use('/api/php', createProxyMiddleware({
+  target: phpProxyTarget,
+  changeOrigin: true,
+  // Keep the same path so gateway can match /api/php/...
+  pathRewrite: {
+    '^/api/php': '/api/php',
+  },
+  onError: (err, req, res) => {
+    logger.warn('Proxy error for /api/php', {
+      error: err.message,
+      url: req.originalUrl || req.url,
+    });
+    res.status(502).json({ error: 'ERR_PROXY_ERROR', message: 'PHP backend không khả dụng' });
+  },
+}));
 
 app.use('*', (req, res) => {
   logger.warn('404 Not Found', {
