@@ -30,3 +30,6 @@ Write-Host "  - Admin Backend: http://localhost:3001/admin/health" -ForegroundCo
 Write-Host "  - Gateway: http://localhost:3002/health" -ForegroundColor Cyan
 Write-Host "  - phpMyAdmin: http://localhost:3003" -ForegroundColor Cyan
 
+
+
+

@@ -24,25 +24,44 @@ const getRuntimeLocation = () => {
 }
 
 // Helper: Force production API if running on production domain but API URL points to localhost
+// Also ensure HTTPS is used when running on HTTPS production site
 const forceProdIfDeployed = (url, isAdminApi = true) => {
   try {
     const parsed = new URL(url)
+    const runtimeLocation = getRuntimeLocation()
+    const isRuntimeProduction = runtimeLocation && !isLocalHostname(runtimeLocation.hostname)
+    const isRuntimeHttps = runtimeLocation && runtimeLocation.protocol === 'https:'
+    
+    // If running on production domain (HTTPS), ensure API URL is also HTTPS
+    if (isRuntimeProduction && isRuntimeHttps) {
+      // If API URL is localhost, force to production
+      if (isLocalHostname(parsed.hostname)) {
+        const forcedUrl = isAdminApi ? PROD_ADMIN_BASE : PROD_PUBLIC_BASE
+        console.warn(`[Admin API] Detected production origin but API URL points to localhost. Forcing production API domain.`, {
+          runtimeHost: runtimeLocation.hostname,
+          previousApiHost: parsed.hostname,
+          forced: forcedUrl
+        })
+        return forcedUrl
+      }
+      // If API URL is production but uses HTTP, force to HTTPS
+      if (parsed.hostname.includes('timeliteclothing.com') && parsed.protocol === 'http:') {
+        parsed.protocol = 'https:'
+        const httpsUrl = parsed.toString().endsWith('/') ? parsed.toString().slice(0, -1) : parsed.toString()
+        console.warn(`[Admin API] Detected HTTP API URL on HTTPS production site. Forcing HTTPS.`, {
+          runtimeHost: runtimeLocation.hostname,
+          previousUrl: url,
+          forced: httpsUrl
+        })
+        return httpsUrl
+      }
+    }
+    
     // If URL is already production, return as is
     if (!isLocalHostname(parsed.hostname)) {
       return url
     }
-    // Check runtime hostname
-    const runtimeLocation = getRuntimeLocation()
-    if (runtimeLocation && !isLocalHostname(runtimeLocation.hostname)) {
-      // Running on production domain but API URL points to localhost - force production
-      const forcedUrl = isAdminApi ? PROD_ADMIN_BASE : PROD_PUBLIC_BASE
-      console.warn(`[Admin API] Detected production origin but API URL points to localhost. Forcing production API domain.`, {
-        runtimeHost: runtimeLocation.hostname,
-        previousApiHost: parsed.hostname,
-        forced: forcedUrl
-      })
-      return forcedUrl
-    }
+    
     return url
   } catch {
     return url

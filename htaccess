@@ -1,0 +1,30 @@
+# Apache .htaccess configuration for API subdomain
+# Redirects ALL requests from api.timeliteclothing.com to port 3001
+#
+# REQUIREMENTS:
+# 1. Enable required Apache modules:
+#    sudo a2enmod proxy proxy_http rewrite headers
+#    sudo systemctl restart apache2
+#
+# 2. In VirtualHost config, ensure AllowOverride is set:
+#    <Directory /var/www/api.timeliteclothing.com>
+#        AllowOverride All
+#    </Directory>
+#
+# 3. Ensure service is running and accessible on port 3001
+#
+# 4. Rename this file to .htaccess (with dot) in DocumentRoot
+
+# Enable Rewrite Engine
+RewriteEngine On
+
+# Handle OPTIONS preflight requests for CORS
+RewriteCond %{REQUEST_METHOD} ^OPTIONS
+RewriteRule ^(.*)$ - [R=200,L]
+
+# Proxy ALL requests to port 3001
+# This includes root (/), /api/php/*, /api/node/*, and any other paths
+# %{REQUEST_URI} includes the full path
+# QSA preserves query string (?page=1&limit=100&category=ao-dai)
+RewriteCond %{REQUEST_URI} !^/\.well-known [NC]
+RewriteRule ^(.*)$ http://127.0.0.1:3001%{REQUEST_URI} [P,L,QSA]

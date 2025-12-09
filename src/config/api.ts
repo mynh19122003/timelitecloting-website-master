@@ -34,18 +34,39 @@ const normalizeAbsoluteUrl = (input: string | undefined | null, fallback: string
 const forceProdIfDeployed = (url: string): string => {
   try {
     const parsed = new URL(url);
+    const runtimeLocation = getRuntimeLocation();
+    const isRuntimeProduction = runtimeLocation && !isLocalHostname(runtimeLocation.hostname);
+    const isRuntimeHttps = runtimeLocation && runtimeLocation.protocol === 'https:';
+    
+    // If running on production domain (HTTPS), ensure API URL is also HTTPS
+    if (isRuntimeProduction && isRuntimeHttps) {
+      // If API URL is localhost, force to production
+      if (isLocalHostname(parsed.hostname)) {
+        console.warn('[api] Detected production origin but API URL points to localhost. Forcing production API domain.', {
+          runtimeHost: runtimeLocation.hostname,
+          previousApiHost: parsed.hostname,
+          forced: PROD_API_ORIGIN,
+        });
+        return PROD_API_ORIGIN;
+      }
+      // If API URL is production but uses HTTP, force to HTTPS
+      if (parsed.hostname.includes('timeliteclothing.com') && parsed.protocol === 'http:') {
+        parsed.protocol = 'https:';
+        const httpsUrl = parsed.toString().replace(/\/+$/, '');
+        console.warn('[api] Detected HTTP API URL on HTTPS production site. Forcing HTTPS.', {
+          runtimeHost: runtimeLocation.hostname,
+          previousUrl: url,
+          forced: httpsUrl,
+        });
+        return httpsUrl;
+      }
+    }
+    
+    // If not production, return as is
     if (!isLocalHostname(parsed.hostname)) {
       return url;
     }
-    const runtimeLocation = getRuntimeLocation();
-    if (runtimeLocation && !isLocalHostname(runtimeLocation.hostname)) {
-      console.warn('[api] Detected production origin but API URL points to localhost. Forcing production API domain.', {
-        runtimeHost: runtimeLocation.hostname,
-        previousApiHost: parsed.hostname,
-        forced: PROD_API_ORIGIN,
-      });
-      return PROD_API_ORIGIN;
-    }
+    
     return url;
   } catch {
     return url;
