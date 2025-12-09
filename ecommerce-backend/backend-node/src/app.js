@@ -82,9 +82,7 @@ const server = http.createServer(app);
 const PORT = process.env.NODE_PORT || 3001;
 
 // Default CORS origins for development: allow both frontend (3000) and admin panel (3002)
-const defaultCorsOrigins = process.env.NODE_ENV === 'production' 
-  ? ['http://api.timeliteclothing.com', 'https://api.timeliteclothing.com']
-  : ['http://localhost:3000', 'http://localhost:3002'];
+const defaultCorsOrigins = '*';
 
 // Parse CORS_ORIGIN if provided (can be comma-separated string or single value)
 const corsOrigin = process.env.CORS_ORIGIN 
@@ -97,12 +95,11 @@ app.use(helmet());
 // CORS configuration
 // When running behind the API gateway, set ENABLE_NODE_CORS=false (default)
 // to avoid duplicate CORS headers. Enable only for direct access in dev.
-if (process.env.ENABLE_NODE_CORS === 'true') {
-  app.use(cors({
-    origin: corsOrigin,
-    credentials: true
-  }));
-}
+// Force enable CORS with wildcard (no credentials)
+app.use(cors({
+  origin: corsOrigin === '*' ? '*' : corsOrigin,
+  credentials: false,
+}));
 
 // Rate limiting
 const limiter = rateLimit({
