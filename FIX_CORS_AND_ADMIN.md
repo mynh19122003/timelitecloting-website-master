@@ -27,7 +27,7 @@ docker-compose restart gateway
 2. **Kiểm tra CORS headers:**
 ```bash
 curl -X OPTIONS https://api.timeliteclothing.com/api/php/products \
-  -H "Origin: https://timeliteclothing.com" \
+  -H "Origin: https://api.timeliteclothing.com" \
   -H "Access-Control-Request-Method: GET" \
   -v
 ```

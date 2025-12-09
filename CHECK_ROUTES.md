@@ -67,15 +67,13 @@
 ### Backend Node.js (`ecommerce-backend/backend-node/src/app.js`):
 ```javascript
 const defaultCorsOrigins = process.env.NODE_ENV === 'production' 
-  ? ['https://timeliteclothing.com', 'https://www.timeliteclothing.com', 'http://api.timeliteclothing.com', 'https://api.timeliteclothing.com'] 
+  ? ['http://api.timeliteclothing.com', 'https://api.timeliteclothing.com'] 
   : ['http://localhost:3000', 'http://localhost:3002'];
 ```
 
 ### Gateway Nginx (`ecommerce-backend/gateway/nginx.conf`):
 - ✅ Hỗ trợ `http://api.timeliteclothing.com`
 - ✅ Hỗ trợ `https://api.timeliteclothing.com`
-- ✅ Hỗ trợ `https://timeliteclothing.com`
-- ✅ Hỗ trợ `https://www.timeliteclothing.com`
 - ✅ Hỗ trợ localhost cho development
 
 ## 🧪 Test CORS
