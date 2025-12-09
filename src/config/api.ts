@@ -31,84 +31,54 @@ const normalizeAbsoluteUrl = (input: string | undefined | null, fallback: string
   }
 };
 
-const forceProdIfDeployed = (url: string): string => {
-  try {
-    const parsed = new URL(url);
-    const runtimeLocation = getRuntimeLocation();
-    const isRuntimeProduction = runtimeLocation && !isLocalHostname(runtimeLocation.hostname);
-    const isRuntimeHttps = runtimeLocation && runtimeLocation.protocol === 'https:';
-    
-    // If running on production domain (HTTPS), ensure API URL is also HTTPS
-    if (isRuntimeProduction && isRuntimeHttps) {
-      // If API URL is localhost, force to production
-      if (isLocalHostname(parsed.hostname)) {
-        console.warn('[api] Detected production origin but API URL points to localhost. Forcing production API domain.', {
-          runtimeHost: runtimeLocation.hostname,
-          previousApiHost: parsed.hostname,
-          forced: PROD_API_ORIGIN,
-        });
-        return PROD_API_ORIGIN;
-      }
-      // If API URL is production but uses HTTP, force to HTTPS
-      if (parsed.hostname.includes('timeliteclothing.com') && parsed.protocol === 'http:') {
-        parsed.protocol = 'https:';
-        const httpsUrl = parsed.toString().replace(/\/+$/, '');
-        console.warn('[api] Detected HTTP API URL on HTTPS production site. Forcing HTTPS.', {
-          runtimeHost: runtimeLocation.hostname,
-          previousUrl: url,
-          forced: httpsUrl,
-        });
-        return httpsUrl;
-      }
-    }
-    
-    // If not production, return as is
-    if (!isLocalHostname(parsed.hostname)) {
-      return url;
-    }
-    
-    return url;
-  } catch {
-    return url;
-  }
-};
+// REMOVED: forceProdIfDeployed() - runtime detection không hoạt động đúng với static export
+// Production URL sẽ được hardcode dựa trên NODE_ENV
+
 
 const resolveAdminBaseUrl = (): string => {
-  const defaultOrigin = PROD_ADMIN_ORIGIN;
-  const normalized = normalizeAbsoluteUrl(process.env.NEXT_PUBLIC_ADMIN_URL, defaultOrigin);
-  return forceProdIfDeployed(normalized);
+  const envOverride = process.env.NEXT_PUBLIC_ADMIN_URL;
+
+  // Env override có priority cao nhất
+  if (envOverride?.trim()) {
+    return normalizeAbsoluteUrl(envOverride, envOverride.trim());
+  }
+
+  // Development: localhost admin port
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3001/admin';
+  }
+
+  // Production: API subdomain với /admin path
+  return `${PROD_ADMIN_ORIGIN}/admin`;
 };
 
 const resolveApiBaseUrl = (): string => {
   const envOverride = process.env.NEXT_PUBLIC_API_URL;
-  
-  // Default cho development: dùng gateway port 3002 (không phải admin port 3001)
-  const isDev = process.env.NODE_ENV === 'development';
-  const defaultOrigin = isDev ? 'http://localhost:3002' : PROD_API_ORIGIN;
-  
-  const base = envOverride?.trim() ? normalizeAbsoluteUrl(envOverride, envOverride.trim()) : defaultOrigin;
-  // Nếu build runtime đang ở production domain nhưng env vẫn để localhost, chuyển sang domain chính
-  let resolved = forceProdIfDeployed(base);
-  
-  // Client side API không nên có /admin prefix - loại bỏ nếu có
-  // Admin API dùng ADMIN_BASE_URL riêng, client API dùng BASE_URL không có /admin
-  try {
-    const url = new URL(resolved);
-    if (url.pathname.startsWith('/admin')) {
-      // Loại bỏ /admin khỏi pathname
-      url.pathname = url.pathname.replace(/^\/admin\/?/, '') || '/';
-      resolved = url.toString().replace(/\/+$/, '');
+
+  // Env override có priority cao nhất
+  if (envOverride?.trim()) {
+    const normalized = normalizeAbsoluteUrl(envOverride, envOverride.trim());
+    // Loại bỏ /admin nếu có (client API không dùng /admin)
+    try {
+      const url = new URL(normalized);
+      if (url.pathname.startsWith('/admin')) {
+        url.pathname = url.pathname.replace(/^\/admin\/?/, '') || '/';
+        return url.toString().replace(/\/+$/, '');
+      }
+    } catch {
+      // Ignore parse errors
     }
-    // Nếu đang ở localhost nhưng port là 3001 (admin), chuyển sang 3002 (gateway)
-    if (isLocalHostname(url.hostname) && url.port === '3001' && !url.pathname.startsWith('/admin')) {
-      url.port = '3002';
-      resolved = url.toString().replace(/\/+$/, '');
-    }
-  } catch {
-    // Nếu không parse được URL, giữ nguyên
+    return normalized;
   }
-  
-  return resolved;
+
+  // Development: localhost gateway port (không phải admin port 3001)
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3002';
+  }
+
+  // Production: LUÔN dùng API subdomain
+  // FIXED: Hardcode để đảm bảo production build luôn gọi đúng domain
+  return PROD_API_ORIGIN;
 };
 
 const RESOLVED_ADMIN_BASE = resolveAdminBaseUrl();
@@ -118,7 +88,7 @@ export const API_CONFIG = {
   BASE_URL: resolveApiBaseUrl(),
   // Admin base for media (images served by admin)
   ADMIN_BASE_URL: RESOLVED_ADMIN_BASE,
-  
+
   // API endpoints
   ENDPOINTS: {
     // User endpoints (use PHP auth in current setup to avoid Node 404s)
@@ -128,16 +98,16 @@ export const API_CONFIG = {
     CHANGE_PASSWORD: '/api/php/users/change-password',
     FORGOT_PASSWORD: '/api/php/users/forgot-password',
     RESET_PASSWORD: '/api/php/users/reset-password',
-    
+
     // Product endpoints
     PRODUCTS: '/api/php/products',
     PRODUCT_DETAIL: '/api/php/products',
-    
+
     // Order endpoints (route directly to PHP backend)
     ORDERS: '/api/php/orders',
     ORDER_HISTORY: '/api/php/orders/history',
     CONTACT: '/api/contact',
-    
+
     // Fallback PHP endpoints
     PHP: {
       LOGIN: '/api/php/users/login',
@@ -152,10 +122,10 @@ export const API_CONFIG = {
       ORDER_HISTORY: '/api/php/orders/history',
     }
   },
-  
+
   // Request timeout (in milliseconds)
   TIMEOUT: 10000,
-  
+
   // Retry configuration
   RETRY: {
     ATTEMPTS: 3,
