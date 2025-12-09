@@ -83,7 +83,7 @@ const PORT = process.env.NODE_PORT || 3001;
 
 // Default CORS origins for development: allow both frontend (3000) and admin panel (3002)
 const defaultCorsOrigins = process.env.NODE_ENV === 'production' 
-  ? ['https://timeliteclothing.com', 'https://www.timeliteclothing.com', 'http://api.timeliteclothing.com', 'https://api.timeliteclothing.com'] 
+  ? ['http://api.timeliteclothing.com', 'https://api.timeliteclothing.com']
   : ['http://localhost:3000', 'http://localhost:3002'];
 
 // Parse CORS_ORIGIN if provided (can be comma-separated string or single value)
