@@ -36,48 +36,15 @@ const normalizeAbsoluteUrl = (input: string | undefined | null, fallback: string
 
 
 const resolveAdminBaseUrl = (): string => {
-  const envOverride = process.env.NEXT_PUBLIC_ADMIN_URL;
-
-  // Env override có priority cao nhất
-  if (envOverride?.trim()) {
-    return normalizeAbsoluteUrl(envOverride, envOverride.trim());
-  }
-
-  // Development: localhost admin port
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3001/admin';
-  }
-
-  // Production: API subdomain với /admin path
+  // FORCE: LUÔN LUÔN dùng production API subdomain
+  // Không check NODE_ENV, không check env variables
   return `${PROD_ADMIN_ORIGIN}/admin`;
 };
 
 const resolveApiBaseUrl = (): string => {
-  const envOverride = process.env.NEXT_PUBLIC_API_URL;
-
-  // Env override có priority cao nhất
-  if (envOverride?.trim()) {
-    const normalized = normalizeAbsoluteUrl(envOverride, envOverride.trim());
-    // Loại bỏ /admin nếu có (client API không dùng /admin)
-    try {
-      const url = new URL(normalized);
-      if (url.pathname.startsWith('/admin')) {
-        url.pathname = url.pathname.replace(/^\/admin\/?/, '') || '/';
-        return url.toString().replace(/\/+$/, '');
-      }
-    } catch {
-      // Ignore parse errors
-    }
-    return normalized;
-  }
-
-  // Development: localhost gateway port (không phải admin port 3001)
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3002';
-  }
-
-  // Production: LUÔN dùng API subdomain
-  // FIXED: Hardcode để đảm bảo production build luôn gọi đúng domain
+  // FORCE: LUÔN LUÔN dùng production API subdomain
+  // Không check NODE_ENV, không check env variables
+  // Build tĩnh sẽ LUÔN gọi https://api.timeliteclothing.com
   return PROD_API_ORIGIN;
 };
 
