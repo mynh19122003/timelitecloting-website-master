@@ -1,0 +1,294 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 900px;
+    /* Increased width for split view */
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.25rem;
+    color: #6b7280;
+}
+
+.body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+    position: relative;
+    /* For progress overlay */
+}
+
+/* Layout for Form */
+.formContainer {
+    display: flex;
+    gap: 24px;
+}
+
+.uploadSection {
+    flex: 1;
+    min-width: 250px;
+}
+
+.fieldsSection {
+    flex: 2;
+}
+
+.fieldsSection h4 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: #374151;
+    font-size: 1.1rem;
+}
+
+.row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.field label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.field input,
+.field select,
+.field textarea {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.sizes {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.sizeLabel {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.tagsList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.tag {
+    background: #e5e7eb;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tag button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0;
+    color: #6b7280;
+}
+
+.tag button:hover {
+    color: #ef4444;
+}
+
+/* Dropzone */
+.dropzone {
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    color: #6b7280;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #f9fafb;
+}
+
+.dropzone:hover {
+    border-color: #3b82f6;
+    color: #3b82f6;
+    background: #eff6ff;
+}
+
+.fileInfo {
+    margin-top: 16px;
+    padding: 12px;
+    background: #f3f4f6;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Progress Overlay */
+.progressOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.progressBar {
+    width: 300px;
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 5px;
+    overflow: hidden;
+    margin: 16px 0 8px;
+}
+
+.progressFill {
+    height: 100%;
+    background: #3b82f6;
+    transition: width 0.3s ease;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+    color: #3b82f6;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Results */
+.results {
+    text-align: center;
+    padding: 20px;
+}
+
+.resultSummary {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 24px;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.successCount {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #059669;
+}
+
+.errorCount {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #dc2626;
+}
+
+.errorList {
+    text-align: left;
+    background: #fef2f2;
+    border: 1px solid #fee2e2;
+    border-radius: 6px;
+    padding: 16px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.errorList h4 {
+    margin: 0 0 8px 0;
+    color: #991b1b;
+}
+
+.errorList ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #b91c1c;
+}
+
+.footer {
+    padding: 16px 24px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}

@@ -38,7 +38,7 @@ const normalizeAbsoluteUrl = (input: string | undefined | null, fallback: string
 const resolveAdminBaseUrl = (): string => {
   // FORCE: LUÔN LUÔN dùng production API subdomain
   // Không check NODE_ENV, không check env variables
-  return `${PROD_ADMIN_ORIGIN}/admin`;
+  return PROD_ADMIN_ORIGIN;
 };
 
 const resolveApiBaseUrl = (): string => {

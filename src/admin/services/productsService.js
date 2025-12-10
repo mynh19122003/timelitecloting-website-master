@@ -46,7 +46,7 @@ const normalizeUiProduct = (apiProduct = {}, fallbackImage = '') => {
   const stockTone = stockOnHand <= 0 ? 'danger' : stockOnHand < 150 ? 'warning' : 'success'
   const stockLabel = stockOnHand <= 0 ? 'out of stock' : stockOnHand < 150 ? 'low stock' : 'in stock'
   const rating = toNumber(apiProduct.rating, 0)
-  
+
   // Preserve products_id for bulk operations
   const productsId = apiProduct.products_id || apiProduct.product_id || null
 
@@ -89,7 +89,7 @@ const normalizeUiProduct = (apiProduct = {}, fallbackImage = '') => {
     rawId = rawId.id || rawId.product_id || rawId.products_id || null
   }
   const productId = rawId ? String(rawId) : `PRD-${Date.now().toString().slice(-6)}`
-  
+
   return {
     id: productId,
     products_id: productsId, // Preserve products_id for bulk delete
@@ -228,7 +228,7 @@ export const createProduct = async (formData = {}) => {
       },
       payload: payload
     })
-    
+
     // Re-throw với message rõ ràng hơn
     if (error?.response?.status === 403) {
       const backendMessage = error?.response?.data?.message || 'Forbidden'
@@ -240,43 +240,87 @@ export const createProduct = async (formData = {}) => {
     } else if (error?.response?.data?.message) {
       throw new Error(`${error.response.status || 'Error'}: ${error.response.data.message}`)
     }
-    
+
     throw error
   }
 }
 
-export const bulkCreateProducts = async (productsArray) => {
-  const payload = {
-    products: productsArray.map((product) => ({
-      name: product.name,
-      description: product.description || '',
-      color: product.color || '',
-      category: product.category || '',
-      variant: product.variant || '',
-      inventory: Number(product.inventory) || 0,
-      price: Number(product.price) || 0,
-      status: product.status || 'published',
-      rating: Number(product.rating) || 0,
-      sizes: product.sizes || [],
-      tags: product.tags || [],
-      imagePreview: product.imagePreview || '',
-      mediaUploads: product.mediaUploads || []
-    }))
+export const bulkCreateProducts = async (productsArray, onProgress) => {
+  // Config: Chunk size to avoid payload too large errors (413)
+  const CHUNK_SIZE = 20
+  const total = productsArray.length
+  const chunks = []
+
+  for (let i = 0; i < total; i += CHUNK_SIZE) {
+    chunks.push(productsArray.slice(i, i + CHUNK_SIZE))
   }
 
-  try {
-    const res = await AdminApi.post('/products/bulk', payload)
-    return res?.data?.data || res?.data || {}
-  } catch (error) {
-    console.error('[bulkCreateProducts] API call failed:', {
-      status: error?.response?.status,
-      statusText: error?.response?.statusText,
-      data: error?.response?.data,
-      error: error?.response?.data?.error,
-      message: error?.response?.data?.message
-    })
-    throw error
+  console.log(`[bulkCreateProducts] Starting upload: ${total} items in ${chunks.length} chunks`)
+
+  const results = {
+    success: [],
+    errors: []
   }
+
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i]
+    const currentChunkIndex = i + 1
+
+    // Notify progress
+    if (onProgress) {
+      onProgress({
+        processed: i * CHUNK_SIZE,
+        total,
+        currentChunk: currentChunkIndex,
+        totalChunks: chunks.length,
+        percent: Math.round((i / chunks.length) * 100)
+      })
+    }
+
+    const payload = {
+      products: chunk.map((product) => ({
+        name: product.name,
+        description: product.description || '',
+        color: product.color || '',
+        category: product.category || '',
+        variant: product.variant || '',
+        inventory: Number(product.inventory) || 0,
+        price: Number(product.price) || 0,
+        status: product.status || 'published',
+        rating: Number(product.rating) || 0,
+        sizes: product.sizes || [],
+        tags: product.tags || [],
+        imagePreview: product.imagePreview || '',
+        mediaUploads: product.mediaUploads || []
+      }))
+    }
+
+    try {
+      const res = await AdminApi.post('/products/bulk', payload)
+      const data = res?.data?.data || res?.data || {}
+      if (Array.isArray(data.success)) results.success.push(...data.success)
+      if (Array.isArray(data.errors)) results.errors.push(...data.errors)
+    } catch (error) {
+      console.error(`[bulkCreateProducts] Chunk ${currentChunkIndex} failed:`, error)
+      // Add all items in this chunk to errors
+      chunk.forEach(p => {
+        results.errors.push({ name: p.name, error: error.message || 'Chunk upload failed' })
+      })
+    }
+  }
+
+  // Final progress update
+  if (onProgress) {
+    onProgress({
+      processed: total,
+      total,
+      currentChunk: chunks.length,
+      totalChunks: chunks.length,
+      percent: 100
+    })
+  }
+
+  return results
 }
 
 export const getProduct = async (idOrCode) => {
@@ -288,7 +332,7 @@ export const getProduct = async (idOrCode) => {
 
 export const updateProduct = async (idOrCode, formData = {}) => {
   if (!idOrCode) throw new Error('Missing product id')
-  
+
   // Map UI form -> backend payload (similar to createProduct)
   let colorsPayload = []
   if (Array.isArray(formData.colors)) {
@@ -388,7 +432,7 @@ export const updateProduct = async (idOrCode, formData = {}) => {
       method: error?.config?.method,
       baseURL: error?.config?.baseURL
     })
-    
+
     if (error?.response?.status === 403) {
       const backendMessage = error?.response?.data?.message || 'Forbidden'
       const backendError = error?.response?.data?.error || 'ERR_FORBIDDEN'
@@ -401,7 +445,7 @@ export const updateProduct = async (idOrCode, formData = {}) => {
     } else if (error?.response?.data?.message) {
       throw new Error(`${error.response.status || 'Error'}: ${error.response.data.message}`)
     }
-    
+
     throw error
   }
 }
@@ -472,33 +516,33 @@ export const listProducts = async ({ page = 1, limit = 1000, search = '', catego
     // Debug: log raw API response
     console.log('[listProducts] response', { status: res?.status, data: res?.data })
 
-  const body = res?.data || {}
+    const body = res?.data || {}
 
-  // Support multiple backend shapes:
-  // 1) Admin backend: { success, items: [...], pagination: {...} }
-  // 2) Legacy: { data: { products: [...], pagination } }
-  // 3) Fallback: array response
-  const itemsFromAdmin = Array.isArray(body.items) ? body.items : []
-  const productsFromData = Array.isArray(body?.data?.products) ? body.data.products : []
-  const arrayPayload = Array.isArray(body?.data)
-    ? body.data
-    : (Array.isArray(body) ? body : [])
+    // Support multiple backend shapes:
+    // 1) Admin backend: { success, items: [...], pagination: {...} }
+    // 2) Legacy: { data: { products: [...], pagination } }
+    // 3) Fallback: array response
+    const itemsFromAdmin = Array.isArray(body.items) ? body.items : []
+    const productsFromData = Array.isArray(body?.data?.products) ? body.data.products : []
+    const arrayPayload = Array.isArray(body?.data)
+      ? body.data
+      : (Array.isArray(body) ? body : [])
 
-  const rawProducts = itemsFromAdmin.length
-    ? itemsFromAdmin
-    : (productsFromData.length ? productsFromData : arrayPayload)
+    const rawProducts = itemsFromAdmin.length
+      ? itemsFromAdmin
+      : (productsFromData.length ? productsFromData : arrayPayload)
 
-  const pagination = body.pagination || body?.data?.pagination || {
-    page,
-    limit,
-    total: rawProducts.length,
-    totalPages: 1
-  }
+    const pagination = body.pagination || body?.data?.pagination || {
+      page,
+      limit,
+      total: rawProducts.length,
+      totalPages: 1
+    }
 
-  return {
-    items: rawProducts.map((p) => normalizeUiProduct(p)),
-    pagination
-  }
+    return {
+      items: rawProducts.map((p) => normalizeUiProduct(p)),
+      pagination
+    }
   } catch (error) {
     // Debug: log rich error details for axios/network errors
     const errInfo = {
@@ -519,7 +563,7 @@ export const getTags = async () => {
     // Use admin API endpoint /admin/products/tags
     const res = await AdminApi.get('/products/tags')
     const body = res?.data || {}
-    
+
     // Support different response shapes
     const tags = body?.data?.tags || body?.tags || []
     return Array.isArray(tags) ? tags : []
@@ -540,7 +584,7 @@ export const getCategories = async () => {
     // Use admin API endpoint /admin/products/categories
     const res = await AdminApi.get('/products/categories')
     const body = res?.data || {}
-    
+
     // Support different response shapes
     const categories = body?.data?.categories || body?.categories || []
     return Array.isArray(categories) ? categories : []

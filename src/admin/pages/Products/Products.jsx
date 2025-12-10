@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { FaPlus, FaFileExport, FaEdit, FaTrash } from 'react-icons/fa'
+import { FaPlus, FaFileExport, FaEdit, FaTrash, FaCloudUploadAlt, FaSpinner } from 'react-icons/fa'
 import Button from '../../components/Button/Button'
 import DataTable from '../../components/DataTable/DataTable'
 import styles from './Products.module.css'
 import defaultProductImage from '../../assets/products/product-01.svg'
 import productsService from '../../services/productsService'
+import BulkProductModal from '../../components/BulkProductModal/BulkProductModal'
 
 const ensureId = (value, fallback) => {
   // Ensure value is a string
@@ -22,7 +23,7 @@ const ensureId = (value, fallback) => {
       stringValue = String(value)
     }
   }
-  
+
   if (stringValue) {
     return stringValue.startsWith('PRD-') ? stringValue : `PRD-${stringValue}`
   }
@@ -132,22 +133,32 @@ const Products = () => {
   const [deletingId, setDeletingId] = useState('')
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
+  const [showBulkModal, setShowBulkModal] = useState(false)
+
+  // Bulk Upload State
+  const [bulkUploadState, setBulkUploadState] = useState({
+    uploading: false,
+    progress: { current: 0, total: 0 },
+    status: '',
+    errors: []
+  })
+
   const pageSize = 5
 
   useEffect(() => {
     let mounted = true
-    ;(async () => {
-      try {
-        setLoading(true)
-        setError('')
-        const { items } = await productsService.listProducts({ page: 1, limit: 1000 })
-        if (mounted) setProducts(items)
-      } catch (e) {
-        if (mounted) setError(e?.message || 'Failed to load products')
-      } finally {
-        if (mounted) setLoading(false)
-      }
-    })()
+      ; (async () => {
+        try {
+          setLoading(true)
+          setError('')
+          const { items } = await productsService.listProducts({ page: 1, limit: 1000 })
+          if (mounted) setProducts(items)
+        } catch (e) {
+          if (mounted) setError(e?.message || 'Failed to load products')
+        } finally {
+          if (mounted) setLoading(false)
+        }
+      })()
     return () => { mounted = false }
   }, [])
 
@@ -284,7 +295,7 @@ const Products = () => {
             </div>
           )
         }
-        
+
         return (
           <div className={styles.rowActions}>
             <button
@@ -403,6 +414,82 @@ const Products = () => {
     URL.revokeObjectURL(url)
   }
 
+  const handleStartBulkUpload = async (imageFiles, formData) => {
+    setShowBulkModal(false)
+    setBulkUploadState({
+      uploading: true,
+      progress: { current: 0, total: imageFiles.length },
+      status: 'Starting upload...',
+      errors: []
+    })
+
+    const successList = []
+    const errorList = []
+
+    for (let i = 0; i < imageFiles.length; i++) {
+      const { filename, fileData } = imageFiles[i]
+      const currentCount = i + 1
+
+      try {
+        setBulkUploadState(prev => ({
+          ...prev,
+          status: `Uploading ${currentCount}/${imageFiles.length}: ${filename}...`,
+          progress: { current: currentCount, total: imageFiles.length }
+        }))
+
+        // Get base64
+        const base64 = await fileData.async('base64')
+        const mime = filename.toLowerCase().endsWith('.png') ? 'image/png' :
+          filename.toLowerCase().endsWith('.webp') ? 'image/webp' :
+            filename.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/jpeg'
+        const dataUrl = `data:${mime};base64,${base64}`
+
+        // Auto-increment name: "Name", "Name 2", "Name 3"...
+        const productName = i === 0 ? formData.name : `${formData.name} ${i + 1}`
+
+        const payload = {
+          name: productName,
+          description: formData.description,
+          price: formData.price,
+          inventory: formData.inventory,
+          color: formData.color,
+          type: formData.type,
+          variant: formData.variant,
+          rating: formData.rating,
+          status: formData.status,
+          sizes: formData.sizes,
+          tags: formData.tags,
+          imagePreview: dataUrl,
+          galleryPayload: []
+        }
+
+        await productsService.createProduct(payload)
+        successList.push({ name: filename })
+
+      } catch (err) {
+        console.error(`Failed to upload ${filename}`, err)
+        errorList.push({ name: filename, error: err.message })
+      }
+    }
+
+    // Refresh list
+    try {
+      const { items } = await productsService.listProducts({ page: 1, limit: 1000 })
+      setProducts(items)
+    } catch (_) { /* ignore */ }
+
+    setBulkUploadState(prev => ({
+      ...prev,
+      uploading: false,
+      status: `Complete! ${successList.length} success, ${errorList.length} errors.`,
+      errors: errorList
+    }))
+
+    if (errorList.length > 0) {
+      alert(`Upload complete with errors.\nSuccess: ${successList.length}\nFailed: ${errorList.length}\nCheck console for details.`)
+    }
+  }
+
   return (
     <div className={styles.page}>
       <div className={styles.headerRow}>
@@ -421,8 +508,20 @@ const Products = () => {
           <Button variant="ghost" onClick={handleExport} title="Export">
             <FaFileExport /> Export
           </Button>
-          <Button variant="primary" onClick={() => navigate('/admin/products/new')}>
-            <FaPlus /> Add Product
+          <Button variant="secondary" onClick={() => setShowBulkModal(true)}>
+            <FaCloudUploadAlt /> Upload Multi Products
+          </Button>
+          <Button variant="primary" onClick={() => navigate('/admin/products/new')} disabled={bulkUploadState.uploading}>
+            {bulkUploadState.uploading ? (
+              <>
+                <FaSpinner className={styles.spin} />
+                Uploading {bulkUploadState.progress.current}/{bulkUploadState.progress.total}
+              </>
+            ) : (
+              <>
+                <FaPlus /> Add Product
+              </>
+            )}
           </Button>
         </div>
       </div>
@@ -463,7 +562,7 @@ const Products = () => {
               </span>
             </div>
           )}
-        <DataTable columns={columns} data={paginated} emptyState="No products found" />
+          <DataTable columns={columns} data={paginated} emptyState="No products found" />
         </>
       )}
 
@@ -479,7 +578,15 @@ const Products = () => {
           <button onClick={() => setPage(pageCount)} disabled={page === pageCount}>{'>>'}</button>
         </div>
       </div>
+
+      {showBulkModal && (
+        <BulkProductModal
+          onClose={() => setShowBulkModal(false)}
+          onStartUpload={handleStartBulkUpload}
+        />
+      )}
     </div>
+
   )
 }
 

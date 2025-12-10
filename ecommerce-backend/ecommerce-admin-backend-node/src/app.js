@@ -24,15 +24,29 @@ const server = http.createServer(app);
 const PORT = process.env.ADMIN_NODE_PORT || 3001;
 
 const isProduction = process.env.NODE_ENV === 'production'
+const prodAllowList = ['https://api.timeliteclothing.com', 'https://timeliteclothing.com', 'https://www.timeliteclothing.com']
 
 const corsOptions = {
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true)
     
-    // In production, allow all origins (frontend should point to api.timeliteclothing.com)
+    // In production, only allow whitelisted origins
     if (isProduction) {
-      return callback(null, true)
+      // Check if origin matches any allowed pattern
+      const isAllowed = prodAllowList.some(allowed => {
+        if (allowed === origin) return true
+        // Support subdomain matching
+        try {
+          const originUrl = new URL(origin)
+          const allowedUrl = new URL(allowed)
+          return originUrl.hostname === allowedUrl.hostname || 
+                 originUrl.hostname.endsWith('.' + allowedUrl.hostname)
+        } catch {
+          return false
+        }
+      })
+      return callback(null, isAllowed)
     }
     
     // In development, allow all origins for easier local development

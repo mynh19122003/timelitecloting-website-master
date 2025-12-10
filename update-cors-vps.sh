@@ -72,10 +72,10 @@ echo ""
 
 # 7. Test CORS
 echo -e "${YELLOW}[7/7] Test CORS policy...${NC}"
-echo "Testing với domain api.timeliteclothing.com..."
+echo "Testing với domain timeliteclothing.com..."
 
 CORS_TEST=$(curl -s -I -X OPTIONS \
-  -H "Origin: https://api.timeliteclothing.com" \
+  -H "Origin: https://timeliteclothing.com" \
   -H "Access-Control-Request-Method: GET" \
   https://api.timeliteclothing.com/api/php/products 2>&1)
 
@@ -91,4 +91,4 @@ fi
 
 echo -e "${GREEN}=== Hoàn tất! ===${NC}"
 echo -e "Backup file: ${YELLOW}$BACKEND_DIR/$BACKUP_FILE${NC}"
-echo -e "\nTest website tại: ${YELLOW}https://api.timeliteclothing.com/shop${NC}"
+echo -e "\nTest website tại: ${YELLOW}https://timeliteclothing.com/shop${NC}"
