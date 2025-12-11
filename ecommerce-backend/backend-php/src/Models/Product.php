@@ -52,6 +52,9 @@ class Product
         // Ceremonial
         'ceremonial-attire' => ['Ceremonial Attire', 'Ao Dai'],
 
+        // Wedding Gift Trays
+        'wedding-gift-trays' => ['Wedding Gift Trays', 'Wedding gift trays'],
+
         // Shop all
         'all' => [],
         'shop-all' => [],
