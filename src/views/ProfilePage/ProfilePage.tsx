@@ -119,7 +119,7 @@ const ProfileTab = ({
   setIsChangingPassword,
 }: ProfileTabProps) => {
   const { t } = useI18n();
-  
+
   const handleNotificationToggle = (key: keyof Profile["notificationPreferences"]) => {
     handleInputChange("notificationPreferences", {
       ...formState.notificationPreferences,
@@ -153,7 +153,7 @@ const ProfileTab = ({
       <div className={styles.rightColumn}>
         <div className={styles.details}>
           {message && <div className={styles.successMessage}>{message}</div>}
-          
+
           {isEditing ? (
             <form className={styles.editForm} onSubmit={handleSubmit} noValidate>
               {/* Personal Information Section */}
@@ -162,18 +162,18 @@ const ProfileTab = ({
                   <FiUser className={styles.sectionIcon} />
                   <h3 className={styles.sectionTitle}>Personal Information</h3>
                 </div>
-              <div className={styles.formGrid}>
-                <label className={styles.formField}>
-                  <span>Full name</span>
-                  <input
-                    type="text"
-                    value={formState.name}
-                    onChange={(event) => handleInputChange("name", event.target.value)}
-                    className={`${styles.formInput} ${errors.name ? styles.formInputError : ""}`.trim()}
+                <div className={styles.formGrid}>
+                  <label className={styles.formField}>
+                    <span>Full name</span>
+                    <input
+                      type="text"
+                      value={formState.name}
+                      onChange={(event) => handleInputChange("name", event.target.value)}
+                      className={`${styles.formInput} ${errors.name ? styles.formInputError : ""}`.trim()}
                       placeholder={t("profile.enter.full.name")}
-                  />
-                  {errors.name && <p className={styles.errorText}>{errors.name}</p>}
-                </label>
+                    />
+                    {errors.name && <p className={styles.errorText}>{errors.name}</p>}
+                  </label>
                   <label className={styles.formField}>
                     <span>{t("profile.date.of.birth")}</span>
                     <div className={styles.inputWithIcon}>
@@ -210,34 +210,34 @@ const ProfileTab = ({
                   <h3 className={styles.sectionTitle}>{t("profile.contact.info")}</h3>
                 </div>
                 <div className={styles.formGrid}>
-                <label className={styles.formField}>
-                  <span>{t("profile.email")}</span>
+                  <label className={styles.formField}>
+                    <span>{t("profile.email")}</span>
                     <div className={styles.inputWithIcon}>
                       <FiMail className={styles.inputIcon} />
-                  <input
-                    type="email"
-                    value={formState.email}
-                    onChange={(event) => handleInputChange("email", event.target.value)}
-                    className={`${styles.formInput} ${errors.email ? styles.formInputError : ""}`.trim()}
+                      <input
+                        type="email"
+                        value={formState.email}
+                        onChange={(event) => handleInputChange("email", event.target.value)}
+                        className={`${styles.formInput} ${errors.email ? styles.formInputError : ""}`.trim()}
                         placeholder="your.email@example.com"
-                  />
+                      />
                     </div>
-                  {errors.email && <p className={styles.errorText}>{errors.email}</p>}
-                </label>
-                <label className={styles.formField}>
-                  <span>{t("profile.phone.number")}</span>
-                  <div className={styles.phoneInputWrapper}>
-                    <CountryPhoneInput
-                      value={formState.phone}
-                      onChange={(value: string) => {
-                        handleInputChange("phone", value);
-                      }}
-                      placeholder={t("profile.enter.phone")}
-                      enableSearch={true}
-                    />
-                  </div>
-                  {errors.phone && <p className={styles.errorText}>{errors.phone}</p>}
-                </label>
+                    {errors.email && <p className={styles.errorText}>{errors.email}</p>}
+                  </label>
+                  <label className={styles.formField}>
+                    <span>{t("profile.phone.number")}</span>
+                    <div className={styles.phoneInputWrapper}>
+                      <CountryPhoneInput
+                        value={formState.phone}
+                        onChange={(value: string) => {
+                          handleInputChange("phone", value);
+                        }}
+                        placeholder={t("profile.enter.phone")}
+                        enableSearch={true}
+                      />
+                    </div>
+                    {errors.phone && <p className={styles.errorText}>{errors.phone}</p>}
+                  </label>
                 </div>
               </div>
 
@@ -262,7 +262,7 @@ const ProfileTab = ({
                     </div>
                     {errors.street && <p className={styles.errorText}>{errors.street}</p>}
                   </label>
-                <label className={styles.formField}>
+                  <label className={styles.formField}>
                     <span>{t("profile.city")}</span>
                     <input
                       type="text"
@@ -305,8 +305,8 @@ const ProfileTab = ({
                       placeholder={t("profile.enter.country")}
                     />
                     {errors.country && <p className={styles.errorText}>{errors.country}</p>}
-                </label>
-              </div>
+                  </label>
+                </div>
               </div>
 
               {/* Notification Preferences Section */}
@@ -416,21 +416,21 @@ const ProfileTab = ({
                   <h3 className={styles.sectionTitle}>{t("profile.contact.info")}</h3>
                 </div>
                 <div className={styles.detailGrid}>
-              <div className={styles.detailItem}>
-                <FiMail className={styles.detailIcon} />
-                <div>
-                  <p className={styles.detailLabel}>Email</p>
-                  <p className={styles.detailValue}>{profile.email}</p>
-                </div>
-              </div>
+                  <div className={styles.detailItem}>
+                    <FiMail className={styles.detailIcon} />
+                    <div>
+                      <p className={styles.detailLabel}>Email</p>
+                      <p className={styles.detailValue}>{profile.email}</p>
+                    </div>
+                  </div>
                   {profile.phone && (
-              <div className={styles.detailItem}>
-                <FiPhone className={styles.detailIcon} />
-                <div>
-                  <p className={styles.detailLabel}>Phone</p>
-                  <p className={styles.detailValue}>{profile.phone}</p>
-                </div>
-              </div>
+                    <div className={styles.detailItem}>
+                      <FiPhone className={styles.detailIcon} />
+                      <div>
+                        <p className={styles.detailLabel}>Phone</p>
+                        <p className={styles.detailValue}>{profile.phone}</p>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -444,7 +444,7 @@ const ProfileTab = ({
                 <div className={styles.detailGrid}>
                   {(profile.street || profile.city || profile.state || profile.zipCode || profile.country) && (
                     <div className={`${styles.detailItem} ${styles.formFieldFull}`}>
-                <FiMapPin className={styles.detailIcon} />
+                      <FiMapPin className={styles.detailIcon} />
                       <div className={styles.addressDetails}>
                         {profile.street && <p className={styles.detailValue}>{profile.street}</p>}
                         <div className={styles.addressLine}>
@@ -452,9 +452,9 @@ const ProfileTab = ({
                           {profile.city && profile.state && <span className={styles.addressSeparator}>, </span>}
                           {profile.state && <span className={styles.detailValue}>{profile.state}</span>}
                           {profile.zipCode && <span className={styles.detailValue}> {profile.zipCode}</span>}
-                </div>
+                        </div>
                         {profile.country && <p className={styles.detailValue}>{profile.country}</p>}
-              </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -541,7 +541,7 @@ const ProfileTab = ({
                       <p className={styles.errorText}>{passwordErrors.confirmPassword}</p>
                     )}
                   </label>
-        </div>
+                </div>
                 <div className={styles.formActions}>
                   <button
                     type="button"
@@ -617,7 +617,7 @@ const getStatusIcon = (status: OrderStatus) => {
 // Helper function to get payment method icon and label
 const getPaymentMethodDisplay = (method: string) => {
   const normalizedMethod = method.toLowerCase().replace(/[_\s-]/g, '');
-  
+
   if (normalizedMethod.includes('bank') || normalizedMethod.includes('transfer')) {
     return {
       icon: <FiCreditCard className={styles.paymentIcon} />,
@@ -639,11 +639,11 @@ const getPaymentMethodDisplay = (method: string) => {
   }
 };
 
-const OrderHistoryTab = ({ 
-  orderHistory, 
-  isLoadingOrders 
-}: { 
-  orderHistory: OrderHistoryItem[]; 
+const OrderHistoryTab = ({
+  orderHistory,
+  isLoadingOrders
+}: {
+  orderHistory: OrderHistoryItem[];
   isLoadingOrders: boolean;
 }) => {
   const { t } = useI18n();
@@ -675,12 +675,12 @@ const OrderHistoryTab = ({
 
   // Filter and sort orders
   let filteredOrders = [...orderHistory];
-  
+
   // Apply status filter
   if (statusFilter !== "all") {
     filteredOrders = filteredOrders.filter(order => order.status === statusFilter);
   }
-  
+
   // Apply sort
   filteredOrders.sort((a, b) => {
     const dateA = new Date(a.placedAt).getTime();
@@ -692,7 +692,7 @@ const OrderHistoryTab = ({
     <div>
       <div className={styles.orderHistoryHeader}>
         <h2 className={styles.tabTitle}>Order History</h2>
-        
+
         <div className={styles.filterControls}>
           {/* Status Filter */}
           <div className={styles.filterGroup}>
@@ -701,8 +701,8 @@ const OrderHistoryTab = ({
               <span>Status:</span>
             </label>
             <div className={styles.selectWrapper}>
-              <select 
-                value={statusFilter} 
+              <select
+                value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as OrderStatus | "all")}
                 className={styles.filterSelect}
               >
@@ -723,8 +723,8 @@ const OrderHistoryTab = ({
               <span>Sort by:</span>
             </label>
             <div className={styles.selectWrapper}>
-              <select 
-                value={sortOrder} 
+              <select
+                value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value as "newest" | "oldest")}
                 className={styles.filterSelect}
               >
@@ -744,71 +744,71 @@ const OrderHistoryTab = ({
       ) : (
         <div className={styles.orderList}>
           {filteredOrders.map((order) => {
-          const statusClassName = styles[statusClassMap[order.status]];
-          const shippingLabel =
-            order.shippingFee === 0 ? "Complimentary shipping" : formatCurrency(order.shippingFee);
-          const isCancelled = order.status === "cancelled";
-          const paymentDisplay = getPaymentMethodDisplay(order.paymentMethod);
+            const statusClassName = styles[statusClassMap[order.status]];
+            const shippingLabel =
+              order.shippingFee === 0 ? "Complimentary shipping" : formatCurrency(order.shippingFee);
+            const isCancelled = order.status === "cancelled";
+            const paymentDisplay = getPaymentMethodDisplay(order.paymentMethod);
 
-          return (
-            <article key={order.id} className={styles.orderCard}>
-              <header className={styles.orderHeader}>
-                <div className={styles.orderHeaderLeft}>
-                  <p className={styles.orderNumber}>{order.orderNumber}</p>
-                  <p className={styles.orderMeta}>
-                    Placed on {formatDate(order.placedAt)}
-                  </p>
-                </div>
-                <div className={styles.orderHeaderRight}>
-                  <span className={`${styles.orderStatus} ${statusClassName ?? ""}`.trim()}>
-                    {getStatusIcon(order.status)}
-                    <span>{orderStatusLabels[order.status]}</span>
-                  </span>
-                  <p className={styles.orderTotal}>{formatCurrency(order.total)}</p>
-                </div>
-              </header>
-
-              <ul className={styles.orderItems}>
-                {order.items.map((item) => (
-                  <li key={`${order.id}-${item.id}`} className={styles.orderItem}>
-                    <img src={item.image} alt={item.name} className={styles.orderItemImage} />
-                    <div className={styles.orderItemInfo}>
-                      <p className={styles.orderItemName}>{item.name}</p>
-                      <p className={styles.orderItemMeta}>
-                        Color: {item.color} - Size: {item.size}
-                      </p>
-                    </div>
-                    <div className={styles.orderItemSummary}>
-                      <p className={styles.orderItemPrice}>
-                        {formatCurrency(item.price * item.quantity)}
-                      </p>
-                      <p className={styles.orderItemQuantity}>{t("profile.order.qty")} {item.quantity}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-
-              <footer className={styles.orderFooter}>
-                <div className={styles.orderFooterLeft}>
-                  <p className={styles.orderFooterText}>
-                    {t("profile.order.subtotal")} {formatCurrency(order.subtotal)} - {shippingLabel}
-                  </p>
-                </div>
-                <div className={styles.orderFooterRight}>
-                  <div className={`${styles.paymentBadge} ${paymentDisplay.className}`.trim()}>
-                    {paymentDisplay.icon}
-                    <span>{paymentDisplay.label}</span>
+            return (
+              <article key={order.id} className={styles.orderCard}>
+                <header className={styles.orderHeader}>
+                  <div className={styles.orderHeaderLeft}>
+                    <p className={styles.orderNumber}>{order.orderNumber}</p>
+                    <p className={styles.orderMeta}>
+                      Placed on {formatDate(order.placedAt)}
+                    </p>
                   </div>
-                </div>
-              </footer>
-              {isCancelled && (
-                <p className={styles.orderNote}>
-                  {t("profile.order.cancelled")}
-                </p>
-              )}
-            </article>
-          );
-        })}
+                  <div className={styles.orderHeaderRight}>
+                    <span className={`${styles.orderStatus} ${statusClassName ?? ""}`.trim()}>
+                      {getStatusIcon(order.status)}
+                      <span>{orderStatusLabels[order.status]}</span>
+                    </span>
+                    <p className={styles.orderTotal}>{formatCurrency(order.total)}</p>
+                  </div>
+                </header>
+
+                <ul className={styles.orderItems}>
+                  {order.items.map((item) => (
+                    <li key={`${order.id}-${item.id}`} className={styles.orderItem}>
+                      <img src={item.image} alt={item.name} className={styles.orderItemImage} />
+                      <div className={styles.orderItemInfo}>
+                        <p className={styles.orderItemName}>{item.name}</p>
+                        <p className={styles.orderItemMeta}>
+                          Color: {item.color} - Size: {item.size}
+                        </p>
+                      </div>
+                      <div className={styles.orderItemSummary}>
+                        <p className={styles.orderItemPrice}>
+                          {formatCurrency(item.price * item.quantity)}
+                        </p>
+                        <p className={styles.orderItemQuantity}>{t("profile.order.qty")} {item.quantity}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                <footer className={styles.orderFooter}>
+                  <div className={styles.orderFooterLeft}>
+                    <p className={styles.orderFooterText}>
+                      {t("profile.order.subtotal")} {formatCurrency(order.subtotal)} - {shippingLabel}
+                    </p>
+                  </div>
+                  <div className={styles.orderFooterRight}>
+                    <div className={`${styles.paymentBadge} ${paymentDisplay.className}`.trim()}>
+                      {paymentDisplay.icon}
+                      <span>{paymentDisplay.label}</span>
+                    </div>
+                  </div>
+                </footer>
+                {isCancelled && (
+                  <p className={styles.orderNote}>
+                    {t("profile.order.cancelled")}
+                  </p>
+                )}
+              </article>
+            );
+          })}
         </div>
       )}
     </div>
@@ -876,11 +876,11 @@ export const ProfilePage = () => {
       try {
         setIsLoadingProfile(true);
         console.log('[ProfilePage] Loading profile for user:', user.email);
-        
+
         // API call will automatically include token from localStorage
         const profileData = await ApiService.getProfile();
         console.log('[ProfilePage] Profile loaded:', profileData);
-        
+
         // Parse address if it exists (for backward compatibility)
         const addressParts = profileData.address ? profileData.address.split(',').map(s => s.trim()) : [];
         const userProfile: Profile = {
@@ -903,13 +903,13 @@ export const ProfilePage = () => {
             marketing: false,
           },
         };
-        
+
         setProfile(userProfile);
         setFormState(userProfile);
       } catch (error) {
         console.error('[ProfilePage] Failed to load profile:', error);
         setMessage(t("error.load.profile"));
-        
+
         // If 401, user needs to login again
         if (error instanceof ApiError && error.status === 401) {
           console.log('[ProfilePage] Token invalid/expired, redirecting to login');
@@ -958,10 +958,10 @@ export const ProfilePage = () => {
     try {
       setIsLoadingOrders(true);
       const orders = await ApiService.getOrderHistory();
-      
+
       // Ensure orders is always an array
       if (Array.isArray(orders)) {
-        setOrderHistory(orders);
+        setOrderHistory(orders as OrderHistoryItem[]);
       } else {
         // API returned unexpected format, use empty array
         setOrderHistory([]);
@@ -1051,7 +1051,7 @@ export const ProfilePage = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!formState) return;
-    
+
     const nextErrors = validateProfile(formState);
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
@@ -1091,7 +1091,7 @@ export const ProfilePage = () => {
         avatar: profile?.avatar || "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80",
         notificationPreferences: formState.notificationPreferences,
       };
-      
+
       setProfile(updatedProfile);
       setFormState(updatedProfile);
       setMessage(t("profile.update.success"));
@@ -1178,9 +1178,9 @@ export const ProfilePage = () => {
             />
           )}
           {activeTab === "orders" && (
-            <OrderHistoryTab 
-              orderHistory={orderHistory} 
-              isLoadingOrders={isLoadingOrders} 
+            <OrderHistoryTab
+              orderHistory={orderHistory}
+              isLoadingOrders={isLoadingOrders}
             />
           )}
         </div>

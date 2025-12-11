@@ -109,6 +109,12 @@ export const shopCatalog: Record<string, ShopCatalogEntry> = {
     chips: ["Schools", "Choirs", "Restaurants", "Retail"],
     filters: ["Industry", "Color"],
   },
+  [toCategorySlug("Wedding Gift Trays")]: {
+    title: "Wedding Gift Trays",
+    subtitle: "Traditional mâm quả sets for your engagement and wedding ceremonies.",
+    chips: ["Eight Tray", "Ten Tray", "Twelve Tray", "Custom Sets"],
+    filters: ["Style", "Color", "Price"],
+  },
 };
 
 // Legacy slug aliases for backward compatibility
@@ -283,6 +289,31 @@ export const shopNavMenu: ShopNavItem[] = [
       },
     ],
     quickLinks: ["View all Uniforms"],
+  },
+  {
+    label: "Wedding Gift Trays",
+    categorySlug: toCategorySlug("Wedding Gift Trays"),
+    columns: [
+      {
+        heading: "Trays & Sets",
+        links: ["Eight Tray", "Ten Tray", "Twelve Tray"],
+      },
+      {
+        heading: "Styles",
+        links: ["Velvet", "Mother of Pearl", "Bamboo Inlay"],
+      },
+      {
+        heading: "Services",
+        links: ["Styling Crew", "Custom Engraving", "Venue Logistics"],
+      },
+    ],
+    quickLinks: ["View all Sets"],
+    highlight: {
+      eyebrow: "Concierge Team",
+      title: "Complete Planning",
+      description: "Full procession planning and logistics for your special day.",
+      cta: "Meet the team",
+    },
   },
 ];
 

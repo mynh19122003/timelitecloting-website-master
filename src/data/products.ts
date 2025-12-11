@@ -5,7 +5,8 @@ export type Category =
   | "evening"
   | "conical-hats"
   | "kidswear"
-  | "gift-procession-sets";
+  | "gift-procession-sets"
+  | "wedding-gift-trays";
 export type ProductCategory = Category; // Alias for backward compatibility
 
 export type Product = {
@@ -34,6 +35,8 @@ export type Product = {
   sleeve?: string;
   length?: string;
   embellishment?: string;
+  badge?: { label: string; variant: "sale" | "new" };
+  oldPrice?: number;
 };
 
 // Map frontend string IDs to backend numeric IDs
@@ -65,6 +68,7 @@ export const categoryLabels: Record<Category, string> = {
   "conical-hats": "Conical Hats",
   kidswear: "Kidswear",
   "gift-procession-sets": "Gift Procession Sets",
+  "wedding-gift-trays": "Wedding Gift Trays",
 };
 
 // Reverse mapping: category label (from API) -> category slug (frontend)
@@ -84,6 +88,7 @@ export const categoryLabelToSlug: Record<string, Category> = {
   "Gift Procession": "gift-procession-sets",
   "Lunar New Year Décor": "gift-procession-sets",
   "Lunar New Year Decor": "gift-procession-sets",
+  "Wedding Gift Trays": "wedding-gift-trays",
   "Ceremonial Attire": "ao-dai",
   "Uniforms & Teamwear": "vest",
   // Also support common variations
@@ -94,6 +99,7 @@ export const categoryLabelToSlug: Record<string, Category> = {
   "conical-hats": "conical-hats",
   "kidswear": "kidswear",
   "gift-procession-sets": "gift-procession-sets",
+  "wedding-gift-trays": "wedding-gift-trays",
   "suits": "vest",
   "bridal-formal-dresses": "wedding",
   "lunar-new-year-decor": "gift-procession-sets",
@@ -110,6 +116,7 @@ const categoryKeywords: Record<Category, string[]> = {
   "conical-hats": ["non la", "non-la", "conical hat", "conical hats", "accessory", "accessories"],
   kidswear: ["kidswear", "kids wear", "child", "children", "mini"],
   "gift-procession-sets": ["procession", "gift set", "tráp cưới", "gift procession", "lunar new year", "decor"],
+  "wedding-gift-trays": ["wedding gift tray", "wedding tray", "mâm quả", "wedding gift"],
 };
 
 export const categorySlugs: Category[] = [
@@ -120,6 +127,7 @@ export const categorySlugs: Category[] = [
   "conical-hats",
   "kidswear",
   "gift-procession-sets",
+  "wedding-gift-trays",
 ];
 
 export const isCategorySlug = (value: string | null | undefined): value is Category => {
@@ -130,10 +138,10 @@ export const isCategorySlug = (value: string | null | undefined): value is Categ
 // Helper function to normalize category from API to frontend slug
 export function normalizeCategory(category: string | null | undefined): Category | "other" {
   if (!category) return "other";
-  
+
   // Normalize: trim, collapse whitespace, remove extra spaces
   const normalized = category.trim().replace(/\s+/g, " ");
-  
+
   // Check exact match first (case-insensitive)
   const lower = normalized.toLowerCase();
   for (const [label, slug] of Object.entries(categoryLabelToSlug)) {
@@ -141,22 +149,22 @@ export function normalizeCategory(category: string | null | undefined): Category
       return slug as Category;
     }
   }
-  
+
   // Check if it's already a slug
   if (normalized.toLowerCase() in categoryLabelToSlug) {
     return categoryLabelToSlug[normalized.toLowerCase()] as Category;
   }
-  
+
   // Fuzzy match: check if category contains keywords (longer keywords first for better matching)
   const lowerCategory = normalized.toLowerCase();
-  
+
   // Sort categories by keyword length (longer = more specific = higher priority)
   const categoryEntries = Object.entries(categoryKeywords) as [Category, string[]][];
-  
+
   // Find the best match by checking longest keywords first
   let bestMatch: Category | null = null;
   let bestMatchLength = 0;
-  
+
   for (const [slug, keywords] of categoryEntries) {
     for (const keyword of keywords) {
       if (lowerCategory.includes(keyword.toLowerCase()) && keyword.length > bestMatchLength) {
@@ -165,11 +173,11 @@ export function normalizeCategory(category: string | null | undefined): Category
       }
     }
   }
-  
+
   if (bestMatch) {
     return bestMatch;
   }
-  
+
   return "other";
 }
 

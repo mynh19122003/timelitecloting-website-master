@@ -14,7 +14,8 @@ const PRIMARY_CATEGORIES = [
     { label: 'Accessories', slug: 'accessories' },
     { label: 'Lunar New Year Décor', slug: 'lunar-new-year-decor' },
     { label: 'Ceremonial Attire', slug: 'ceremonial-attire' },
-    { label: 'Uniforms & Teamwear', slug: 'uniforms-teamwear' }
+    { label: 'Uniforms & Teamwear', slug: 'uniforms-teamwear' },
+    { label: 'Wedding Gift Trays', slug: 'wedding-gift-trays' }
 ]
 
 const CATEGORY_SLUG_MAP = PRIMARY_CATEGORIES.reduce((acc, item) => {
@@ -42,7 +43,8 @@ const SIZELESS_CATEGORY_SLUGS = new Set([
     'decor',
     'home-decor',
     'mam-qua',
-    'non-la'
+    'non-la',
+    'wedding-gift-trays'
 ])
 
 const sortVariantsByCategory = (variants = []) =>
@@ -130,7 +132,14 @@ const BulkProductModal = ({ onClose, onSuccess }) => {
             const next = { ...prev, [name]: value }
             if (name === 'type') {
                 const slug = toCategorySlug(value)
-                if (slug && SIZELESS_CATEGORY_SLUGS.has(slug)) {
+
+                // Logic for Wedding Gift Trays
+                if (slug === 'wedding-gift-trays') {
+                    next.variant = 'Rent'
+                    next.color = 'Default'
+                    next.inventory = '100' // Default inventory for rental items
+                    next.sizes = []
+                } else if (slug && SIZELESS_CATEGORY_SLUGS.has(slug)) {
                     next.sizes = []
                 }
             }
@@ -335,7 +344,7 @@ const BulkProductModal = ({ onClose, onSuccess }) => {
                                         <input name="name" value={formData.name} onChange={handleInputChange} placeholder="e.g. Summer T-Shirt" />
                                     </div>
                                     <div className={styles.field}>
-                                        <label>Price ($)</label>
+                                        <label>{selectedCategorySlug === 'wedding-gift-trays' ? 'Rental Price ($)' : 'Price ($)'}</label>
                                         <input name="price" type="number" value={formData.price} onChange={handleInputChange} placeholder="0.00" />
                                     </div>
                                 </div>
@@ -359,27 +368,31 @@ const BulkProductModal = ({ onClose, onSuccess }) => {
                                     </div>
                                 </div>
 
-                                <div className={styles.row}>
-                                    <div className={styles.field}>
-                                        <label>Color</label>
-                                        <input name="color" value={formData.color} onChange={handleInputChange} placeholder="e.g. Blue" />
+                                {selectedCategorySlug !== 'wedding-gift-trays' && (
+                                    <div className={styles.row}>
+                                        <div className={styles.field}>
+                                            <label>Color</label>
+                                            <input name="color" value={formData.color} onChange={handleInputChange} placeholder="e.g. Blue" />
+                                        </div>
+                                        <div className={styles.field}>
+                                            <label>Inventory</label>
+                                            <input name="inventory" type="number" value={formData.inventory} onChange={handleInputChange} placeholder="0" />
+                                        </div>
                                     </div>
-                                    <div className={styles.field}>
-                                        <label>Inventory</label>
-                                        <input name="inventory" type="number" value={formData.inventory} onChange={handleInputChange} placeholder="0" />
-                                    </div>
-                                </div>
+                                )}
 
                                 <div className={styles.row}>
-                                    <div className={styles.field}>
-                                        <label>Variant</label>
-                                        <select name="variant" value={formData.variant} onChange={handleInputChange}>
-                                            <option value="">Select Variant</option>
-                                            {variantOptions.map(v => (
-                                                <option key={v.id} value={v.variant_name}>{v.variant_name}</option>
-                                            ))}
-                                        </select>
-                                    </div>
+                                    {selectedCategorySlug !== 'wedding-gift-trays' && (
+                                        <div className={styles.field}>
+                                            <label>Variant</label>
+                                            <select name="variant" value={formData.variant} onChange={handleInputChange}>
+                                                <option value="">Select Variant</option>
+                                                {variantOptions.map(v => (
+                                                    <option key={v.id} value={v.variant_name}>{v.variant_name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
                                     <div className={styles.field}>
                                         <label>Rating</label>
                                         <input name="rating" type="number" step="0.1" value={formData.rating} onChange={handleInputChange} />

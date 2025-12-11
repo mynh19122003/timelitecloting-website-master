@@ -26,36 +26,15 @@ const socialLinks = [
   { icon: FiLinkedin, label: "LinkedIn" },
 ];
 
-const contactDetails = [
-  {
-    icon: FiMapPin,
-    label: "236 N Claremont Ave\nSan Jose, CA 95127",
-  },
-  {
-    icon: FiPhone,
-    label: "669.254.7401",
-  },
-  {
-    icon: FiMail,
-    label: "tim19092016@gmail.com",
-  },
-];
-
-const socialLinks = [
-  { icon: FiInstagram, label: "Instagram" },
-  { icon: FiFacebook, label: "Facebook" },
-  { icon: FiLinkedin, label: "LinkedIn" },
-];
-
 export function Footer() {
   const { t } = useI18n();
-  
+
   const navLinks = [
     { label: t("footer.links.home"), href: "/" },
     { label: t("footer.links.shop"), href: "/suiting" },
     { label: t("footer.links.contact"), href: "/contact" },
   ];
-  
+
   return (
     <footer className="footer">
       <style jsx global>{footerStyles}</style>

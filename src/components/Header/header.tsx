@@ -61,7 +61,7 @@ export function Header({ navMenu }: HeaderProps) {
 
   const translateLink = (link: string, categoryLabel: string): string => {
     const category = categoryLabel.toLowerCase();
-    
+
     // Ao Dai links
     if (category.includes("ao dai")) {
       const map: Record<string, string> = {
@@ -78,7 +78,7 @@ export function Header({ navMenu }: HeaderProps) {
       };
       return map[link] || link;
     }
-    
+
     // Suiting links
     if (category.includes("suiting")) {
       const map: Record<string, string> = {
@@ -94,7 +94,7 @@ export function Header({ navMenu }: HeaderProps) {
       };
       return map[link] || link;
     }
-    
+
     // Bridal links
     if (category.includes("bridal")) {
       const map: Record<string, string> = {
@@ -110,7 +110,7 @@ export function Header({ navMenu }: HeaderProps) {
       };
       return map[link] || link;
     }
-    
+
     // Evening links
     if (category.includes("evening")) {
       const map: Record<string, string> = {
@@ -127,7 +127,7 @@ export function Header({ navMenu }: HeaderProps) {
       };
       return map[link] || link;
     }
-    
+
     // Conical Hats links
     if (category.includes("conical") || category.includes("hats")) {
       const map: Record<string, string> = {
@@ -145,7 +145,7 @@ export function Header({ navMenu }: HeaderProps) {
       };
       return map[link] || link;
     }
-    
+
     // Kidswear links
     if (category.includes("kidswear")) {
       const map: Record<string, string> = {
@@ -162,7 +162,7 @@ export function Header({ navMenu }: HeaderProps) {
       };
       return map[link] || link;
     }
-    
+
     // Gift Procession Sets links
     if (category.includes("gift") || category.includes("procession")) {
       const map: Record<string, string> = {
@@ -178,13 +178,13 @@ export function Header({ navMenu }: HeaderProps) {
       };
       return map[link] || link;
     }
-    
+
     return link;
   };
 
   const translateHighlight = (text: string, categoryLabel: string, type: "eyebrow" | "title" | "description" | "cta"): string => {
     const category = categoryLabel.toLowerCase();
-    
+
     // Ao Dai highlight
     if (category.includes("ao dai")) {
       if (type === "eyebrow" && text === "Signature drop") return t("nav.ao.dai.signature.drop");
@@ -192,13 +192,13 @@ export function Header({ navMenu }: HeaderProps) {
       if (type === "description" && text.includes("Curated looks")) return t("nav.ao.dai.capsule.description");
       if (type === "cta" && text === "Shop Ao Dai capsule") return t("nav.ao.dai.capsule.cta");
     }
-    
+
     // Suiting highlight
     if (category.includes("suiting")) {
       if (type === "title" && text === "Tailored for movement") return t("nav.suiting.tailored.title");
       if (type === "description" && text.includes("Lightweight structures")) return t("nav.suiting.tailored.description");
     }
-    
+
     // Bridal highlight
     if (category.includes("bridal")) {
       if (type === "eyebrow" && text === "Bridal studio") return t("nav.bridal.studio");
@@ -206,13 +206,13 @@ export function Header({ navMenu }: HeaderProps) {
       if (type === "description" && text.includes("Explore silhouettes")) return t("nav.bridal.fitting.description");
       if (type === "cta" && text === "Explore bridal") return t("nav.bridal.explore");
     }
-    
+
     // Evening highlight
     if (category.includes("evening")) {
       if (type === "title" && text === "Evening edit") return t("nav.evening.edit.title");
       if (type === "description" && text.includes("Statement pieces")) return t("nav.evening.edit.description");
     }
-    
+
     // Kidswear highlight
     if (category.includes("kidswear")) {
       if (type === "eyebrow" && text === "Mini Atelier") return t("nav.kidswear.mini.atelier");
@@ -220,7 +220,7 @@ export function Header({ navMenu }: HeaderProps) {
       if (type === "description" && text.includes("Coordinated looks")) return t("nav.kidswear.custom.sibling.description");
       if (type === "cta" && text === "Plan styling") return t("nav.kidswear.plan.styling");
     }
-    
+
     // Gift Procession Sets highlight
     if (category.includes("gift") || category.includes("procession")) {
       if (type === "eyebrow" && text === "Concierge Team") return t("nav.gift.concierge.team");
@@ -228,7 +228,7 @@ export function Header({ navMenu }: HeaderProps) {
       if (type === "description" && text.includes("Full procession")) return t("nav.gift.complete.planning.description");
       if (type === "cta" && text === "Meet the team") return t("nav.gift.meet.team");
     }
-    
+
     return text;
   };
 
@@ -338,15 +338,14 @@ export function Header({ navMenu }: HeaderProps) {
               return (
                 <div
                   key={item.label}
-                  className={`header__nav-item${item.accent ? " header__nav-item--accent" : ""}${
-                    isActive ? " is-active" : ""
-                  }`}
+                  className={`header__nav-item${item.accent ? " header__nav-item--accent" : ""}${isActive ? " is-active" : ""
+                    }`}
                   onMouseEnter={() => hasDropdown && handleNavItemEnter(index)}
                 >
                   <button
                     type="button"
                     className="header__nav-trigger"
-                    aria-expanded={isActive && hasDropdown}
+                    aria-expanded={!!(isActive && hasDropdown)}
                     aria-controls={hasDropdown ? `mega-${index}` : undefined}
                     onClick={() => {
                       handleNavigateToItem(item);

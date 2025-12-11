@@ -50,6 +50,9 @@ const navLinkParamMap: NavLinkParamMap = {
   "uniforms-teamwear": {
     "view-all-uniforms": null,
   },
+  "wedding-gift-trays": {
+    "view-all-sets": null,
+  },
 };
 
 export const Navbar = () => {
@@ -156,13 +159,22 @@ export const Navbar = () => {
     const itemKey = normalizeNavKey(itemLabel);
     const linkKey = normalizeNavKey(linkLabel);
     const config = navLinkParamMap[itemKey]?.[linkKey];
+
+    // Check explicit config first
     if (config === null) {
       return undefined;
     }
     if (config) {
       return config;
     }
-    return { facet: linkLabel };
+
+    // Special handling for Wedding Gift Trays (use chip/tag instead of variant)
+    if (itemKey === "wedding-gift-trays") {
+      return { facet: linkLabel, chip: linkLabel };
+    }
+
+    // Default: treat link as a variant filter
+    return { facet: linkLabel, variant: linkLabel };
   };
 
   const handleNavLinkClick = (item: ShopNavItem, entry: string) => {
@@ -206,7 +218,7 @@ export const Navbar = () => {
 
   const translateLink = (link: string, categoryLabel: string): string => {
     const category = categoryLabel.toLowerCase();
-    
+
     // Ao Dai links
     if (category.includes("ao dai")) {
       const map: Record<string, string> = {
@@ -223,7 +235,7 @@ export const Navbar = () => {
       };
       return map[link] || link;
     }
-    
+
     // Suiting links
     if (category.includes("suit")) {
       const map: Record<string, string> = {
@@ -239,7 +251,7 @@ export const Navbar = () => {
       };
       return map[link] || link;
     }
-    
+
     // Bridal links
     if (category.includes("bridal")) {
       const map: Record<string, string> = {
@@ -255,7 +267,7 @@ export const Navbar = () => {
       };
       return map[link] || link;
     }
-    
+
     // Evening links
     if (category.includes("formal") || category.includes("evening")) {
       const map: Record<string, string> = {
@@ -272,7 +284,7 @@ export const Navbar = () => {
       };
       return map[link] || link;
     }
-    
+
     // Conical Hats links
     if (category.includes("conical") || category.includes("hats") || category.includes("accessor")) {
       const map: Record<string, string> = {
@@ -290,7 +302,7 @@ export const Navbar = () => {
       };
       return map[link] || link;
     }
-    
+
     // Kidswear links
     if (category.includes("kidswear")) {
       const map: Record<string, string> = {
@@ -307,7 +319,7 @@ export const Navbar = () => {
       };
       return map[link] || link;
     }
-    
+
     // Gift Procession Sets links
     if (category.includes("gift") || category.includes("procession") || category.includes("lunar")) {
       const map: Record<string, string> = {
@@ -323,13 +335,13 @@ export const Navbar = () => {
       };
       return map[link] || link;
     }
-    
+
     return link;
   };
 
   const translateHighlight = (text: string, categoryLabel: string, type: "eyebrow" | "title" | "description" | "cta"): string => {
     const category = categoryLabel.toLowerCase();
-    
+
     // Ao Dai highlight
     if (category.includes("ao dai")) {
       if (type === "eyebrow" && text === "Signature drop") return t("nav.ao.dai.signature.drop");
@@ -337,13 +349,13 @@ export const Navbar = () => {
       if (type === "description" && text.includes("Curated looks")) return t("nav.ao.dai.capsule.description");
       if (type === "cta" && text === "Shop Ao Dai capsule") return t("nav.ao.dai.capsule.cta");
     }
-    
+
     // Suiting highlight
     if (category.includes("suiting") || category.includes("suit")) {
       if (type === "title" && text === "Tailored for movement") return t("nav.suiting.tailored.title");
       if (type === "description" && text.includes("Lightweight structures")) return t("nav.suiting.tailored.description");
     }
-    
+
     // Bridal highlight
     if (category.includes("bridal")) {
       if (type === "eyebrow" && text === "Bridal studio") return t("nav.bridal.studio");
@@ -351,13 +363,13 @@ export const Navbar = () => {
       if (type === "description" && text.includes("Explore silhouettes")) return t("nav.bridal.fitting.description");
       if (type === "cta" && text === "Explore bridal") return t("nav.bridal.explore");
     }
-    
+
     // Evening highlight
     if (category.includes("evening")) {
       if (type === "title" && text === "Evening edit") return t("nav.evening.edit.title");
       if (type === "description" && text.includes("Statement pieces")) return t("nav.evening.edit.description");
     }
-    
+
     // Kidswear highlight
     if (category.includes("kidswear")) {
       if (type === "eyebrow" && text === "Mini Atelier") return t("nav.kidswear.mini.atelier");
@@ -365,7 +377,7 @@ export const Navbar = () => {
       if (type === "description" && text.includes("Coordinated looks")) return t("nav.kidswear.custom.sibling.description");
       if (type === "cta" && text === "Plan styling") return t("nav.kidswear.plan.styling");
     }
-    
+
     // Gift Procession Sets highlight
     if (category.includes("gift") || category.includes("procession") || category.includes("lunar")) {
       if (type === "eyebrow" && text === "Concierge Team") return t("nav.gift.concierge.team");
@@ -373,7 +385,7 @@ export const Navbar = () => {
       if (type === "description" && text.includes("Full procession")) return t("nav.gift.complete.planning.description");
       if (type === "cta" && text === "Meet the team") return t("nav.gift.meet.team");
     }
-    
+
     return text;
   };
 
@@ -450,8 +462,8 @@ export const Navbar = () => {
                 className="header__action"
                 aria-label={t("auth.logout") || "Logout"}
                 onClick={handleLogout}
-                style={{ 
-                  fontSize: "0.7rem", 
+                style={{
+                  fontSize: "0.7rem",
                   padding: "0.4rem 0.8rem",
                   width: "auto",
                   height: "auto",
@@ -489,18 +501,16 @@ export const Navbar = () => {
               return (
                 <div
                   key={item.label}
-                  className={`header__nav-item${item.accent ? " header__nav-item--accent" : ""}${
-                    isActive ? " is-active" : ""
-                  }`}
+                  className={`header__nav-item${item.accent ? " header__nav-item--accent" : ""}${isActive ? " is-active" : ""}`}
                   onMouseEnter={() => hasDropdown && handleNavItemEnter(index)}
                   onMouseLeave={handleNavItemLeave}
                 >
                   <button
                     type="button"
                     className="header__nav-trigger"
-                    aria-expanded={isActive && hasDropdown}
+                    aria-expanded={!!(isActive && hasDropdown)}
                     aria-controls={hasDropdown ? `mega-${index}` : undefined}
-                  onClick={() => navigateToItem(item)}
+                    onClick={() => navigateToItem(item)}
                   >
                     {translateNavLabel(item.label)}
                   </button>
@@ -582,7 +592,7 @@ export const Navbar = () => {
                         <button
                           type="button"
                           className="header__mega-cta"
-                          onClick={() => handleNavLinkClick(activeItem, activeItem.highlight.cta!)}
+                          onClick={() => activeItem.highlight?.cta && handleNavLinkClick(activeItem, activeItem.highlight.cta)}
                         >
                           {translateHighlight(activeItem.highlight.cta, activeItem.label, "cta")}
                         </button>
@@ -594,7 +604,7 @@ export const Navbar = () => {
                             <button
                               type="button"
                               className="header__mega-note-cta"
-                              onClick={() => handleNavLinkClick(activeItem, activeItem.highlight.noteCta!)}
+                              onClick={() => activeItem.highlight?.noteCta && handleNavLinkClick(activeItem, activeItem.highlight.noteCta)}
                             >
                               {activeItem.highlight.noteCta}
                             </button>

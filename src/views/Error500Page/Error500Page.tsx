@@ -29,7 +29,7 @@ export const Error500Page = ({ error, errorInfo }: Error500PageProps = {}) => {
       showHomeButton={true}
       showReloadButton={true}
       showDetails={process.env.NODE_ENV === "development"}
-      errorDetails={{ error, errorInfo }}
+      errorDetails={{ error, errorInfo: errorInfo as React.ErrorInfo | undefined }}
     />
   );
 };

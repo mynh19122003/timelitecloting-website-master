@@ -12,10 +12,10 @@ type ProductSliderProps = {
   loading?: boolean;
 };
 
-export const ProductSlider = ({ 
-  products, 
+export const ProductSlider = ({
+  products,
   itemsPerView = 5,
-  loading = false 
+  loading = false
 }: ProductSliderProps) => {
   const { t } = useI18n();
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -25,7 +25,7 @@ export const ProductSlider = ({
 
   const checkScrollability = () => {
     if (!sliderRef.current) return;
-    
+
     const { scrollLeft, scrollWidth, clientWidth } = sliderRef.current;
     setCanScrollLeft(scrollLeft > 10);
     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
@@ -81,7 +81,7 @@ export const ProductSlider = ({
     return (
       <div className={styles.sliderWrapper}>
         <div className={styles.empty}>
-          <p>{t("product.related.empty", "No related products available")}</p>
+          <p>{t("product.related.empty")}</p>
         </div>
       </div>
     );
@@ -98,7 +98,7 @@ export const ProductSlider = ({
           <FiChevronLeft size={24} />
         </button>
       )}
-      
+
       <div className={styles.sliderWrapper} ref={sliderRef}>
         <div className={styles.sliderTrack} ref={trackRef}>
           {products.map((product) => (

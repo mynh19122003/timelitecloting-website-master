@@ -105,13 +105,13 @@ export default function ShopProductGrid() {
         colors: Array.isArray(p.colors)
           ? p.colors
           : typeof p.colors === "string"
-          ? safeParseArray(p.colors) ?? []
-          : [],
+            ? safeParseArray(p.colors) ?? []
+            : [],
         sizes: Array.isArray(p.sizes)
           ? (p.sizes as UiProduct["sizes"])
           : typeof p.sizes === "string"
-          ? ((safeParseArray(p.sizes) as UiProduct["sizes"]) ?? ["S", "M", "L"])
-          : ["S", "M", "L"],
+            ? ((safeParseArray(p.sizes) as UiProduct["sizes"]) ?? ["S", "M", "L"])
+            : ["S", "M", "L"],
         image,
         gallery,
         rating: Number(p.rating ?? 0),
@@ -125,7 +125,7 @@ export default function ShopProductGrid() {
     ApiService.getProducts({ limit: 100 })
       .then((res) => {
         const list = res?.products ?? [];
-        if (isMounted) setAllProducts(list.map(mapProduct));
+        if (isMounted) setAllProducts(list.map(mapProduct as (p: unknown) => UiProduct));
       })
       .catch(() => {
         if (isMounted) setAllProducts([]);
@@ -197,9 +197,8 @@ export default function ShopProductGrid() {
                 role="tab"
                 aria-selected={filter.value === activeFilter}
                 onClick={() => setActiveFilter(filter.value)}
-                className={`${styles.filterButton} ${
-                  filter.value === activeFilter ? styles.filterButtonActive : ""
-                }`}
+                className={`${styles.filterButton} ${filter.value === activeFilter ? styles.filterButtonActive : ""
+                  }`}
               >
                 {filter.label}
               </button>
@@ -217,36 +216,35 @@ export default function ShopProductGrid() {
             {filteredProducts.map((product) => {
               const productHref = `/product/${product.pid || product.id}`;
               return (
-              <article key={product.name} className={styles.card}>
+                <article key={product.name} className={styles.card}>
                   <Link to={productHref} className={styles.mediaLink} aria-label={product.name}>
-                <div className={styles.imageWrapper}>
-                  {product.badge && (
-                    <span
-                      className={`${styles.badge} ${
-                        product.badge.variant === "sale" ? styles.badgeSale : styles.badgeNew
-                      }`}
-                    >
-                      {product.badge.label}
-                    </span>
-                  )}
-                  <ImageWithFallback src={product.image} alt={product.name} />
-                </div>
+                    <div className={styles.imageWrapper}>
+                      {product.badge && (
+                        <span
+                          className={`${styles.badge} ${product.badge.variant === "sale" ? styles.badgeSale : styles.badgeNew
+                            }`}
+                        >
+                          {product.badge.label}
+                        </span>
+                      )}
+                      <ImageWithFallback src={product.image} alt={product.name} />
+                    </div>
                   </Link>
-                <div className={styles.content}>
+                  <div className={styles.content}>
                     <Link to={productHref} className={styles.nameLink}>
-                  <h3 className={styles.name}>{product.name}</h3>
+                      <h3 className={styles.name}>{product.name}</h3>
                     </Link>
-                  <p className={styles.description}>{product.description}</p>
-                  <div className={styles.priceRow}>
-                    <span className={styles.price}>{currencyFormatter.format(product.price)}</span>
-                    {product.oldPrice && (
-                      <span className={styles.oldPrice}>
-                        {currencyFormatter.format(product.oldPrice)}
-                      </span>
-                    )}
+                    <p className={styles.description}>{product.description}</p>
+                    <div className={styles.priceRow}>
+                      <span className={styles.price}>{currencyFormatter.format(product.price)}</span>
+                      {product.oldPrice && (
+                        <span className={styles.oldPrice}>
+                          {currencyFormatter.format(product.oldPrice)}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </article>
+                </article>
               );
             })}
           </div>

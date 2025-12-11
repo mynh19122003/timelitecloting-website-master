@@ -72,7 +72,7 @@ export const ProductsPage = () => {
     let isMounted = true;
     const mapProduct = (p: ApiProduct): UiProduct => {
       const slug: string | undefined = p.slug ?? undefined;
-      const productsId: string | undefined = p.products_id ?? undefined;
+      const productsId: string | undefined = p.products_id ? String(p.products_id) : undefined;
 
       const fromSlug = (s?: string): Category | "other" => {
         if (!s) return "other";
@@ -101,8 +101,8 @@ export const ProductsPage = () => {
         apiCategory !== "other"
           ? apiCategory
           : fallbackCategory !== "other"
-          ? fallbackCategory
-          : "ao-dai";
+            ? fallbackCategory
+            : "ao-dai";
 
       const parseJsonField = <T,>(value: unknown, fallback: T): T => {
         if (Array.isArray(value)) return value as T;
@@ -122,7 +122,7 @@ export const ProductsPage = () => {
       return {
         id: slug ?? String(p.id),
         pid: pid,
-        name: p.name,
+        name: p.name ?? "",
         category: finalCategory,
         shortDescription: p.short_description ?? "",
         description: p.description ?? "",
@@ -144,7 +144,7 @@ export const ProductsPage = () => {
     ApiService.getProducts({ limit: 1000 })
       .then((res) => {
         const list = res?.products ?? [];
-        if (isMounted) setAllProducts(list.map(mapProduct));
+        if (isMounted) setAllProducts(list.map(mapProduct as (p: unknown) => UiProduct));
       })
       .catch((error: unknown) => {
         const message = error instanceof Error ? error.message : String(error);

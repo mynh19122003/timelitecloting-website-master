@@ -7,5 +7,5 @@ export async function generateStaticParams() {
 
 export default function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = use(params);
-    return <ProductDetail />;
+    return <ProductDetail slug={slug} />;
 }

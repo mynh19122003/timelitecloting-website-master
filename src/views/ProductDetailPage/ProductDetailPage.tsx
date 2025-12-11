@@ -90,10 +90,10 @@ export const ProductDetailPage = () => {
     const mapProduct = (p: ApiProduct): UiProduct => {
       const slug: string | undefined = p.slug ?? undefined;
       const pidLike: string | number | undefined = p.products_id ?? p.product_id ?? p.id ?? p.productId;
-      
+
       // Normalize products_id to PID format (e.g., PID00001)
       const pid = pidLike ? toProductsPid(pidLike) : undefined;
-      
+
       const fromSlug = (s?: string): Category | "other" => {
         if (!s) return "other";
         if (s.startsWith("ao-dai-")) return "ao-dai";
@@ -102,7 +102,7 @@ export const ProductDetailPage = () => {
         if (s.startsWith("evening-")) return "evening";
         return "other";
       };
-      
+
       const raw = typeof p.image_url === "string" ? p.image_url.trim() : "";
       const fromPid = getAdminMediaUrlByAny(pidLike);
       let image = fromPid ?? "";
@@ -116,7 +116,7 @@ export const ProductDetailPage = () => {
         }
       }
       image = normalizePossibleMediaUrl(image) || "/images/image_1.png";
-      
+
       // Build gallery URLs from DB values (PID/file or absolute URLs)
       const galleryRaw = Array.isArray(p.gallery) && p.gallery.length ? p.gallery : [image];
       const gallery = galleryRaw.map((g) => {
@@ -139,32 +139,32 @@ export const ProductDetailPage = () => {
         }
         return image;
       });
-      
+
       // Normalize category from API (could be label like "Bridal Gowns" or slug like "wedding")
       const apiCategory = p.category ? normalizeCategory(p.category) : fromSlug(slug);
       const finalCategory = apiCategory !== "other" ? apiCategory : fromSlug(slug);
-      
+
       const rawSizes = Array.isArray(p.sizes) ? p.sizes : (safeParseArray(p.sizes) || [])
       const normalizedSizes = rawSizes
         .map((size) => (typeof size === "string" ? size.trim() : String(size ?? "")))
         .filter((size) => size.length > 0)
       const safeSizes = normalizedSizes.length > 0 ? normalizedSizes : ["One Size"]
-      
+
       return {
         id: slug ?? String(p.id),
         pid,
         name: p.name ?? "",
-        category: finalCategory,
+        category: finalCategory as Category,
         shortDescription: p.short_description ?? "",
         description: p.description ?? "",
         price: Number(p.price ?? 0),
         originalPrice: p.original_price != null ? Number(p.original_price) : undefined,
         colors: Array.isArray(p.colors) ? p.colors : (safeParseArray(p.colors) || []),
-        sizes: safeSizes,
+        sizes: safeSizes as Array<"XS" | "S" | "M" | "L" | "XL">,
         image,
         gallery,
-        rating: Number(p.rating ?? 0),
-        reviews: Number(p.reviews ?? 0),
+        rating: Number((p as ApiProduct & { rating?: number | string }).rating ?? 0),
+        reviews: Number((p as ApiProduct & { reviews?: number | string }).reviews ?? 0),
         tags: Array.isArray(p.tags) ? p.tags : [],
         isFeatured: Boolean(p.is_featured ?? false),
         isNew: Boolean(p.is_new ?? false),
@@ -175,7 +175,7 @@ export const ProductDetailPage = () => {
     // Use getProduct instead of getProductBySlug to support both PID and slug
     ApiService.getProduct(id)
       .then((res) => {
-        const data = (res as { data?: ApiProduct } | ApiProduct).data ?? res;
+        const data = ((res as { data?: ApiProduct } | ApiProduct) as { data?: ApiProduct }).data ?? res as ApiProduct;
         const mapped = mapProduct(data);
         if (!isMounted) return;
         setProduct(mapped);
@@ -188,13 +188,13 @@ export const ProductDetailPage = () => {
         } else {
           // If current selection is not available in new product, reset to first size
           setSelectedSize((prevSize) => {
-            if (!prevSize || !mapped.sizes.includes(prevSize)) {
+            if (!prevSize || !mapped.sizes.includes(prevSize as "XS" | "S" | "M" | "L" | "XL")) {
               return mapped.sizes[0] ?? "";
             }
             return prevSize;
           });
         }
-        
+
         // Load related products separately - load 15 products for slider
         if (isMounted) {
           setLoadingRelated(true);
@@ -223,13 +223,13 @@ export const ProductDetailPage = () => {
         // Log error to console
         console.error('[ProductDetailPage] Error loading product:', {
           id,
-          error: error?.message || error,
-          status: error?.status
+          error: (error as { message?: string })?.message || String(error),
+          status: (error as { status?: number })?.status
         });
 
         if (isMounted) {
           // If 404 or product not found, redirect to 404 page
-          if (error?.status === 404 || error?.message?.toLowerCase().includes('not found')) {
+          if ((error as { status?: number })?.status === 404 || (error as { message?: string })?.message?.toLowerCase().includes('not found')) {
             navigate('/404', { replace: true });
             return;
           }
@@ -339,9 +339,8 @@ export const ProductDetailPage = () => {
             </div>
             <div className={styles.thumbnailGrid}>
               {product.gallery.map((image) => {
-                const buttonClass = `${styles.thumbnailButton} ${
-                  selectedImage === image ? styles.thumbnailActive : ""
-                }`.trim();
+                const buttonClass = `${styles.thumbnailButton} ${selectedImage === image ? styles.thumbnailActive : ""
+                  }`.trim();
                 return (
                   <button
                     key={image}
@@ -399,9 +398,8 @@ export const ProductDetailPage = () => {
                 <p className={styles.optionLabel}>{t("product.color")}</p>
                 <div className={styles.optionList}>
                   {product.colors.map((color) => {
-                    const className = `${styles.colorButton} ${
-                      selectedColor === color ? styles.colorButtonActive : ""
-                    }`.trim();
+                    const className = `${styles.colorButton} ${selectedColor === color ? styles.colorButtonActive : ""
+                      }`.trim();
                     return (
                       <button
                         key={color}
@@ -420,9 +418,8 @@ export const ProductDetailPage = () => {
                 <div className={styles.optionList}>
                   {product.sizes.map((size) => {
                     const isActive = selectedSize === size;
-                    const className = `${styles.sizeButton} ${
-                      isActive ? styles.sizeButtonActive : ""
-                    }`.trim();
+                    const className = `${styles.sizeButton} ${isActive ? styles.sizeButtonActive : ""
+                      }`.trim();
                     return (
                       <button
                         key={size}
@@ -499,8 +496,8 @@ export const ProductDetailPage = () => {
           </Link>
         </div>
         <div className={styles.relatedSlider}>
-          <ProductSlider 
-            products={relatedProducts} 
+          <ProductSlider
+            products={relatedProducts}
             itemsPerView={5}
             loading={loadingRelated}
           />
@@ -514,4 +511,4 @@ export const ProductDetailPage = () => {
   );
 };
 
-  export default ProductDetailPage;
+export default ProductDetailPage;

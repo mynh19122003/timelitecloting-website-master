@@ -125,7 +125,7 @@ class HttpClient {
         console.warn('[HttpClient] Could not parse request body as JSON:', e);
         parsedBody = options.body;
       }
-      
+
       console.log('[HttpClient] REQUEST:', {
         url,
         method: options.method || 'GET',
@@ -189,7 +189,7 @@ class HttpClient {
           }
           // Check for validation errors array
           if ('errors' in data && Array.isArray(data.errors) && data.errors.length > 0) {
-            errorMessage = data.errors.map((e: unknown) => 
+            errorMessage = data.errors.map((e: unknown) =>
               typeof e === 'string' ? e : (e && typeof e === 'object' && 'message' in e ? String(e.message) : '')
             ).filter(Boolean).join(', ');
           }
@@ -217,16 +217,16 @@ class HttpClient {
       } = {
         url,
         errorType: error instanceof Error ? error.constructor.name : typeof error,
-        errorMessage: error instanceof Error ? error.message : (error && typeof error === 'object' 
-          ? JSON.stringify(error) 
+        errorMessage: error instanceof Error ? error.message : (error && typeof error === 'object'
+          ? JSON.stringify(error)
           : String(error || 'Unknown error')),
         errorName: error instanceof Error ? error.name : 'Unknown',
       };
-      
+
       if (error instanceof Error && error.stack) {
         errorInfo.errorStack = error.stack;
       }
-      
+
       if (error && typeof error === 'object') {
         try {
           errorInfo.errorObject = JSON.parse(JSON.stringify(error));
@@ -236,7 +236,7 @@ class HttpClient {
       } else {
         errorInfo.errorObject = error;
       }
-      
+
       console.error('[HttpClient] Request error caught:', errorInfo);
 
       if (error instanceof ApiError) {
@@ -333,14 +333,14 @@ export class ApiService {
     try {
       // Try Node.js backend first (qua Gateway / domain API chính)
       const response = await httpClient.post<ApiResponse<LoginResponse>>(API_CONFIG.ENDPOINTS.LOGIN, credentials);
-      const loginData = response.data || (response as LoginResponse);
+      const loginData = response.data || (response as unknown as LoginResponse);
       httpClient.saveToken(loginData.token);
       return loginData;
     } catch (error) {
       // Fallback sang PHP backend nếu Node.js lỗi
       try {
         const response = await httpClient.post<ApiResponse<LoginResponse>>(API_CONFIG.ENDPOINTS.PHP.LOGIN, credentials);
-        const loginData = response.data || (response as LoginResponse);
+        const loginData = response.data || (response as unknown as LoginResponse);
         httpClient.saveToken(loginData.token);
         return loginData;
       } catch {
@@ -355,7 +355,7 @@ export class ApiService {
       // Try Node.js backend first
       const payload = { email: userData.email, password: userData.password };
       const response = await httpClient.post<ApiResponse<RegisterResponse>>(API_CONFIG.ENDPOINTS.REGISTER, payload);
-      const registerData = response.data || (response as RegisterResponse);
+      const registerData = response.data || (response as unknown as RegisterResponse);
       httpClient.saveToken(registerData.token);
       return registerData;
     } catch (error) {
@@ -363,7 +363,7 @@ export class ApiService {
       try {
         const payload = { email: userData.email, password: userData.password };
         const response = await httpClient.post<ApiResponse<RegisterResponse>>(API_CONFIG.ENDPOINTS.PHP.REGISTER, payload);
-        const registerData = response.data || (response as RegisterResponse);
+        const registerData = response.data || (response as unknown as RegisterResponse);
         httpClient.saveToken(registerData.token);
         return registerData;
       } catch {
@@ -613,25 +613,25 @@ export class ApiService {
         'kidswear': 'Kidswear',
         'gift-procession-sets': 'Gift Procession Sets',
       };
-      
+
       // If category is a slug, convert to label
       const lowerCategory = category.toLowerCase();
       if (categoryLabelMap[lowerCategory]) {
         apiCategory = categoryLabelMap[lowerCategory];
       }
-      
+
       // Build query params - request more to account for filtering
       const requestLimit = excludeProductId ? Math.max(limit * 2, 20) : limit;
       const queryParams = new URLSearchParams();
       queryParams.append('category', apiCategory);
       queryParams.append('limit', String(requestLimit));
-      
+
       const endpoint = `${API_CONFIG.ENDPOINTS.PRODUCTS}?${queryParams.toString()}`;
-      
+
       const res = await httpClient.get<ApiResponse<unknown>>(endpoint, true);
       const data = (res as ApiResponse<unknown>).data ?? res;
       const products = (data as { products?: unknown[] }).products ?? [];
-      
+
       // Filter out current product if excludeProductId is provided
       let filtered = products;
       if (excludeProductId) {
@@ -644,16 +644,16 @@ export class ApiService {
             products_id?: string | number;
           };
           const productId = String(
-            product.id ?? 
-            product.product_id ?? 
-            product.slug ?? 
-            product.products_id ?? 
+            product.id ??
+            product.product_id ??
+            product.slug ??
+            product.products_id ??
             ''
           );
           return productId !== excludeIdStr;
         });
       }
-      
+
       // Return limited results
       return filtered.slice(0, limit);
     } catch (error) {
@@ -671,21 +671,21 @@ export class ApiService {
           'kidswear': 'Kidswear',
           'gift-procession-sets': 'Gift Procession Sets',
         };
-        
+
         const lowerCategory = category.toLowerCase();
         if (categoryLabelMap[lowerCategory]) {
           apiCategory = categoryLabelMap[lowerCategory];
         }
-        
+
         const queryParams = new URLSearchParams();
         queryParams.append('category', apiCategory);
         queryParams.append('limit', String(Math.max(limit * 2, 10)));
-        
+
         const endpoint = `${API_CONFIG.ENDPOINTS.PHP.PRODUCTS}?${queryParams.toString()}`;
         const res = await httpClient.get<ApiResponse<unknown>>(endpoint, true);
         const data = (res as ApiResponse<unknown>).data ?? res;
         const products = (data as { products?: unknown[] }).products ?? [];
-        
+
         let filtered = products;
         if (excludeProductId) {
           const excludeIdStr = String(excludeProductId);
@@ -697,16 +697,16 @@ export class ApiService {
               products_id?: string | number;
             };
             const productId = String(
-              product.id ?? 
-              product.product_id ?? 
-              product.slug ?? 
-              product.products_id ?? 
+              product.id ??
+              product.product_id ??
+              product.slug ??
+              product.products_id ??
               ''
             );
             return productId !== excludeIdStr;
           });
         }
-        
+
         return filtered.slice(0, limit);
       } catch (fallbackError) {
         console.error('[ApiService] Fallback also failed:', fallbackError);
@@ -760,13 +760,13 @@ export class ApiService {
       } else {
         errorMessage = String(error || 'Unknown error');
       }
-      
+
       const errorDetails = error instanceof Error ? {
         name: error.name,
         message: error.message,
         stack: error.stack
       } : (error && typeof error === 'object' ? error : { error });
-      
+
       console.error('[ApiService] ❌ Primary API failed:', errorMessage);
       console.error('[ApiService] Primary API error details:', errorDetails);
 
@@ -783,7 +783,7 @@ export class ApiService {
           message: phpError.message,
           stack: phpError.stack
         } : { error: phpError };
-        
+
         console.error('[ApiService] ❌ PHP backend also failed:', phpErrorMessage);
         console.error('[ApiService] PHP backend error details:', phpErrorDetails);
         throw phpError;
@@ -873,7 +873,7 @@ export class ApiService {
                   name: item.name ?? 'Unknown product',
                   quantity: item.qty ?? item.quantity ?? 1,
                   price: item.price ?? 0,
-                  image: item.products_id ? getAdminMediaUrl(item.products_id) : '/images/placeholder.jpg',
+                  image: item.products_id ? getAdminMediaUrl(String(item.products_id)) : '/images/placeholder.jpg',
                   color: item.color || 'Default',
                   size: item.size || 'Default',
                 };

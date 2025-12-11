@@ -45,7 +45,8 @@ const PRIMARY_CATEGORIES = [
   { label: 'Accessories', slug: 'accessories' },
   { label: 'Lunar New Year Décor', slug: 'lunar-new-year-decor' },
   { label: 'Ceremonial Attire', slug: 'ceremonial-attire' },
-  { label: 'Uniforms & Teamwear', slug: 'uniforms-teamwear' }
+  { label: 'Uniforms & Teamwear', slug: 'uniforms-teamwear' },
+  { label: 'Wedding Gift Trays', slug: 'wedding-gift-trays' }
 ]
 
 const CATEGORY_SLUG_MAP = PRIMARY_CATEGORIES.reduce((acc, item) => {
@@ -76,7 +77,8 @@ const SIZELESS_CATEGORY_SLUGS = new Set([
   'decor',
   'home-decor',
   'mam-qua',
-  'non-la'
+  'non-la',
+  'wedding-gift-trays'
 ])
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif'])
@@ -238,7 +240,7 @@ const AddProduct = () => {
             } catch (_) {
               parsedTags = []
             }
-            
+
             setSelectedTags(Array.isArray(parsedTags) ? parsedTags : [])
             setFormData({
               name: productToEdit.name,
@@ -647,9 +649,17 @@ const AddProduct = () => {
     const nextValue = type === 'checkbox' ? checked : value
     setFormData((prev) => {
       const nextState = { ...prev, [name]: nextValue }
+
       if (name === 'type') {
         const slug = toCategorySlug(nextValue)
-        if (slug && SIZELESS_CATEGORY_SLUGS.has(slug)) {
+
+        // Logic for Wedding Gift Trays
+        if (slug === 'wedding-gift-trays') {
+          nextState.variant = 'Rent'
+          nextState.color = 'Default'
+          nextState.inventory = '100' // Default inventory for rental items
+          nextState.sizes = []
+        } else if (slug && SIZELESS_CATEGORY_SLUGS.has(slug)) {
           nextState.sizes = []
         }
       }
@@ -723,7 +733,7 @@ const AddProduct = () => {
     } finally {
       if (event.target) event.target.value = ''
     }
-    }
+  }
 
   const handleRemoveUpload = (uploadId) => {
     setMediaUploads((prev) => {
@@ -778,7 +788,7 @@ const AddProduct = () => {
 
     try {
       setFormError('')
-      
+
       // Handle new variant creation if applicable
       let finalVariant = formData.variant
       if (showNewVariantInput) {
@@ -809,17 +819,17 @@ const AddProduct = () => {
 
       if (isEditMode) {
         // Update product via backend API
-        const updatePayload = { 
-          ...formData, 
+        const updatePayload = {
+          ...formData,
           variant: finalVariant,
           inventory: inventoryValue,
           price: normalizedPrice
         }
         console.log('[AddProduct] Attempting to update product with payload:', updatePayload)
-        
+
         const updatedUi = await updateProduct(id, updatePayload)
         console.log('[AddProduct] Product updated successfully:', updatedUi)
-        
+
         // Navigate back to products list with updated data
         navigate('/admin/products', { replace: true, state: { updatedProduct: updatedUi } })
         return
@@ -828,10 +838,10 @@ const AddProduct = () => {
       // Create via backend API
       const payload = { ...formData, variant: finalVariant }
       console.log('[AddProduct] Attempting to create product with payload:', payload)
-      
+
       const createdUi = await createProduct(payload)
       console.log('[AddProduct] Product created successfully:', createdUi)
-      
+
       // Điều hướng lại trang danh sách sản phẩm cùng dữ liệu mới
       navigate('/admin/products', { replace: true, state: { newProduct: createdUi } })
     } catch (err) {
@@ -849,7 +859,7 @@ const AddProduct = () => {
           headers: err?.config?.headers
         }
       })
-      
+
       // Hiển thị lỗi chi tiết hơn
       let errorMessage = 'Failed to save product'
       if (err?.response?.status === 403) {
@@ -864,7 +874,7 @@ const AddProduct = () => {
       } else if (err?.message) {
         errorMessage = err.message
       }
-      
+
       setFormError(errorMessage)
     }
   }
@@ -921,316 +931,315 @@ const AddProduct = () => {
             </div>
           ) : (
             bulkProducts.map((product, index) => {
-            const productCategorySlug = toCategorySlug(product.type)
-            const matchingVariants = productCategorySlug
-              ? variantsList.filter((variant) => variant.category_slug === productCategorySlug)
-              : variantsList
-            const variantOptions = matchingVariants.length ? matchingVariants : variantsList
-            const hasVariant = variantOptions.some(
-              (variant) => variant.variant_name === product.variant
-            )
-            const showSizes =
-              !productCategorySlug || !SIZELESS_CATEGORY_SLUGS.has(productCategorySlug)
+              const productCategorySlug = toCategorySlug(product.type)
+              const matchingVariants = productCategorySlug
+                ? variantsList.filter((variant) => variant.category_slug === productCategorySlug)
+                : variantsList
+              const variantOptions = matchingVariants.length ? matchingVariants : variantsList
+              const hasVariant = variantOptions.some(
+                (variant) => variant.variant_name === product.variant
+              )
+              const showSizes =
+                !productCategorySlug || !SIZELESS_CATEGORY_SLUGS.has(productCategorySlug)
 
-            return (
-              <article key={product.id} className={styles.bulkCard}>
-                <header className={styles.bulkCardHeader}>
-                  <div>
-                    <p className={styles.bulkCardEyebrow}>Product #{index + 1}</p>
-                    <h4>{product.name || 'Untitled product'}</h4>
-                  </div>
-                  <div className={styles.bulkCardActions}>
-                    <button
-                      type='button'
-                      className={styles.bulkGhostButton}
-                      onClick={() => handleBulkDuplicateProduct(index)}
-                    >
-                      Duplicate
-                    </button>
-                    <button
-                      type='button'
-                      className={styles.bulkDangerButton}
-                      onClick={() => handleBulkRemoveProduct(index)}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </header>
-
-                <div className={styles.fieldRow}>
-                  <label className={styles.field}>
-                    Product name *
-                    <input
-                      name='name'
-                      value={product.name}
-                      onChange={(event) => handleBulkInputChange(index, event)}
-                      placeholder='Summer T-Shirt'
-                    />
-                  </label>
-                  <label className={styles.field}>
-                    Product description *
-                    <input
-                      name='description'
-                      value={product.description}
-                      onChange={(event) => handleBulkInputChange(index, event)}
-                      placeholder='Describe the product experience'
-                    />
-                  </label>
-                </div>
-
-                <div className={styles.fieldRow}>
-                  <label className={styles.field}>
-                    Inventory quantity *
-                    <input
-                      name='inventory'
-                      type='number'
-                      min='0'
-                      value={product.inventory}
-                      onChange={(event) => handleBulkInputChange(index, event)}
-                    />
-                  </label>
-                  <label className={styles.field}>
-                    Primary color *
-                    <input
-                      name='color'
-                      value={product.color}
-                      onChange={(event) => handleBulkInputChange(index, event)}
-                      placeholder='e.g. Crimson, Champagne, Ivory'
-                    />
-                  </label>
-                </div>
-
-                <div className={styles.fieldRow}>
-                  <label className={styles.field}>
-                    Category *
-                    <select
-                      name='type'
-                      value={product.type}
-                      onChange={(event) => handleBulkInputChange(index, event)}
-                    >
-                      <option value=''>Select a category</option>
-                      {categoriesList.map((cat) => (
-                        <option key={cat.slug} value={cat.label}>
-                          {cat.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className={styles.field}>
-                    Variant (Collection)
-                    <select
-                      name='variant'
-                      value={product.variant}
-                      onChange={(event) => handleBulkInputChange(index, event)}
-                    >
-                      <option value=''>Select variant</option>
-                      {variantOptions.map((variant) => (
-                        <option
-                          key={`${variant.category_slug}-${variant.variant_name}`}
-                          value={variant.variant_name}
-                        >
-                          {variant.variant_name}
-                        </option>
-                      ))}
-                      {!hasVariant && product.variant && (
-                        <option value={product.variant}>{product.variant}</option>
-                      )}
-                    </select>
-                  </label>
-                </div>
-
-                <div className={styles.fieldRow}>
-                  <label className={styles.field}>
-                    Status
-                    <select
-                      name='status'
-                      value={product.status}
-                      onChange={(event) => handleBulkInputChange(index, event)}
-                    >
-                      <option value='published'>Published</option>
-                      <option value='scheduled'>Scheduled</option>
-                      <option value='draft'>Draft</option>
-                      <option value='archived'>Archived</option>
-                    </select>
-                  </label>
-                  <label className={styles.field}>
-                    Product rating
-                    <input
-                      name='rating'
-                      type='number'
-                      min='0'
-                      max='5'
-                      step='0.1'
-                      value={product.rating}
-                      onChange={(event) => handleBulkInputChange(index, event)}
-                    />
-                  </label>
-                  <label className={styles.field}>
-                    Product price *
-                    <input
-                      name='price'
-                      value={product.price}
-                      onChange={(event) => handleBulkInputChange(index, event)}
-                      placeholder='Enter price'
-                    />
-                  </label>
-                </div>
-
-                {showSizes ? (
-                  <div className={styles.fieldRow}>
-                    <label className={styles.field}>
-                      Sizes
-                      <div className={styles.sizeSelector}>
-                        {SIZES.map((size) => (
-                          <button
-                            key={`${product.id}-${size}`}
-                            type='button'
-                            className={`${styles.sizeButton} ${
-                              product.sizes.includes(size) ? styles.sizeButtonActive : ''
-                            }`}
-                            onClick={() => handleBulkSizeToggle(index, size)}
-                          >
-                            {size}
-                          </button>
-                        ))}
-                      </div>
-                    </label>
-                  </div>
-                ) : (
-                  product.type && (
-                    <p className={styles.helperText}>
-                      Category “{product.type}” does not use sizes, so the selector is hidden.
-                    </p>
-                  )
-                )}
-
-                <div className={styles.bulkMediaUpload}>
-                  {product.mediaUploads.length > 0 && (
+              return (
+                <article key={product.id} className={styles.bulkCard}>
+                  <header className={styles.bulkCardHeader}>
                     <div>
-                      <p className={styles.mediaLabel}>Pending uploads</p>
-                      <div className={styles.mediaThumbGrid}>
-                        {product.mediaUploads.map((media, mediaIndex) => (
-                          <figure key={media.id} className={styles.mediaThumb}>
-                            <img src={media.dataUrl} alt={`Bulk upload ${mediaIndex + 1}`} />
-                            <figcaption>
-                              {mediaIndex === 0 ? 'main.webp (cover)' : `main_${mediaIndex + 1}.webp`}
-                            </figcaption>
-                            <button
-                              type='button'
-                              className={styles.mediaRemove}
-                              onClick={() => handleBulkRemoveUpload(index, media.id)}
-                              aria-label='Remove image'
-                            >
-                              <FiX />
-                            </button>
-                          </figure>
-                        ))}
-                      </div>
+                      <p className={styles.bulkCardEyebrow}>Product #{index + 1}</p>
+                      <h4>{product.name || 'Untitled product'}</h4>
                     </div>
-                  )}
-                  <div className={styles.uploadActions}>
-                    <button type='button' onClick={() => handleBulkBrowse(product.id)}>
-                      <FiUploadCloud />
-                      Add files
-                    </button>
-                    <span className={styles.fileHint}>
-                      {product.mediaUploads.length
-                        ? `${product.mediaUploads.length} file(s) ready`
-                        : 'No new files selected'}
-                    </span>
-                  </div>
-                  <input
-                    ref={(node) => {
-                      bulkFileInputRefs.current[product.id] = node
-                    }}
-                    className={styles.hiddenInput}
-                    type='file'
-                    accept='image/png,image/jpeg,image/webp'
-                    multiple
-                    onChange={(event) => handleBulkImageChange(index, event)}
-                  />
-                </div>
+                    <div className={styles.bulkCardActions}>
+                      <button
+                        type='button'
+                        className={styles.bulkGhostButton}
+                        onClick={() => handleBulkDuplicateProduct(index)}
+                      >
+                        Duplicate
+                      </button>
+                      <button
+                        type='button'
+                        className={styles.bulkDangerButton}
+                        onClick={() => handleBulkRemoveProduct(index)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </header>
 
-                <div className={styles.fieldRow}>
-                  <label className={styles.checkbox}>
-                    <input
-                      type='checkbox'
-                      name='addTax'
-                      checked={product.addTax}
-                      onChange={(event) => handleBulkInputChange(index, event)}
-                    />
-                    <span>Add tax for this product</span>
-                  </label>
-                  <label className={styles.checkbox}>
-                    <input
-                      type='checkbox'
-                      name='hasVariations'
-                      checked={product.hasVariations}
-                      onChange={(event) => handleBulkInputChange(index, event)}
-                    />
-                    <span>This product has multiple options</span>
-                  </label>
-                </div>
-
-                {product.hasVariations && (
                   <div className={styles.fieldRow}>
                     <label className={styles.field}>
-                      Option name
+                      Product name *
                       <input
-                        name='optionName'
-                        value={product.optionName}
+                        name='name'
+                        value={product.name}
                         onChange={(event) => handleBulkInputChange(index, event)}
-                        placeholder='Size'
+                        placeholder='Summer T-Shirt'
                       />
                     </label>
                     <label className={styles.field}>
-                      Option values
+                      Product description *
                       <input
-                        name='optionValues'
-                        value={product.optionValues}
+                        name='description'
+                        value={product.description}
                         onChange={(event) => handleBulkInputChange(index, event)}
-                        placeholder='S, M, L, XL'
+                        placeholder='Describe the product experience'
                       />
                     </label>
                   </div>
-                )}
 
-                <div className={styles.bulkTags}>
-                  <label className={styles.field}>
-                    Tags
-                    <select
-                      onChange={(event) => handleBulkTagSelect(index, event)}
-                      defaultValue=''
-                      style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-                    >
-                      <option value=''>Select a tag</option>
-                      {tagsList
-                        .filter((tag) => !(product.selectedTags || []).includes(tag))
-                        .map((tag) => (
-                          <option key={`${product.id}-${tag}`} value={tag}>
-                            {tag}
+                  <div className={styles.fieldRow}>
+                    <label className={styles.field}>
+                      Inventory quantity *
+                      <input
+                        name='inventory'
+                        type='number'
+                        min='0'
+                        value={product.inventory}
+                        onChange={(event) => handleBulkInputChange(index, event)}
+                      />
+                    </label>
+                    <label className={styles.field}>
+                      Primary color *
+                      <input
+                        name='color'
+                        value={product.color}
+                        onChange={(event) => handleBulkInputChange(index, event)}
+                        placeholder='e.g. Crimson, Champagne, Ivory'
+                      />
+                    </label>
+                  </div>
+
+                  <div className={styles.fieldRow}>
+                    <label className={styles.field}>
+                      Category *
+                      <select
+                        name='type'
+                        value={product.type}
+                        onChange={(event) => handleBulkInputChange(index, event)}
+                      >
+                        <option value=''>Select a category</option>
+                        {categoriesList.map((cat) => (
+                          <option key={cat.slug} value={cat.label}>
+                            {cat.label}
                           </option>
                         ))}
-                    </select>
-                  </label>
-                  {(product.selectedTags || []).length > 0 ? (
-                    <div className={styles.tagPills} style={{ marginTop: '12px' }}>
-                      {product.selectedTags.map((tag) => (
-                        <span key={`${product.id}-${tag}`}>
-                          {tag}
-                          <button type='button' onClick={() => handleBulkTagRemove(index, tag)}>
-                            ×
-                          </button>
-                        </span>
-                      ))}
+                      </select>
+                    </label>
+                    <label className={styles.field}>
+                      Variant (Collection)
+                      <select
+                        name='variant'
+                        value={product.variant}
+                        onChange={(event) => handleBulkInputChange(index, event)}
+                      >
+                        <option value=''>Select variant</option>
+                        {variantOptions.map((variant) => (
+                          <option
+                            key={`${variant.category_slug}-${variant.variant_name}`}
+                            value={variant.variant_name}
+                          >
+                            {variant.variant_name}
+                          </option>
+                        ))}
+                        {!hasVariant && product.variant && (
+                          <option value={product.variant}>{product.variant}</option>
+                        )}
+                      </select>
+                    </label>
+                  </div>
+
+                  <div className={styles.fieldRow}>
+                    <label className={styles.field}>
+                      Status
+                      <select
+                        name='status'
+                        value={product.status}
+                        onChange={(event) => handleBulkInputChange(index, event)}
+                      >
+                        <option value='published'>Published</option>
+                        <option value='scheduled'>Scheduled</option>
+                        <option value='draft'>Draft</option>
+                        <option value='archived'>Archived</option>
+                      </select>
+                    </label>
+                    <label className={styles.field}>
+                      Product rating
+                      <input
+                        name='rating'
+                        type='number'
+                        min='0'
+                        max='5'
+                        step='0.1'
+                        value={product.rating}
+                        onChange={(event) => handleBulkInputChange(index, event)}
+                      />
+                    </label>
+                    <label className={styles.field}>
+                      Product price *
+                      <input
+                        name='price'
+                        value={product.price}
+                        onChange={(event) => handleBulkInputChange(index, event)}
+                        placeholder='Enter price'
+                      />
+                    </label>
+                  </div>
+
+                  {showSizes ? (
+                    <div className={styles.fieldRow}>
+                      <label className={styles.field}>
+                        Sizes
+                        <div className={styles.sizeSelector}>
+                          {SIZES.map((size) => (
+                            <button
+                              key={`${product.id}-${size}`}
+                              type='button'
+                              className={`${styles.sizeButton} ${product.sizes.includes(size) ? styles.sizeButtonActive : ''
+                                }`}
+                              onClick={() => handleBulkSizeToggle(index, size)}
+                            >
+                              {size}
+                            </button>
+                          ))}
+                        </div>
+                      </label>
                     </div>
                   ) : (
-                    <p className={styles.helperText}>No tags selected yet.</p>
+                    product.type && (
+                      <p className={styles.helperText}>
+                        Category “{product.type}” does not use sizes, so the selector is hidden.
+                      </p>
+                    )
                   )}
-                </div>
-              </article>
-            )
-          })
+
+                  <div className={styles.bulkMediaUpload}>
+                    {product.mediaUploads.length > 0 && (
+                      <div>
+                        <p className={styles.mediaLabel}>Pending uploads</p>
+                        <div className={styles.mediaThumbGrid}>
+                          {product.mediaUploads.map((media, mediaIndex) => (
+                            <figure key={media.id} className={styles.mediaThumb}>
+                              <img src={media.dataUrl} alt={`Bulk upload ${mediaIndex + 1}`} />
+                              <figcaption>
+                                {mediaIndex === 0 ? 'main.webp (cover)' : `main_${mediaIndex + 1}.webp`}
+                              </figcaption>
+                              <button
+                                type='button'
+                                className={styles.mediaRemove}
+                                onClick={() => handleBulkRemoveUpload(index, media.id)}
+                                aria-label='Remove image'
+                              >
+                                <FiX />
+                              </button>
+                            </figure>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <div className={styles.uploadActions}>
+                      <button type='button' onClick={() => handleBulkBrowse(product.id)}>
+                        <FiUploadCloud />
+                        Add files
+                      </button>
+                      <span className={styles.fileHint}>
+                        {product.mediaUploads.length
+                          ? `${product.mediaUploads.length} file(s) ready`
+                          : 'No new files selected'}
+                      </span>
+                    </div>
+                    <input
+                      ref={(node) => {
+                        bulkFileInputRefs.current[product.id] = node
+                      }}
+                      className={styles.hiddenInput}
+                      type='file'
+                      accept='image/png,image/jpeg,image/webp'
+                      multiple
+                      onChange={(event) => handleBulkImageChange(index, event)}
+                    />
+                  </div>
+
+                  <div className={styles.fieldRow}>
+                    <label className={styles.checkbox}>
+                      <input
+                        type='checkbox'
+                        name='addTax'
+                        checked={product.addTax}
+                        onChange={(event) => handleBulkInputChange(index, event)}
+                      />
+                      <span>Add tax for this product</span>
+                    </label>
+                    <label className={styles.checkbox}>
+                      <input
+                        type='checkbox'
+                        name='hasVariations'
+                        checked={product.hasVariations}
+                        onChange={(event) => handleBulkInputChange(index, event)}
+                      />
+                      <span>This product has multiple options</span>
+                    </label>
+                  </div>
+
+                  {product.hasVariations && (
+                    <div className={styles.fieldRow}>
+                      <label className={styles.field}>
+                        Option name
+                        <input
+                          name='optionName'
+                          value={product.optionName}
+                          onChange={(event) => handleBulkInputChange(index, event)}
+                          placeholder='Size'
+                        />
+                      </label>
+                      <label className={styles.field}>
+                        Option values
+                        <input
+                          name='optionValues'
+                          value={product.optionValues}
+                          onChange={(event) => handleBulkInputChange(index, event)}
+                          placeholder='S, M, L, XL'
+                        />
+                      </label>
+                    </div>
+                  )}
+
+                  <div className={styles.bulkTags}>
+                    <label className={styles.field}>
+                      Tags
+                      <select
+                        onChange={(event) => handleBulkTagSelect(index, event)}
+                        defaultValue=''
+                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                      >
+                        <option value=''>Select a tag</option>
+                        {tagsList
+                          .filter((tag) => !(product.selectedTags || []).includes(tag))
+                          .map((tag) => (
+                            <option key={`${product.id}-${tag}`} value={tag}>
+                              {tag}
+                            </option>
+                          ))}
+                      </select>
+                    </label>
+                    {(product.selectedTags || []).length > 0 ? (
+                      <div className={styles.tagPills} style={{ marginTop: '12px' }}>
+                        {product.selectedTags.map((tag) => (
+                          <span key={`${product.id}-${tag}`}>
+                            {tag}
+                            <button type='button' onClick={() => handleBulkTagRemove(index, tag)}>
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className={styles.helperText}>No tags selected yet.</p>
+                    )}
+                  </div>
+                </article>
+              )
+            })
           )}
         </div>
       </section>
@@ -1272,9 +1281,9 @@ const AddProduct = () => {
             Cancel
           </Button>
           {!isBulkMode ? (
-          <Button type='submit' form='add-product-form' variant='primary'>
-            Save
-          </Button>
+            <Button type='submit' form='add-product-form' variant='primary'>
+              Save
+            </Button>
           ) : (
             <>
               <Button type='button' variant='ghost' onClick={handleBulkPreview}>
@@ -1308,418 +1317,417 @@ const AddProduct = () => {
       {isBulkMode ? (
         renderBulkMode()
       ) : (
-      <main className={styles.body}>
-        <form id='add-product-form' className={styles.form} onSubmit={handleSubmit}>
-          <section className={styles.section}>
-            <h1>{isEditMode ? 'Edit Product' : 'Add Product'}</h1>
-            <p>Define product information, inventory, pricing, and SEO before publishing.</p>
-            {formError && (
-              <div className={styles.formError} role='alert' style={{ whiteSpace: 'pre-line' }}>
-                {formError}
-              </div>
-            )}
-          </section>
+        <main className={styles.body}>
+          <form id='add-product-form' className={styles.form} onSubmit={handleSubmit}>
+            <section className={styles.section}>
+              <h1>{isEditMode ? 'Edit Product' : 'Add Product'}</h1>
+              <p>Define product information, inventory, pricing, and SEO before publishing.</p>
+              {formError && (
+                <div className={styles.formError} role='alert' style={{ whiteSpace: 'pre-line' }}>
+                  {formError}
+                </div>
+              )}
+            </section>
 
-          <section className={styles.section}>
-            <h3>Information</h3>
-            <div className={styles.fieldRow}>
-              <label
-                className={`${styles.field} ${missingFields.includes('name') ? styles.fieldError : ''}`}
-              >
-                Product name *
-                <input
-                  name='name'
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  placeholder='Summer T-Shirt'
-                  aria-invalid={missingFields.includes('name')}
-                />
-              </label>
-              <label
-                className={`${styles.field} ${
-                  missingFields.includes('description') ? styles.fieldError : ''
-                }`}
-              >
-                Product description *
-                <input
-                  name='description'
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder='Describe the product experience'
-                  aria-invalid={missingFields.includes('description')}
-                />
-              </label>
-            </div>
-
-            <div className={styles.fieldRow}>
-              <label
-                className={`${styles.field} ${
-                  missingFields.includes('inventory') ? styles.fieldError : ''
-                }`}
-              >
-                Inventory quantity *
-                <input
-                  name='inventory'
-                  type='number'
-                  min='0'
-                  value={formData.inventory}
-                  onChange={handleInputChange}
-                  placeholder='Enter stock quantity'
-                  aria-invalid={missingFields.includes('inventory')}
-                />
-              </label>
-              <label
-                className={`${styles.field} ${missingFields.includes('color') ? styles.fieldError : ''}`}
-              >
-                Primary color *
-                <input
-                  name='color'
-                  value={formData.color}
-                  onChange={handleInputChange}
-                  placeholder='e.g. Crimson, Champagne, Ivory'
-                  aria-invalid={missingFields.includes('color')}
-                />
-              </label>
-            </div>
-
-            <div className={styles.fieldRow}>
-              <label
-                className={`${styles.field} ${missingFields.includes('type') ? styles.fieldError : ''}`}
-              >
-                Category *
-                <select
-                  name='type'
-                  value={formData.type}
-                  onChange={handleInputChange}
-                  aria-invalid={missingFields.includes('type')}
+            <section className={styles.section}>
+              <h3>Information</h3>
+              <div className={styles.fieldRow}>
+                <label
+                  className={`${styles.field} ${missingFields.includes('name') ? styles.fieldError : ''}`}
                 >
-                  <option value=''>Select a category</option>
-                  {categoriesList.map((cat) => (
-                  <option key={cat.slug} value={cat.label}>
-                    {cat.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className={styles.field}>
-                Variant (Collection)
-                {!showNewVariantInput ? (
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <select
-                      name='variant'
-                      value={formData.variant}
-                      onChange={handleInputChange}
-                      style={{ flex: 1 }}
-                    >
-                      <option value=''>Select variant</option>
-                    {variantOptions.map((v) => (
-                      <option key={`${v.category_slug}-${v.variant_name}`} value={v.variant_name}>
-                          {v.variant_name}
-                        </option>
-                      ))}
-                    {!hasSelectedVariant && formData.variant && (
-                      <option value={formData.variant}>{formData.variant}</option>
-                    )}
-                    </select>
-                    <button
-                      type='button'
-                    onClick={() => {
-                      if (!selectedCategorySlug) {
-                        setFormError('Please choose a category before adding a new variant.')
-                        return
-                      }
-                      setShowNewVariantInput(true)
-                      setNewVariantName('')
-                    }}
-                      style={{ whiteSpace: 'nowrap', padding: '0 8px', border: '1px solid #ccc', borderRadius: '4px', background: '#fff', cursor: 'pointer' }}
-                    >
-                      + New
-                    </button>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <input
-                      value={newVariantName}
-                      onChange={(e) => setNewVariantName(e.target.value)}
-                      placeholder='Enter new variant'
-                      style={{ flex: 1 }}
-                    />
-                    <button
-                      type='button'
-                      onClick={() => setShowNewVariantInput(false)}
-                      style={{ whiteSpace: 'nowrap', padding: '0 8px', border: '1px solid #ccc', borderRadius: '4px', background: '#fff', cursor: 'pointer' }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                )}
-              </label>
-            </div>
+                  Product name *
+                  <input
+                    name='name'
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder='Summer T-Shirt'
+                    aria-invalid={missingFields.includes('name')}
+                  />
+                </label>
+                <label
+                  className={`${styles.field} ${missingFields.includes('description') ? styles.fieldError : ''
+                    }`}
+                >
+                  Product description *
+                  <input
+                    name='description'
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    placeholder='Describe the product experience'
+                    aria-invalid={missingFields.includes('description')}
+                  />
+                </label>
+              </div>
 
-            <div className={styles.fieldRow}>
-              <label className={styles.field}>
-                Status
-                <select name='status' value={formData.status} onChange={handleInputChange}>
-                  <option value='published'>Published</option>
-                  <option value='scheduled'>Scheduled</option>
-                  <option value='draft'>Draft</option>
-                  <option value='archived'>Archived</option>
-                </select>
-              </label>
-            </div>
-
-            {shouldShowSizeSelector ? (
-            <div className={styles.fieldRow}>
-              <label className={styles.field}>
-                Sizes
-                <div className={styles.sizeSelector}>
-                  {SIZES.map((size) => (
-                    <button
-                      key={size}
-                      type='button'
-                      className={`${styles.sizeButton} ${
-                        formData.sizes.includes(size) ? styles.sizeButtonActive : ''
+              {selectedCategorySlug !== 'wedding-gift-trays' && (
+                <div className={styles.fieldRow}>
+                  <label
+                    className={`${styles.field} ${missingFields.includes('inventory') ? styles.fieldError : ''
                       }`}
-                      onClick={() => handleSizeToggle(size)}
-                    >
-                      {size}
-                    </button>
-                  ))}
+                  >
+                    Inventory quantity *
+                    <input
+                      name='inventory'
+                      type='number'
+                      min='0'
+                      value={formData.inventory}
+                      onChange={handleInputChange}
+                      placeholder='Enter stock quantity'
+                      aria-invalid={missingFields.includes('inventory')}
+                    />
+                  </label>
+                  <label
+                    className={`${styles.field} ${missingFields.includes('color') ? styles.fieldError : ''}`}
+                  >
+                    Primary color *
+                    <input
+                      name='color'
+                      value={formData.color}
+                      onChange={handleInputChange}
+                      placeholder='e.g. Crimson, Champagne, Ivory'
+                      aria-invalid={missingFields.includes('color')}
+                    />
+                  </label>
                 </div>
-              </label>
-            </div>
-            ) : (
-              selectedCategorySlug && (
-                <p className={styles.helperText}>
-                  Category “{formData.type}” không sử dụng size nên tuỳ chọn size được ẩn.
-                </p>
-              )
-            )}
-          </section>
+              )}
 
-          <section className={styles.section}>
-            <h3>Images</h3>
-            <p className={styles.mediaNote}>
-              First image becomes <code>main.webp</code>. Additional images are saved sequentially as{' '}
-              <code>main_2.webp</code>, <code>main_3.webp</code>, ...
-            </p>
-            {(existingMedia.length > 0 || mediaUploads.length > 0) && (
-              <div className={styles.mediaGallery}>
-                {existingMedia.length > 0 && (
-                  <div>
-                    <p className={styles.mediaLabel}>Existing images</p>
-                    <div className={styles.mediaThumbGrid}>
-                      {existingMedia.map((media) => (
-                        <figure key={media.id} className={styles.mediaThumb}>
-                          <img src={media.url} alt={media.label} />
-                          <figcaption>{media.label}</figcaption>
-                        </figure>
-                      ))}
-              </div>
-                  </div>
-                )}
-                {mediaUploads.length > 0 && (
-                  <div>
-                    <p className={styles.mediaLabel}>Pending uploads</p>
-                    <div className={styles.mediaThumbGrid}>
-                      {mediaUploads.map((media, index) => (
-                        <figure key={media.id} className={styles.mediaThumb}>
-                          <img src={media.dataUrl} alt={`Upload ${index + 1}`} />
-                          <figcaption>
-                            {index === 0 ? 'main.webp (cover)' : `main_${index + 1}.webp`}
-                          </figcaption>
-                          <button
-                            type='button'
-                            className={styles.mediaRemove}
-                            onClick={() => handleRemoveUpload(media.id)}
-                            aria-label='Remove image'
-                          >
-                            <FiX />
-                          </button>
-                        </figure>
-                      ))}
+              <div className={styles.fieldRow}>
+                <label
+                  className={`${styles.field} ${missingFields.includes('type') ? styles.fieldError : ''}`}
+                >
+                  Category *
+                  <select
+                    name='type'
+                    value={formData.type}
+                    onChange={handleInputChange}
+                    aria-invalid={missingFields.includes('type')}
+                  >
+                    <option value=''>Select a category</option>
+                    {categoriesList.map((cat) => (
+                      <option key={cat.slug} value={cat.label}>
+                        {cat.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className={styles.field}>
+                  Variant (Collection)
+                  {!showNewVariantInput ? (
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <select
+                        name='variant'
+                        value={formData.variant}
+                        onChange={handleInputChange}
+                        style={{ flex: 1 }}
+                      >
+                        <option value=''>Select variant</option>
+                        {variantOptions.map((v) => (
+                          <option key={`${v.category_slug}-${v.variant_name}`} value={v.variant_name}>
+                            {v.variant_name}
+                          </option>
+                        ))}
+                        {!hasSelectedVariant && formData.variant && (
+                          <option value={formData.variant}>{formData.variant}</option>
+                        )}
+                      </select>
+                      <button
+                        type='button'
+                        onClick={() => {
+                          if (!selectedCategorySlug) {
+                            setFormError('Please choose a category before adding a new variant.')
+                            return
+                          }
+                          setShowNewVariantInput(true)
+                          setNewVariantName('')
+                        }}
+                        style={{ whiteSpace: 'nowrap', padding: '0 8px', border: '1px solid #ccc', borderRadius: '4px', background: '#fff', cursor: 'pointer' }}
+                      >
+                        + New
+                      </button>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input
+                        value={newVariantName}
+                        onChange={(e) => setNewVariantName(e.target.value)}
+                        placeholder='Enter new variant'
+                        style={{ flex: 1 }}
+                      />
+                      <button
+                        type='button'
+                        onClick={() => setShowNewVariantInput(false)}
+                        style={{ whiteSpace: 'nowrap', padding: '0 8px', border: '1px solid #ccc', borderRadius: '4px', background: '#fff', cursor: 'pointer' }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </label>
               </div>
-            )}
-            <div className={styles.mediaUpload}>
-              <div>
-                <strong>Upload product imagery</strong>
-                <span>PNG, JPG, WEBP up to 5 MB. You can select multiple files.</span>
-                <div className={styles.uploadActions}>
-                  <button type='button' onClick={handleImageBrowse}>
-                    <FiUploadCloud />
-                    Add Files
-                  </button>
-                  <span className={styles.fileHint}>
-                    {mediaUploads.length ? `${mediaUploads.length} file(s) ready` : 'No new files selected'}
-                  </span>
-                </div>
-              </div>
-              <input
-                ref={fileInputRef}
-                className={styles.hiddenInput}
-                type='file'
-                accept='image/png,image/jpeg,image/webp'
-                multiple
-                onChange={handleImageChange}
-              />
-            </div>
-          </section>
 
-          <section className={styles.section}>
-            <h3>Pricing</h3>
-            <div className={styles.fieldRow}>
-              <label
-                className={`${styles.field} ${missingFields.includes('price') ? styles.fieldError : ''}`}
-              >
-                Product price *
-                <input
-                  name='price'
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  placeholder='Enter price'
-                  aria-invalid={missingFields.includes('price')}
-                />
-              </label>
-              <label className={styles.field}>
-                Discount price
-                <input
-                  name='discountPrice'
-                  value={formData.discountPrice}
-                  onChange={handleInputChange}
-                  placeholder='Price at discount'
-                />
-              </label>
-              <label className={styles.field}>
-                Product rating
-                <input
-                  name='rating'
-                  type='number'
-                  min='0'
-                  max='5'
-                  step='0.1'
-                  value={formData.rating}
-                  onChange={handleInputChange}
-                  placeholder='4.5'
-                />
-              </label>
-            </div>
-            <label className={styles.checkbox}>
-              <input
-                type='checkbox'
-                name='addTax'
-                checked={formData.addTax}
-                onChange={handleInputChange}
-              />
-              <span>Add tax for this product</span>
-            </label>
-          </section>
-
-          <section className={styles.section}>
-            <h3>Different options</h3>
-            <label className={styles.checkbox}>
-              <input
-                type='checkbox'
-                name='hasVariations'
-                checked={formData.hasVariations}
-                onChange={handleInputChange}
-              />
-              <span>This product has multiple options</span>
-            </label>
-            {formData.hasVariations && (
               <div className={styles.fieldRow}>
                 <label className={styles.field}>
-                  Option name
+                  Status
+                  <select name='status' value={formData.status} onChange={handleInputChange}>
+                    <option value='published'>Published</option>
+                    <option value='scheduled'>Scheduled</option>
+                    <option value='draft'>Draft</option>
+                    <option value='archived'>Archived</option>
+                  </select>
+                </label>
+              </div>
+
+              {shouldShowSizeSelector ? (
+                <div className={styles.fieldRow}>
+                  <label className={styles.field}>
+                    Sizes
+                    <div className={styles.sizeSelector}>
+                      {SIZES.map((size) => (
+                        <button
+                          key={size}
+                          type='button'
+                          className={`${styles.sizeButton} ${formData.sizes.includes(size) ? styles.sizeButtonActive : ''
+                            }`}
+                          onClick={() => handleSizeToggle(size)}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                  </label>
+                </div>
+              ) : (
+                selectedCategorySlug && (
+                  <p className={styles.helperText}>
+                    Category “{formData.type}” không sử dụng size nên tuỳ chọn size được ẩn.
+                  </p>
+                )
+              )}
+            </section>
+
+            <section className={styles.section}>
+              <h3>Images</h3>
+              <p className={styles.mediaNote}>
+                First image becomes <code>main.webp</code>. Additional images are saved sequentially as{' '}
+                <code>main_2.webp</code>, <code>main_3.webp</code>, ...
+              </p>
+              {(existingMedia.length > 0 || mediaUploads.length > 0) && (
+                <div className={styles.mediaGallery}>
+                  {existingMedia.length > 0 && (
+                    <div>
+                      <p className={styles.mediaLabel}>Existing images</p>
+                      <div className={styles.mediaThumbGrid}>
+                        {existingMedia.map((media) => (
+                          <figure key={media.id} className={styles.mediaThumb}>
+                            <img src={media.url} alt={media.label} />
+                            <figcaption>{media.label}</figcaption>
+                          </figure>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {mediaUploads.length > 0 && (
+                    <div>
+                      <p className={styles.mediaLabel}>Pending uploads</p>
+                      <div className={styles.mediaThumbGrid}>
+                        {mediaUploads.map((media, index) => (
+                          <figure key={media.id} className={styles.mediaThumb}>
+                            <img src={media.dataUrl} alt={`Upload ${index + 1}`} />
+                            <figcaption>
+                              {index === 0 ? 'main.webp (cover)' : `main_${index + 1}.webp`}
+                            </figcaption>
+                            <button
+                              type='button'
+                              className={styles.mediaRemove}
+                              onClick={() => handleRemoveUpload(media.id)}
+                              aria-label='Remove image'
+                            >
+                              <FiX />
+                            </button>
+                          </figure>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className={styles.mediaUpload}>
+                <div>
+                  <strong>Upload product imagery</strong>
+                  <span>PNG, JPG, WEBP up to 5 MB. You can select multiple files.</span>
+                  <div className={styles.uploadActions}>
+                    <button type='button' onClick={handleImageBrowse}>
+                      <FiUploadCloud />
+                      Add Files
+                    </button>
+                    <span className={styles.fileHint}>
+                      {mediaUploads.length ? `${mediaUploads.length} file(s) ready` : 'No new files selected'}
+                    </span>
+                  </div>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  className={styles.hiddenInput}
+                  type='file'
+                  accept='image/png,image/jpeg,image/webp'
+                  multiple
+                  onChange={handleImageChange}
+                />
+              </div>
+            </section>
+
+            <section className={styles.section}>
+              <h3>Pricing</h3>
+              <div className={styles.fieldRow}>
+                <label
+                  className={`${styles.field} ${missingFields.includes('price') ? styles.fieldError : ''}`}
+                >
+                  Product price *
                   <input
-                    name='optionName'
-                    value={formData.optionName}
+                    name='price'
+                    value={formData.price}
                     onChange={handleInputChange}
-                    placeholder='Size'
+                    placeholder='Enter price'
+                    aria-invalid={missingFields.includes('price')}
                   />
                 </label>
                 <label className={styles.field}>
-                  Option values
+                  Discount price
                   <input
-                    name='optionValues'
-                    value={formData.optionValues}
+                    name='discountPrice'
+                    value={formData.discountPrice}
                     onChange={handleInputChange}
-                    placeholder='S, M, L, XL'
+                    placeholder='Price at discount'
+                  />
+                </label>
+                <label className={styles.field}>
+                  Product rating
+                  <input
+                    name='rating'
+                    type='number'
+                    min='0'
+                    max='5'
+                    step='0.1'
+                    value={formData.rating}
+                    onChange={handleInputChange}
+                    placeholder='4.5'
                   />
                 </label>
               </div>
-            )}
-          </section>
+              <label className={styles.checkbox}>
+                <input
+                  type='checkbox'
+                  name='addTax'
+                  checked={formData.addTax}
+                  onChange={handleInputChange}
+                />
+                <span>Add tax for this product</span>
+              </label>
+            </section>
 
-        </form>
+            <section className={styles.section}>
+              <h3>Different options</h3>
+              <label className={styles.checkbox}>
+                <input
+                  type='checkbox'
+                  name='hasVariations'
+                  checked={formData.hasVariations}
+                  onChange={handleInputChange}
+                />
+                <span>This product has multiple options</span>
+              </label>
+              {formData.hasVariations && (
+                <div className={styles.fieldRow}>
+                  <label className={styles.field}>
+                    Option name
+                    <input
+                      name='optionName'
+                      value={formData.optionName}
+                      onChange={handleInputChange}
+                      placeholder='Size'
+                    />
+                  </label>
+                  <label className={styles.field}>
+                    Option values
+                    <input
+                      name='optionValues'
+                      value={formData.optionValues}
+                      onChange={handleInputChange}
+                      placeholder='S, M, L, XL'
+                    />
+                  </label>
+                </div>
+              )}
+            </section>
 
-        <aside className={styles.sidebar}>
-          <div className={styles.card}>
-            <h4>Tags</h4>
-            <label className={styles.field}>
-              Add tags
-              <select
-                onChange={handleTagSelect}
-                defaultValue=''
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-              >
-                <option value=''>Select a tag</option>
-                {tagsList
-                  .filter((tag) => !selectedTags.includes(tag))
-                  .map((tag) => (
-                    <option key={tag} value={tag}>
-                      {tag}
-                    </option>
-                  ))}
-              </select>
-            </label>
-            {selectedTags.length > 0 && (
-              <div className={styles.tagPills} style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {selectedTags.map((tag) => (
-                  <span
-                    key={tag}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      padding: '4px 8px',
-                      backgroundColor: '#f0f0f0',
-                      borderRadius: '4px',
-                      fontSize: '14px'
-                    }}
-                  >
-                    {tag}
-                    <button
-                      type='button'
-                      onClick={() => handleTagRemove(tag)}
+          </form>
+
+          <aside className={styles.sidebar}>
+            <div className={styles.card}>
+              <h4>Tags</h4>
+              <label className={styles.field}>
+                Add tags
+                <select
+                  onChange={handleTagSelect}
+                  defaultValue=''
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                >
+                  <option value=''>Select a tag</option>
+                  {tagsList
+                    .filter((tag) => !selectedTags.includes(tag))
+                    .map((tag) => (
+                      <option key={tag} value={tag}>
+                        {tag}
+                      </option>
+                    ))}
+                </select>
+              </label>
+              {selectedTags.length > 0 && (
+                <div className={styles.tagPills} style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {selectedTags.map((tag) => (
+                    <span
+                      key={tag}
                       style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: '0',
-                        marginLeft: '4px',
-                        fontSize: '16px',
-                        lineHeight: '1',
-                        color: '#666'
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '4px 8px',
+                        backgroundColor: '#f0f0f0',
+                        borderRadius: '4px',
+                        fontSize: '14px'
                       }}
-                      aria-label={`Remove ${tag}`}
                     >
-                      ×
-                    </button>
-                  </span>
-              ))}
+                      {tag}
+                      <button
+                        type='button'
+                        onClick={() => handleTagRemove(tag)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '0',
+                          marginLeft: '4px',
+                          fontSize: '16px',
+                          lineHeight: '1',
+                          color: '#666'
+                        }}
+                        aria-label={`Remove ${tag}`}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              {tagsList.length === 0 && (
+                <p style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
+                  No tags available. Tags will appear here once products are created.
+                </p>
+              )}
             </div>
-            )}
-            {tagsList.length === 0 && (
-              <p style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
-                No tags available. Tags will appear here once products are created.
-              </p>
-            )}
-          </div>
 
-        </aside>
-      </main>
+          </aside>
+        </main>
       )}
     </div>
   )
