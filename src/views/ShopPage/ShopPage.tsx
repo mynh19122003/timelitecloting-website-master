@@ -28,6 +28,7 @@ const slugToCategoryMap: Record<string, Category> = {
   [toCategorySlug("Gift Procession Sets")]: "gift-procession-sets",
   [toCategorySlug("Evening Couture")]: "evening",
   [toCategorySlug("Suiting")]: "vest",
+  [toCategorySlug("Wedding Gift Trays")]: "wedding-gift-trays",
 };
 
 // Curated variant names per category, aligned with admin variants & navbar
@@ -173,7 +174,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
   }, [category, searchParams]);
 
   const catalog = shopCatalog[slug] ?? shopCatalog[defaultCategorySlug];
-  
+
   // Translate category title and subtitle
   const getCategoryTranslation = (slugValue: string) => {
     const translationMap: Record<string, { title: string; subtitle: string }> = {
@@ -209,14 +210,18 @@ export const ShopPage = ({ category }: ShopPageProps) => {
         title: t("shop.gift.procession.title"),
         subtitle: t("shop.gift.procession.subtitle"),
       },
+      [toCategorySlug("Wedding Gift Trays")]: {
+        title: "Wedding Gift Trays",
+        subtitle: "Traditional mâm quả sets for your engagement and wedding ceremonies.",
+      },
     };
     return translationMap[slugValue] || { title: catalog.title, subtitle: catalog.subtitle };
   };
-  
+
   const categoryTranslation = getCategoryTranslation(slug);
   const readableCategory = categoryTranslation.title;
   const categorySubtitle = categoryTranslation.subtitle;
-  
+
   // Translate chips
   const translateChip = (chip: string): string => {
     const chipMap: Record<string, string> = {
@@ -236,7 +241,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
         typeof p.products_id === "string" || typeof p.products_id === "number"
           ? String(p.products_id)
           : undefined;
-      
+
       // Helper to fallback to slug-based category detection if needed
       const fromSlug = (s?: string): Category | "other" => {
         if (!s) return "other";
@@ -251,7 +256,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
         }
         return "other";
       };
-      
+
       const pickImage = (): string => {
         if (productsId) return getAdminMediaUrl(String(productsId));
         const raw = typeof p.image_url === "string" ? p.image_url.trim() : "";
@@ -286,8 +291,8 @@ export const ShopPage = ({ category }: ShopPageProps) => {
       const pid = productsId
         ? toProductsPid(productsId)
         : p.id != null
-        ? toProductsPid(p.id)
-        : undefined;
+          ? toProductsPid(p.id)
+          : undefined;
 
       return {
         id: slug ?? String(p.id),
@@ -324,7 +329,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
         let page = 1;
         const aggregated: ApiProduct[] = [];
         const categoryParam = slug !== defaultCategorySlug ? slug : undefined;
-        const variantParam = selectedVariant || undefined;
+        const variantParam = selectedVariant && !selectedVariant.includes('(All)') ? selectedVariant : undefined;
 
         while (true) {
           const response = await ApiService.getProducts(
@@ -358,8 +363,8 @@ export const ShopPage = ({ category }: ShopPageProps) => {
           error instanceof Error
             ? error.message
             : typeof error === "object" && error !== null && "message" in error
-            ? String((error as { message: unknown }).message)
-            : String(error);
+              ? String((error as { message: unknown }).message)
+              : String(error);
         const status =
           typeof error === "object" && error !== null && "status" in error
             ? (error as { status?: unknown }).status
@@ -379,7 +384,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
     return () => {
       isMounted = false;
     };
-  }, [slug]);
+  }, [slug, selectedVariant]);
 
   // Get available variants for current category:
   // use curated list so it always matches navbar & admin variant options
@@ -391,7 +396,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
   // Get available filter options for current category
   const availableFilterOptions = useMemo(() => {
     const targetCategory = categoryFromSlug(slug);
-    
+
     if (!targetCategory) {
       return {
         silhouette: [],
@@ -402,7 +407,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
         embellishment: [],
       };
     }
-    
+
     const categoryProducts = allProducts.filter((p) => p.category === targetCategory);
     const options = {
       silhouette: new Set<string>(),
@@ -412,7 +417,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
       length: new Set<string>(),
       embellishment: new Set<string>(),
     };
-    
+
     categoryProducts.forEach((p) => {
       if (p.silhouette) options.silhouette.add(p.silhouette);
       if (p.fabric) options.fabric.add(p.fabric);
@@ -421,7 +426,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
       if (p.length) options.length.add(p.length);
       if (p.embellishment) options.embellishment.add(p.embellishment);
     });
-    
+
     return {
       silhouette: Array.from(options.silhouette).sort(),
       fabric: Array.from(options.fabric).sort(),
@@ -450,7 +455,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
 
     // Filter by chip (tags or variant)
     if (selectedChip) {
-      filtered = filtered.filter((p) => 
+      filtered = filtered.filter((p) =>
         p.tags.some((tag) => tag.toLowerCase().includes(selectedChip.toLowerCase())) ||
         p.variant?.toLowerCase().includes(selectedChip.toLowerCase()) ||
         p.name.toLowerCase().includes(selectedChip.toLowerCase())
@@ -508,7 +513,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
   // Initialize filters from URL
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    
+
     const variantParam = params.get("variant");
     setSelectedVariant((prev) => {
       if (variantParam && variantParam !== prev) {
@@ -541,7 +546,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
     };
 
     setFilters((prev) => {
-      const filtersChanged = 
+      const filtersChanged =
         newFilters.silhouette !== prev.silhouette ||
         newFilters.fabric !== prev.fabric ||
         newFilters.occasion !== prev.occasion ||
@@ -613,7 +618,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
           <h1>{readableCategory}</h1>
           <p>{categorySubtitle}</p>
         </header>
-        
+
         {/* Chỉ hiển thị bộ lọc biến thể ở cấp category chính (không có facet con) */}
         {availableVariants.length > 0 && !facet && (
           <div className={styles.variantFilters} role="group" aria-label="Variant filters">
