@@ -43,8 +43,7 @@ const resolveAdminBaseUrl = (): string => {
 
 const resolveApiBaseUrl = (): string => {
   // FORCE: LUÔN LUÔN dùng production API subdomain
-  // Không check NODE_ENV, không check env variables
-  // Build tĩnh sẽ LUÔN gọi https://api.timeliteclothing.com
+  // Static build phải hardcode production URL
   return PROD_API_ORIGIN;
 };
 

@@ -39,14 +39,14 @@ const VARIANTS_BY_CATEGORY_SLUG: Record<string, string[]> = {
     "Designer Ao Dai (Women)",
     "Traditional Ao Dai (Women)",
     "Modern Ao Dai (Women)",
-    "Ceremonial Nhạc Bình (Women)",
+    "Ceremonial Nhật Bình (Women)",
     "Five-Panel Ao Dai (Women)",
     "Girls’ Ao Dai",
     "Mother & Daughter Matching Ao Dai",
     "Modern Ao Dai (Men)",
     "Designer Ao Dai (Men)",
     "Five-Panel Ao Dai (Men)",
-    "Ceremonial Nhạc Bình (Men)",
+    "Ceremonial Nhật Bình (Men)",
     "Father & Son Matching Ao Dai",
   ],
   [toCategorySlug("Suits")]: ["Men’s Suits", "Women’s Suits"],
@@ -73,6 +73,8 @@ const VARIANTS_BY_CATEGORY_SLUG: Record<string, string[]> = {
     "Lanterns",
   ],
   [toCategorySlug("Ceremonial Attire")]: [
+    "Ceremonial Nhật Bình (Women)",
+    "Ceremonial Nhật Bình (Men)",
     "Women’s Temple Robes",
     "Women’s Pilgrimage Ao Dai",
     "Women’s “Ba Ba” Sets",
@@ -349,8 +351,18 @@ export const ShopPage = ({ category }: ShopPageProps) => {
           page += 1;
         }
 
+        // Client-side filtering for Ceremonial Attire to only show relevant variants
+        // This is needed because backend returns all Ao Dai for this category slug
+        let finalProducts = aggregated;
+        if (slug === toCategorySlug("Ceremonial Attire") && !selectedVariant) {
+          const allowedVariants = VARIANTS_BY_CATEGORY_SLUG[slug] || [];
+          if (allowedVariants.length > 0) {
+            finalProducts = aggregated.filter(p => p.variant && allowedVariants.includes(p.variant));
+          }
+        }
+
         if (isMounted) {
-          const mapped = aggregated.map(mapProduct);
+          const mapped = finalProducts.map(mapProduct);
           const dedupedMap = new Map<string, UiProduct>();
           mapped.forEach((product) => {
             const key = product.pid ?? product.id;

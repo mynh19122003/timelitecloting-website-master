@@ -1,32 +1,31 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Static export configuration for VPS deployment
-  output: 'export',
-  
+  // output: 'export',
+
   // Disable ESLint during build for production deployment
   eslint: {
     ignoreDuringBuilds: true,
   },
-  
+
   // Disable TypeScript errors during build
   typescript: {
     ignoreBuildErrors: true,
   },
-  
+
   // Build ID for cache busting
   generateBuildId: async () => {
     return 'build-' + Date.now();
   },
-  
+
   // Compress output
   compress: true,
-  
+
   // Experimental features for better performance
   experimental: {
     optimizePackageImports: ['lucide-react', 'react-icons'],
   },
-  
+
   // Images configuration
   images: {
     unoptimized: true, // Disable image optimization for static export compatibility
@@ -41,7 +40,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  
+
   // Headers for caching and security
   // NOTE: Custom headers are not supported with 'output: export' (static export)
   // Headers must be configured at the web server level (nginx, Apache, etc.)

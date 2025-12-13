@@ -27,6 +27,7 @@ export const STOREFRONT_ROUTES = [
   { slug: ['forgot-password'] },
   { slug: ['reset-password'] },
   { slug: ['verify-email'] },
+  { slug: ['usps-test'] }, // USPS API testing page
 ] as const;
 
 // Error pages - required for static export

@@ -147,7 +147,7 @@ export const shopNavMenu: ShopNavItem[] = [
       {
         heading: "Heritage & Family",
         links: [
-          "Ceremonial Nhạc Bình (Women)",
+          "Ceremonial Nhật Bình (Women)",
           "Five-Panel Ao Dai (Women)",
           "Girls’ Ao Dai",
           "Mother & Daughter Sets",
@@ -159,7 +159,7 @@ export const shopNavMenu: ShopNavItem[] = [
           "Modern Ao Dai (Men)",
           "Designer Ao Dai (Men)",
           "Five-Panel Ao Dai (Men)",
-          "Ceremonial Nhạc Bình (Men)",
+          "Ceremonial Nhật Bình (Men)",
           "Father & Son Sets",
         ],
       },
@@ -249,6 +249,7 @@ export const shopNavMenu: ShopNavItem[] = [
       {
         heading: "Women",
         links: [
+          "Ceremonial Nhật Bình (Women)",
           "Temple Robes (Women)",
           "Pilgrimage Ao Dai",
           "Women’s Ba Ba Sets",
@@ -257,6 +258,7 @@ export const shopNavMenu: ShopNavItem[] = [
       {
         heading: "Men",
         links: [
+          "Ceremonial Nhật Bình (Men)",
           "Temple Ao Dai (Men)",
           "Men’s Ba Ba Sets",
         ],
@@ -293,6 +295,7 @@ export const shopNavMenu: ShopNavItem[] = [
   {
     label: "Wedding Gift Trays",
     categorySlug: toCategorySlug("Wedding Gift Trays"),
+    disableDropdown: true,
     columns: [
       {
         heading: "Trays & Sets",

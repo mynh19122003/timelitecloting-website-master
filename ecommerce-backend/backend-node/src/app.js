@@ -76,6 +76,7 @@ const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const contactRoutes = require('./routes/contactRoutes');
+const shippingRoutes = require('./routes/shippingRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -85,7 +86,7 @@ const PORT = process.env.NODE_PORT || 3001;
 const defaultCorsOrigins = '*';
 
 // Parse CORS_ORIGIN if provided (can be comma-separated string or single value)
-const corsOrigin = process.env.CORS_ORIGIN 
+const corsOrigin = process.env.CORS_ORIGIN
   ? (process.env.CORS_ORIGIN.includes(',') ? process.env.CORS_ORIGIN.split(',').map(o => o.trim()) : process.env.CORS_ORIGIN)
   : defaultCorsOrigins;
 
@@ -131,6 +132,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/shipping', shippingRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -170,7 +172,7 @@ const startServer = async () => {
   try {
     // Test database connection
     await testConnection();
-    
+
     server.listen(PORT, () => {
       console.log(`🚀 Node.js backend server running on port ${PORT}`);
       console.log(`📊 Health check: http://localhost:${PORT}/health`);

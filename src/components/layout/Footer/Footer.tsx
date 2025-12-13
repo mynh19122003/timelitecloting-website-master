@@ -1,9 +1,10 @@
 "use client";
 
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import { FiClock, FiFacebook, FiInstagram, FiMapPin, FiMail, FiPhone } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { useI18n } from "../../../context/I18nContext";
+import { ApiService } from "../../../services/api";
 import styles from "./Footer.module.css";
 
 const mapHref = "https://maps.app.goo.gl/M675ESVRWXjbb9we9";
@@ -18,10 +19,42 @@ const contactDetails = [
 export const Footer = () => {
   const { t } = useI18n();
   const currentYear = new Date().getFullYear();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setFeedback(null);
+
+    const formData = new FormData(event.currentTarget);
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const phone = formData.get('phone') as string;
+    const message = formData.get('message') as string;
+
+    // Basic validation
+    if (!name?.trim() || !email?.trim() || !message?.trim()) {
+      setFeedback({ type: 'error', message: 'Please fill in all required fields (Name, Email, Message).' });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      console.log('[Footer] Submitting contact form...', { name, email, phone, message });
+      const result = await ApiService.submitContactRequest({ name, email, phone, message });
+      console.log('[Footer] Contact form success:', result);
+      setFeedback({ type: 'success', message: 'Thank you! Your message has been sent successfully.' });
+      // Clear form
+      (event.target as HTMLFormElement).reset();
+    } catch (error) {
+      console.error('[Footer] Contact form error:', error);
+      setFeedback({ type: 'error', message: 'Failed to send message. Please try again or contact us directly.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
 
   return (
     <footer className={styles.footer}>
@@ -59,7 +92,7 @@ export const Footer = () => {
                 <span>Phone number</span>
                 <input className={styles.inputControl} type="tel" name="phone" placeholder="+1 (669) ..." />
               </label>
-        </div>
+            </div>
 
             <label className={styles.inputField}>
               <span>Message</span>
@@ -70,8 +103,21 @@ export const Footer = () => {
               />
             </label>
 
-            <button type="submit" className={styles.submitButton}>
-              Send request
+            {feedback && (
+              <div style={{
+                padding: '10px 14px',
+                borderRadius: '6px',
+                marginBottom: '10px',
+                backgroundColor: feedback.type === 'success' ? '#d4edda' : '#f8d7da',
+                color: feedback.type === 'success' ? '#155724' : '#721c24',
+                fontSize: '14px'
+              }}>
+                {feedback.message}
+              </div>
+            )}
+
+            <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
+              {isSubmitting ? 'Sending...' : 'Send request'}
             </button>
           </form>
         </div>
@@ -80,12 +126,12 @@ export const Footer = () => {
       <div className={styles.legal}>
         <p>&copy; 2025 Timeliteclothing. All rights reserved.</p>
         {process.env.NODE_ENV === "development" && (
-        <div className={styles.legalLinks}>
+          <div className={styles.legalLinks}>
             <Link to="/404" style={{ color: "#ff6b6b", fontSize: "0.85rem" }}>
               [Dev] Preview 404
             </Link>
           </div>
-          )}
+        )}
       </div>
     </footer>
   );

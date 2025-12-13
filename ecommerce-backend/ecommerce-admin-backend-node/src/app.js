@@ -18,6 +18,7 @@ const customersRoutes = require('./routes/customersRoutes');
 const productsRoutes = require('./routes/productsRoutes');
 const variantsRoutes = require('./routes/variantsRoutes');
 const conversationsRoutes = require('./routes/conversationsRoutes');
+const shippingRoutes = require('./routes/shippingRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -30,7 +31,7 @@ const corsOptions = {
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true)
-    
+
     // In production, only allow whitelisted origins
     if (isProduction) {
       // Check if origin matches any allowed pattern
@@ -40,15 +41,15 @@ const corsOptions = {
         try {
           const originUrl = new URL(origin)
           const allowedUrl = new URL(allowed)
-          return originUrl.hostname === allowedUrl.hostname || 
-                 originUrl.hostname.endsWith('.' + allowedUrl.hostname)
+          return originUrl.hostname === allowedUrl.hostname ||
+            originUrl.hostname.endsWith('.' + allowedUrl.hostname)
         } catch {
           return false
         }
       })
       return callback(null, isAllowed)
     }
-    
+
     // In development, allow all origins for easier local development
     return callback(null, true)
   },
@@ -86,7 +87,7 @@ const limiter = rateLimit({
   max: 200,
   message: { error: 'ERR_RATE_LIMIT_EXCEEDED', message: 'Too many requests, try later.' }
 });
-const DISABLE_RATE_LIMIT = String(process.env.DISABLE_RATE_LIMIT || '').toLowerCase() === 'true' 
+const DISABLE_RATE_LIMIT = String(process.env.DISABLE_RATE_LIMIT || '').toLowerCase() === 'true'
   || process.env.DISABLE_RATE_LIMIT === '1';
 if (!DISABLE_RATE_LIMIT) {
   app.use(limiter);
@@ -117,7 +118,7 @@ if (!isProduction) {
   app.use((req, res, next) => {
     try {
       console.log(`[REQ] ${req.method} ${req.originalUrl}`);
-    } catch (_) {}
+    } catch (_) { }
     next();
   });
 }
@@ -136,7 +137,7 @@ app.use((req, res, next) => {
   if (DISABLE_ADMIN_TOKEN) {
     try {
       console.log(`[AUTH] Skipped (DISABLE_ADMIN_TOKEN=1) method=${req.method} url=${req.originalUrl}`);
-    } catch (_) {}
+    } catch (_) { }
     return next();
   }
 
@@ -170,10 +171,10 @@ app.use((req, res, next) => {
         ...headerSnapshot,
         bodyPreview: buildDebugPayload()
       });
-    } catch (_) {}
+    } catch (_) { }
     return res.status(401).json({ error: 'ERR_UNAUTHORIZED', message: 'Missing admin token' });
   }
-  
+
   // Verify JWT token instead of comparing with static token
   try {
     const decoded = verifyToken(token);
@@ -196,7 +197,7 @@ app.use((req, res, next) => {
         ...headerSnapshot,
         bodyPreview: buildDebugPayload()
       });
-    } catch (_) {}
+    } catch (_) { }
     return res.status(403).json({ error: 'ERR_FORBIDDEN', message: 'Invalid admin token' });
   }
 });
@@ -216,6 +217,9 @@ app.use('/admin/customers', customersRoutes);
 app.use('/admin/products', productsRoutes);
 app.use('/admin/variants', variantsRoutes);
 app.use('/admin/conversations', conversationsRoutes);
+
+// Shipping API routes (public access for USPS integration)
+app.use('/api/shipping', shippingRoutes);
 
 // Proxy PHP APIs for client usage hitting this service directly
 // Forward to gateway (nginx) which routes to PHP-FPM
