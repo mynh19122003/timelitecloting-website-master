@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { FiClock, FiFacebook, FiInstagram, FiMapPin, FiMail, FiPhone } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { useI18n } from "../../../context/I18nContext";
+import { useToast } from "../../../context/ToastContext";
 import { ApiService } from "../../../services/api";
 import styles from "./Footer.module.css";
 
@@ -18,6 +19,7 @@ const contactDetails = [
 
 export const Footer = () => {
   const { t } = useI18n();
+  const { showToast } = useToast();
   const currentYear = new Date().getFullYear();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -35,20 +37,31 @@ export const Footer = () => {
     // Basic validation
     if (!name?.trim() || !email?.trim() || !message?.trim()) {
       setFeedback({ type: 'error', message: 'Please fill in all required fields (Name, Email, Message).' });
+      showToast('Please fill in all required fields (Name, Email, Message).', 'error');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      console.log('[Footer] Submitting contact form...', { name, email, phone, message });
+      console.log('[ContactForm] Sending email request...', { name, email, phone: phone || '(none)', messageLength: message.length });
       const result = await ApiService.submitContactRequest({ name, email, phone, message });
-      console.log('[Footer] Contact form success:', result);
+      console.log('[ContactForm] ✅ Email sent successfully!', {
+        to: 'henry@timeliteclothing.com',
+        from: email,
+        name: name,
+        messageId: (result as { messageId?: string })?.messageId || 'unknown'
+      });
+
+      // Show success popup notification
+      showToast('✅ Thank you! Your message has been sent successfully.', 'success', 5000);
       setFeedback({ type: 'success', message: 'Thank you! Your message has been sent successfully.' });
+
       // Clear form
       (event.target as HTMLFormElement).reset();
     } catch (error) {
-      console.error('[Footer] Contact form error:', error);
+      console.error('[ContactForm] ❌ Failed to send email:', error);
+      showToast('Failed to send message. Please try again or contact us directly.', 'error', 5000);
       setFeedback({ type: 'error', message: 'Failed to send message. Please try again or contact us directly.' });
     } finally {
       setIsSubmitting(false);
