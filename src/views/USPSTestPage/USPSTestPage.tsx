@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { API_CONFIG } from "../../config/api";
 import styles from "./USPSTestPage.module.css";
 
 interface Address {
@@ -53,7 +54,7 @@ export const USPSTestPage = () => {
         setValidationResult(null);
 
         try {
-            const response = await fetch('http://localhost:3001/api/shipping/validate-address', {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/api/shipping/validate-address`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -83,7 +84,7 @@ export const USPSTestPage = () => {
         setRates(null);
 
         try {
-            const response = await fetch('http://localhost:3001/api/shipping/calculate-rates', {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/api/shipping/calculate-rates`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -121,7 +122,7 @@ export const USPSTestPage = () => {
         setError(null);
 
         try {
-            const response = await fetch('http://localhost:3001/api/shipping/test');
+            const response = await fetch(`${API_CONFIG.BASE_URL}/api/shipping/test`);
             const data = await response.json();
 
             if (!response.ok) {
