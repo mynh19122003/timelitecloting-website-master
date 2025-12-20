@@ -1,24 +1,25 @@
 const express = require('express');
 const router = express.Router();
-const uspsService = require('../services/uspsService');
+const shippoService = require('../services/shippoService');
 
 /**
  * POST /api/shipping/validate-address
- * Validate a US address using USPS API
+ * Validate a US address using Shippo API
  */
 router.post('/validate-address', async (req, res) => {
     try {
-        const { streetAddress, city, state, zipCode } = req.body;
+        const { streetAddress, city, state, zipCode, name } = req.body;
 
         // Validate required fields
-        if (!streetAddress || !city || !state || !zipCode) {
+        if (!city || !state || !zipCode) {
             return res.status(400).json({
                 error: 'INVALID_ADDRESS',
-                message: 'Missing required address fields'
+                message: 'Missing required address fields (city, state, zipCode)'
             });
         }
 
-        const result = await uspsService.validateAddress({
+        const result = await shippoService.validateAddress({
+            name,
             streetAddress,
             city,
             state,
@@ -38,6 +39,7 @@ router.post('/validate-address', async (req, res) => {
 /**
  * POST /api/shipping/calculate-rates
  * Calculate shipping rates for given destination and items
+ * Returns rates from multiple carriers (USPS, UPS, FedEx)
  */
 router.post('/calculate-rates', async (req, res) => {
     try {
@@ -51,32 +53,19 @@ router.post('/calculate-rates', async (req, res) => {
             });
         }
 
-        // Calculate rates
-        try {
-            const rates = await uspsService.calculateShippingRates(destination, items);
+        // Calculate rates using Shippo
+        const rates = await shippoService.calculateShippingRates(destination, items);
 
-            res.json({
-                success: true,
-                rates,
-                origin: {
-                    zipCode: uspsService.originZip,
-                    city: uspsService.originCity,
-                    state: uspsService.originState
-                }
-            });
-        } catch (apiError) {
-            // Fallback to static rates if USPS API fails
-            console.warn('USPS API failed, using fallback rates:', apiError.message);
+        // Check if rates are fallback
+        const isFallback = rates.some(rate => rate.fallback);
 
-            const fallbackRates = uspsService.getFallbackRates();
-
-            res.json({
-                success: true,
-                rates: fallbackRates,
-                fallback: true,
-                warning: 'Using estimated rates. USPS API temporarily unavailable.'
-            });
-        }
+        res.json({
+            success: true,
+            rates,
+            origin: shippoService.getServiceInfo().origin,
+            fallback: isFallback,
+            warning: isFallback ? 'Using estimated rates. Carrier API temporarily unavailable.' : undefined
+        });
     } catch (error) {
         console.error('Calculate rates error:', error);
         res.status(500).json({
@@ -88,38 +77,39 @@ router.post('/calculate-rates', async (req, res) => {
 
 /**
  * GET /api/shipping/test
- * Test endpoint to verify USPS service configuration
+ * Test endpoint to verify Shippo service configuration
  */
 router.get('/test', async (req, res) => {
     try {
-        // Test OAuth authentication
-        const token = await uspsService.getAccessToken();
+        const serviceInfo = shippoService.getServiceInfo();
 
         res.json({
             success: true,
-            message: 'USPS service configured correctly',
+            message: 'Shippo shipping service configured',
+            service: 'Shippo (Multi-carrier: USPS, UPS, FedEx, DHL)',
             config: {
-                baseURL: uspsService.baseURL,
+                configured: serviceInfo.configured,
                 origin: {
-                    zipCode: uspsService.originZip,
-                    city: uspsService.originCity,
-                    state: uspsService.originState
+                    street: serviceInfo.origin.street1,
+                    city: serviceInfo.origin.city,
+                    state: serviceInfo.origin.state,
+                    zipCode: serviceInfo.origin.zip
                 },
                 defaults: {
-                    weight: uspsService.defaultWeight,
-                    dimensions: `${uspsService.defaultLength}x${uspsService.defaultWidth}x${uspsService.defaultHeight} inches`
-                },
-                authenticated: !!token
+                    weight: `${serviceInfo.defaultParcel.weight} lb`,
+                    dimensions: `${serviceInfo.defaultParcel.length}x${serviceInfo.defaultParcel.width}x${serviceInfo.defaultParcel.height} in`
+                }
             }
         });
     } catch (error) {
-        console.error('USPS test error:', error);
+        console.error('Shipping test error:', error);
         res.status(500).json({
             success: false,
-            error: 'USPS_TEST_FAILED',
-            message: error.message || 'USPS service test failed'
+            error: 'SHIPPING_TEST_FAILED',
+            message: error.message || 'Shipping service test failed'
         });
     }
 });
 
 module.exports = router;
+

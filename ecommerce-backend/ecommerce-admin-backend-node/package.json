@@ -19,7 +19,8 @@
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.6.5",
     "sharp": "^0.33.4",
-    "axios": "^1.6.0"
+    "axios": "^1.6.0",
+    "shippo": "^1.5.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

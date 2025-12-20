@@ -42,8 +42,13 @@ const resolveAdminBaseUrl = (): string => {
 };
 
 const resolveApiBaseUrl = (): string => {
-  // FORCE: LUÔN LUÔN dùng production API subdomain
-  // Static build phải hardcode production URL
+  // Check if running on localhost for development testing
+  const loc = getRuntimeLocation();
+  if (loc && isLocalHostname(loc.hostname)) {
+    // Local development: use Docker gateway
+    return 'http://localhost:3002';
+  }
+  // Production: use production API
   return PROD_API_ORIGIN;
 };
 

@@ -1,7 +1,13 @@
 ﻿"use client";
 
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Navigate, Route, Routes, Outlet } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  Outlet,
+} from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
@@ -11,21 +17,56 @@ import { ToastContainer } from "./components/ui/Toast";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ScrollToTop } from "./components/layout/ScrollToTop";
 
-const HomePage = lazy(() => import("./views/HomePage").then(m => ({ default: m.HomePage })));
-const ShopPage = lazy(() => import("./views/ShopPage").then(m => ({ default: m.ShopPage })));
-const ProductsPage = lazy(() => import("./views/ProductsPage").then(m => ({ default: m.default })));
-const ProductDetailPage = lazy(() => import("./views/ProductDetailPage").then(m => ({ default: m.ProductDetailPage })));
-const CartPage = lazy(() => import("./views/CartPage").then(m => ({ default: m.CartPage })));
-const CheckoutPage = lazy(() => import("./views/CheckoutPage").then(m => ({ default: m.CheckoutPage })));
-const LoginPage = lazy(() => import("./views/LoginPage").then(m => ({ default: m.LoginPage })));
-const RegisterPage = lazy(() => import("./views/RegisterPage").then(m => ({ default: m.RegisterPage })));
-const ProfilePage = lazy(() => import("./views/ProfilePage").then(m => ({ default: m.ProfilePage })));
-const ForgotPasswordPage = lazy(() => import("./views/ForgotPasswordPage").then(m => ({ default: m.ForgotPasswordPage })));
-const ResetPasswordPage = lazy(() => import("./views/ResetPasswordPage").then(m => ({ default: m.ResetPasswordPage })));
-const VerifyEmailPage = lazy(() => import("./views/VerifyEmailPage").then(m => ({ default: m.VerifyEmailPage })));
-const NotFoundPage = lazy(() => import("./views/NotFoundPage").then(m => ({ default: m.NotFoundPage })));
-const AdminApp = lazy(() => import("./admin/AdminApp").then(m => ({ default: m.default })));
-const USPSTestPage = lazy(() => import("./views/USPSTestPage").then(m => ({ default: m.USPSTestPage })));
+const HomePage = lazy(() =>
+  import("./views/HomePage").then((m) => ({ default: m.HomePage }))
+);
+const ShopPage = lazy(() =>
+  import("./views/ShopPage").then((m) => ({ default: m.ShopPage }))
+);
+const ProductsPage = lazy(() =>
+  import("./views/ProductsPage").then((m) => ({ default: m.default }))
+);
+const ProductDetailPage = lazy(() =>
+  import("./views/ProductDetailPage").then((m) => ({
+    default: m.ProductDetailPage,
+  }))
+);
+const CartPage = lazy(() =>
+  import("./views/CartPage").then((m) => ({ default: m.CartPage }))
+);
+const CheckoutPage = lazy(() =>
+  import("./views/CheckoutPage").then((m) => ({ default: m.CheckoutPage }))
+);
+const LoginPage = lazy(() =>
+  import("./views/LoginPage").then((m) => ({ default: m.LoginPage }))
+);
+const RegisterPage = lazy(() =>
+  import("./views/RegisterPage").then((m) => ({ default: m.RegisterPage }))
+);
+const ProfilePage = lazy(() =>
+  import("./views/ProfilePage").then((m) => ({ default: m.ProfilePage }))
+);
+const ForgotPasswordPage = lazy(() =>
+  import("./views/ForgotPasswordPage").then((m) => ({
+    default: m.ForgotPasswordPage,
+  }))
+);
+const ResetPasswordPage = lazy(() =>
+  import("./views/ResetPasswordPage").then((m) => ({
+    default: m.ResetPasswordPage,
+  }))
+);
+const VerifyEmailPage = lazy(() =>
+  import("./views/VerifyEmailPage").then((m) => ({
+    default: m.VerifyEmailPage,
+  }))
+);
+const NotFoundPage = lazy(() =>
+  import("./views/NotFoundPage").then((m) => ({ default: m.NotFoundPage }))
+);
+const AdminApp = lazy(() =>
+  import("./admin/AdminApp").then((m) => ({ default: m.default }))
+);
 
 // Loading component
 const PageLoader = () => (
@@ -37,8 +78,8 @@ const PageLoader = () => (
   </div>
 );
 
-if (process.env.NODE_ENV === 'development') {
-  import("./utils/demo").catch(() => { });
+if (process.env.NODE_ENV === "development") {
+  import("./utils/demo").catch(() => {});
 }
 
 export default function AppRoot() {
@@ -65,27 +106,131 @@ export default function AppRoot() {
                 <ToastContainer />
                 <Routes>
                   <Route element={<HomepageLayout />}>
-                    <Route path="/" element={<Suspense fallback={<PageLoader />}><HomePage /></Suspense>} />
+                    <Route
+                      path="/"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <HomePage />
+                        </Suspense>
+                      }
+                    />
                   </Route>
 
                   <Route element={<DefaultLayout />}>
-                    <Route path="/shop" element={<Suspense fallback={<PageLoader />}><ShopPage /></Suspense>} />
-                    <Route path="/products" element={<Suspense fallback={<PageLoader />}><ProductsPage /></Suspense>} />
-                    <Route path="/product/:id" element={<Suspense fallback={<PageLoader />}><ProductDetailPage /></Suspense>} />
-                    <Route path="/cart" element={<Suspense fallback={<PageLoader />}><CartPage /></Suspense>} />
-                    <Route path="/checkout" element={<Suspense fallback={<PageLoader />}><CheckoutPage /></Suspense>} />
-                    <Route path="/login" element={<Suspense fallback={<PageLoader />}><LoginPage /></Suspense>} />
-                    <Route path="/register" element={<Suspense fallback={<PageLoader />}><RegisterPage /></Suspense>} />
-                    <Route path="/profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />
-                    <Route path="/forgot-password" element={<Suspense fallback={<PageLoader />}><ForgotPasswordPage /></Suspense>} />
-                    <Route path="/reset-password" element={<Suspense fallback={<PageLoader />}><ResetPasswordPage /></Suspense>} />
-                    <Route path="/verify-email" element={<Suspense fallback={<PageLoader />}><VerifyEmailPage /></Suspense>} />
-                    <Route path="/usps-test" element={<Suspense fallback={<PageLoader />}><USPSTestPage /></Suspense>} />
-                    <Route path="/404" element={<Suspense fallback={<PageLoader />}><NotFoundPage /></Suspense>} />
+                    <Route
+                      path="/shop"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <ShopPage />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="/products"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <ProductsPage />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="/product/:id"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <ProductDetailPage />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="/cart"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <CartPage />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="/checkout"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <CheckoutPage />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="/login"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <LoginPage />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="/register"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <RegisterPage />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="/profile"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <ProfilePage />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="/forgot-password"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <ForgotPasswordPage />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="/reset-password"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <ResetPasswordPage />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="/verify-email"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <VerifyEmailPage />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="/404"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <NotFoundPage />
+                        </Suspense>
+                      }
+                    />
                   </Route>
 
-                  <Route path="/admin/*" element={<Suspense fallback={<PageLoader />}><AdminApp /></Suspense>} />
-                  <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFoundPage /></Suspense>} />
+                  <Route
+                    path="/admin/*"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <AdminApp />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="*"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <NotFoundPage />
+                      </Suspense>
+                    }
+                  />
                 </Routes>
               </BrowserRouter>
             </CartProvider>

@@ -1,10 +1,11 @@
-import { useState, useEffect, FormEvent } from "react";
+import { useState, useEffect, FormEvent, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useCart, type CartItem } from "../../context/CartContext";
 import { useToast } from "../../context/ToastContext";
 import { useI18n } from "../../context/I18nContext";
 import { formatCurrency } from "../../utils/currency";
 import { ApiService } from "../../services/api";
+import { API_CONFIG } from "../../config/api";
 import { getUserData } from "../../utils/auth";
 import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
 import CountryPhoneInput from "react-country-phone-input";
@@ -27,7 +28,20 @@ type InputProps = {
   autoComplete?: string;
 };
 
-const Input = ({ label, type = "text", className, name, value, onChange, required = false, pattern, minLength, maxLength, placeholder, autoComplete }: InputProps) => (
+const Input = ({
+  label,
+  type = "text",
+  className,
+  name,
+  value,
+  onChange,
+  required = false,
+  pattern,
+  minLength,
+  maxLength,
+  placeholder,
+  autoComplete,
+}: InputProps) => (
   <label className={`${styles.inputLabel} ${className ?? ""}`.trim()}>
     {label}
     <input
@@ -46,7 +60,6 @@ const Input = ({ label, type = "text", className, name, value, onChange, require
   </label>
 );
 
-
 interface FormData {
   firstName: string;
   lastName: string;
@@ -60,7 +73,7 @@ interface FormData {
   zipCode: string;
   country: string;
   notes: string;
-  paymentMethod: 'credit_card' | 'bank_transfer';
+  paymentMethod: "credit_card" | "bank_transfer";
   shippingMethod: string;
   cardName: string;
   cardNumber: string;
@@ -79,13 +92,47 @@ interface FormData {
   billingPhone: string;
 }
 
-const SHIPPING_METHODS = [
-  { id: 'usps_ground', name: 'USPS Ground Advantage', price: 7.23, time: '3 business days' },
-  { id: 'usps_priority', name: 'USPS Priority Mail', price: 8.64, time: '2 business days' },
-  { id: 'usps_express', name: 'USPS Priority Mail Express', price: 58.35, time: '1 business day' },
+// Shipping rate type from Shippo API
+interface ShippingRate {
+  id: string;
+  name: string;
+  price: number;
+  time: string;
+  provider?: string;
+  service?: string;
+  estimatedDays?: number;
+  fallback?: boolean;
+}
+
+// Fallback rates if API fails
+const FALLBACK_SHIPPING_RATES: ShippingRate[] = [
+  {
+    id: "fallback_ground",
+    name: "USPS Ground Advantage",
+    price: 7.49,
+    time: "3-5 business days",
+    provider: "USPS",
+    fallback: true,
+  },
+  {
+    id: "fallback_priority",
+    name: "USPS Priority Mail",
+    price: 9.99,
+    time: "1-3 business days",
+    provider: "USPS",
+    fallback: true,
+  },
+  {
+    id: "fallback_express",
+    name: "USPS Priority Mail Express",
+    price: 29.99,
+    time: "1-2 business days",
+    provider: "USPS",
+    fallback: true,
+  },
 ];
 
-const DEFAULT_SHIPPING_METHOD = SHIPPING_METHODS[0].id;
+const DEFAULT_SHIPPING_METHOD = "fallback_ground";
 const SUPPORTED_COUNTRIES = ["US", "CA"];
 
 const digitsOnly = (value: string) => value.replace(/\D/g, "");
@@ -139,7 +186,8 @@ export const CheckoutPage = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
-  const locationState = (location.state ?? null) as CheckoutLocationState | null;
+  const locationState = (location.state ??
+    null) as CheckoutLocationState | null;
   const directPurchaseItem = locationState?.directPurchase;
   const items = directPurchaseItem ? [directPurchaseItem] : cartItems;
   const total = directPurchaseItem
@@ -148,40 +196,53 @@ export const CheckoutPage = () => {
   const isDirectPurchase = Boolean(directPurchaseItem);
 
   const [formData, setFormData] = useState<FormData>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    company: '',
-    streetAddress: '',
-    apartment: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: 'United States',
-    notes: '',
-    paymentMethod: 'credit_card',
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    company: "",
+    streetAddress: "",
+    apartment: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "United States",
+    notes: "",
+    paymentMethod: "credit_card",
     shippingMethod: DEFAULT_SHIPPING_METHOD,
-    cardName: '',
-    cardNumber: '',
-    cardExpiry: '',
-    cardCvc: '',
+    cardName: "",
+    cardNumber: "",
+    cardExpiry: "",
+    cardCvc: "",
     billingSameAsShipping: true,
-    billingFirstName: '',
-    billingLastName: '',
-    billingCompany: '',
-    billingStreetAddress: '',
-    billingApartment: '',
-    billingCity: '',
-    billingState: '',
-    billingZipCode: '',
-    billingCountry: 'United States',
-    billingPhone: ''
+    billingFirstName: "",
+    billingLastName: "",
+    billingCompany: "",
+    billingStreetAddress: "",
+    billingApartment: "",
+    billingCity: "",
+    billingState: "",
+    billingZipCode: "",
+    billingCountry: "United States",
+    billingPhone: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Shipping rates state (fetched from Shippo API)
+  const [shippingRates, setShippingRates] = useState<ShippingRate[]>([]);
+  const [isLoadingShipping, setIsLoadingShipping] = useState(false);
+  const [shippingError, setShippingError] = useState<string | null>(null);
+
+  // Check if address is complete for shipping calculation
+  const isAddressComplete = Boolean(
+    formData.city.trim() &&
+      formData.state.trim() &&
+      formData.zipCode.trim() &&
+      formData.zipCode.length >= 5
+  );
 
   // Load user profile on mount
   useEffect(() => {
@@ -191,35 +252,45 @@ export const CheckoutPage = () => {
       const hasToken = ApiService.isAuthenticated();
 
       try {
-        const profile = hasToken ? await ApiService.getProfile() : getUserData();
+        const profile = hasToken
+          ? await ApiService.getProfile()
+          : getUserData();
 
         // Parse name into first/last name
-        const nameParts = ((profile && profile.name) || '').trim().split(' ').filter(Boolean);
-        const firstName = nameParts[0] || '';
-        const lastName = nameParts.slice(1).join(' ') || '';
+        const nameParts = ((profile && profile.name) || "")
+          .trim()
+          .split(" ")
+          .filter(Boolean);
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.slice(1).join(" ") || "";
 
         // Parse address into components
-        const rawAddress = (profile && profile.address) || '';
-        const addressParts = rawAddress.split(',').map(s => s.trim()).filter(Boolean);
-        let streetAddress = addressParts[0] || '';
-        const city = addressParts[1] || '';
-        let state = '';
-        let zipCode = '';
-        let detectedCountry = '';
+        const rawAddress = (profile && profile.address) || "";
+        const addressParts = rawAddress
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        let streetAddress = addressParts[0] || "";
+        const city = addressParts[1] || "";
+        let state = "";
+        let zipCode = "";
+        let detectedCountry = "";
         if (addressParts.length >= 3) {
-          const stateZip = addressParts[2] || '';
-          const stateZipMatch = stateZip.match(/^([A-Z]{2})\s+(\d{5})(?:-\d{4})?$/i);
-          state = stateZipMatch ? stateZipMatch[1].toUpperCase() : '';
-          zipCode = stateZipMatch ? stateZipMatch[2] : '';
+          const stateZip = addressParts[2] || "";
+          const stateZipMatch = stateZip.match(
+            /^([A-Z]{2})\s+(\d{5})(?:-\d{4})?$/i
+          );
+          state = stateZipMatch ? stateZipMatch[1].toUpperCase() : "";
+          zipCode = stateZipMatch ? stateZipMatch[2] : "";
           if (addressParts.length >= 4) {
-            detectedCountry = addressParts[addressParts.length - 1] || '';
+            detectedCountry = addressParts[addressParts.length - 1] || "";
           }
         } else if (rawAddress && (!streetAddress || !city)) {
           // Fallback: if cannot parse, put full address into streetAddress
           streetAddress = rawAddress;
         }
 
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           firstName,
           lastName,
@@ -229,10 +300,10 @@ export const CheckoutPage = () => {
           city: city || prev.city,
           state: state || prev.state,
           zipCode: zipCode || prev.zipCode,
-          country: detectedCountry || prev.country || 'United States',
+          country: detectedCountry || prev.country || "United States",
         }));
       } catch (err: unknown) {
-        console.error('Failed to load profile:', err);
+        console.error("Failed to load profile:", err);
         // Don't show error to user - they can still fill the form manually
       } finally {
         setIsLoadingProfile(false);
@@ -242,74 +313,187 @@ export const CheckoutPage = () => {
     loadUserProfile();
   }, []);
 
+  // Fetch shipping rates when address is complete
+  // Using a ref to track if we already fetched for this address to avoid re-fetching
+  const shippingFetchKeyRef = useRef<string>("");
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  useEffect(() => {
+    if (!isAddressComplete) {
+      // Reset shipping when address becomes incomplete
+      setShippingRates([]);
+      setShippingError(null);
+      shippingFetchKeyRef.current = "";
+      return;
+    }
+
+    // Create a key from address to avoid re-fetching same address
+    const addressKey = `${formData.city}-${formData.state}-${formData.zipCode}`;
+    if (shippingFetchKeyRef.current === addressKey) {
+      return; // Already fetched for this address
+    }
+
+    const fetchShippingRates = async () => {
+      setIsLoadingShipping(true);
+      setShippingError(null);
+
+      try {
+        const response = await fetch(
+          `${API_CONFIG.BASE_URL}/api/shipping/calculate-rates`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              destination: {
+                city: formData.city,
+                state: formData.state,
+                zipCode: formData.zipCode,
+                streetAddress: formData.streetAddress || "123 Main St",
+              },
+              items: [{ quantity: 1, weight: 1.5 }],
+            }),
+          }
+        );
+
+        const data = await response.json();
+
+        if (data.success && data.rates && data.rates.length > 0) {
+          setShippingRates(data.rates);
+          shippingFetchKeyRef.current = addressKey;
+          // Only auto-select if no method selected yet
+          setFormData((prev) => {
+            if (
+              !prev.shippingMethod ||
+              prev.shippingMethod.startsWith("fallback")
+            ) {
+              return { ...prev, shippingMethod: data.rates[0].id };
+            }
+            // Check if current method exists in new rates
+            const exists = data.rates.some(
+              (r: ShippingRate) => r.id === prev.shippingMethod
+            );
+            if (!exists) {
+              return { ...prev, shippingMethod: data.rates[0].id };
+            }
+            return prev; // Keep current selection
+          });
+        } else {
+          // Use fallback rates
+          setShippingRates(FALLBACK_SHIPPING_RATES);
+          setShippingError("Using estimated rates");
+          shippingFetchKeyRef.current = addressKey;
+          setFormData((prev) => {
+            if (
+              !prev.shippingMethod ||
+              !prev.shippingMethod.startsWith("fallback")
+            ) {
+              return { ...prev, shippingMethod: FALLBACK_SHIPPING_RATES[0].id };
+            }
+            return prev;
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch shipping rates:", err);
+        setShippingRates(FALLBACK_SHIPPING_RATES);
+        setShippingError("Could not fetch live rates. Using estimates.");
+        shippingFetchKeyRef.current = addressKey;
+        setFormData((prev) => {
+          if (
+            !prev.shippingMethod ||
+            !prev.shippingMethod.startsWith("fallback")
+          ) {
+            return { ...prev, shippingMethod: FALLBACK_SHIPPING_RATES[0].id };
+          }
+          return prev;
+        });
+      } finally {
+        setIsLoadingShipping(false);
+      }
+    };
+
+    // Debounce to avoid too many API calls
+    const timer = setTimeout(fetchShippingRates, 600);
+    return () => clearTimeout(timer);
+    // Only depend on address fields, not items or shippingMethod
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAddressComplete, formData.city, formData.state, formData.zipCode]);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
 
     let sanitizedValue = value;
 
     // Auto-format and sanitize based on field type
-    if (name === 'state' || name === 'billingState') {
+    if (name === "state" || name === "billingState") {
       // Auto uppercase state code and limit to 2 chars
-      sanitizedValue = value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2);
-    } else if (name === 'zipCode' || name === 'billingZipCode') {
+      sanitizedValue = value
+        .toUpperCase()
+        .replace(/[^A-Z]/g, "")
+        .slice(0, 2);
+    } else if (name === "zipCode" || name === "billingZipCode") {
       // Only allow digits and hyphen for ZIP
-      sanitizedValue = value.replace(/[^\d-]/g, '').slice(0, 10);
+      sanitizedValue = value.replace(/[^\d-]/g, "").slice(0, 10);
     } else if (
-      name === 'firstName' ||
-      name === 'lastName' ||
-      name === 'city' ||
-      name === 'billingFirstName' ||
-      name === 'billingLastName' ||
-      name === 'billingCity'
+      name === "firstName" ||
+      name === "lastName" ||
+      name === "city" ||
+      name === "billingFirstName" ||
+      name === "billingLastName" ||
+      name === "billingCity"
     ) {
       // Prevent numbers and special chars in names
-      sanitizedValue = value.replace(/[^a-zA-Z\s'-]/g, '');
-    } else if (name === 'email') {
+      sanitizedValue = value.replace(/[^a-zA-Z\s'-]/g, "");
+    } else if (name === "email") {
       // No spaces in email
-      sanitizedValue = value.replace(/\s/g, '').toLowerCase();
-    } else if (name === 'cardNumber') {
+      sanitizedValue = value.replace(/\s/g, "").toLowerCase();
+    } else if (name === "cardNumber") {
       sanitizedValue = formatCardNumber(value);
-    } else if (name === 'cardExpiry') {
+    } else if (name === "cardExpiry") {
       sanitizedValue = formatExpiry(value);
-    } else if (name === 'cardCvc') {
+    } else if (name === "cardCvc") {
       sanitizedValue = digitsOnly(value).slice(0, 4);
-    } else if (name === 'cardName') {
-      sanitizedValue = value.replace(/[^a-zA-Z\s'-]/g, '').toUpperCase();
+    } else if (name === "cardName") {
+      sanitizedValue = value.replace(/[^a-zA-Z\s'-]/g, "").toUpperCase();
     }
 
-    setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
+    setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
     // Clear error when user starts typing
     if (error) setError(null);
   };
 
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+  const handleSelectChange = (
+    e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value as FormData['paymentMethod'] }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value as FormData["paymentMethod"],
+    }));
     if (error) setError(null);
   };
 
   const handleCountryChange = (country: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       country,
-      state: ''
+      state: "",
     }));
     if (error) setError(null);
   };
 
   const handleRegionChange = (region: string) => {
-    const normalizedRegion = region ? region.toUpperCase() : '';
-    setFormData(prev => ({ ...prev, state: normalizedRegion }));
+    const normalizedRegion = region ? region.toUpperCase() : "";
+    setFormData((prev) => ({ ...prev, state: normalizedRegion }));
     if (error) setError(null);
   };
 
   const handleShippingChange = (methodId: string) => {
-    setFormData(prev => ({ ...prev, shippingMethod: methodId }));
+    setFormData((prev) => ({ ...prev, shippingMethod: methodId }));
   };
 
   const handleBillingToggle = () => {
-    setFormData(prev => {
+    setFormData((prev) => {
       const nextValue = !prev.billingSameAsShipping;
       if (nextValue) {
         return {
@@ -324,7 +508,7 @@ export const CheckoutPage = () => {
           billingState: prev.state,
           billingZipCode: prev.zipCode,
           billingCountry: prev.country,
-          billingPhone: prev.phone
+          billingPhone: prev.phone,
         };
       }
 
@@ -333,34 +517,40 @@ export const CheckoutPage = () => {
   };
 
   const handleBillingCountryChange = (country: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       billingCountry: country,
-      billingState: ''
+      billingState: "",
     }));
     if (error) setError(null);
   };
 
   const handleBillingRegionChange = (region: string) => {
-    const normalizedRegion = region ? region.toUpperCase() : '';
-    setFormData(prev => ({ ...prev, billingState: normalizedRegion }));
+    const normalizedRegion = region ? region.toUpperCase() : "";
+    setFormData((prev) => ({ ...prev, billingState: normalizedRegion }));
     if (error) setError(null);
   };
 
-  // Calculate shipping cost
+  // Calculate shipping cost from dynamic rates
   const getShippingCost = () => {
-    const method = SHIPPING_METHODS.find(m => m.id === formData.shippingMethod);
+    const rates =
+      shippingRates.length > 0 ? shippingRates : FALLBACK_SHIPPING_RATES;
+    const method = rates.find((m) => m.id === formData.shippingMethod);
     return method ? method.price : 0;
   };
 
   const shippingCost = getShippingCost();
   const finalTotal = total + shippingCost;
-  const shippingOptions = SHIPPING_METHODS;
+  // Use dynamic shipping rates (from API or fallback)
+  const shippingOptions = shippingRates.length > 0 ? shippingRates : [];
 
   const sanitizePhoneNumber = (value: string) => value.replace(/[^\d+]/g, "");
 
-  const handlePhoneChange = (field: "phone" | "billingPhone", value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handlePhoneChange = (
+    field: "phone" | "billingPhone",
+    value: string
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (error) setError(null);
   };
 
@@ -425,7 +615,10 @@ export const CheckoutPage = () => {
         setError(t("checkout.state.required"));
         setIsSubmitting(false);
         return;
-      } else if (formData.country === 'United States' && !stateRegex.test(formData.state)) {
+      } else if (
+        formData.country === "United States" &&
+        !stateRegex.test(formData.state)
+      ) {
         setError(t("checkout.state.invalid"));
         setIsSubmitting(false);
         return;
@@ -443,7 +636,8 @@ export const CheckoutPage = () => {
       const shippingStreetLine = formData.apartment
         ? `${formData.streetAddress}, ${formData.apartment}`
         : formData.streetAddress;
-      const shippingAddress = `${shippingStreetLine}, ${formData.city}, ${formData.state} ${formData.zipCode}, ${formData.country}`.trim();
+      const shippingAddress =
+        `${shippingStreetLine}, ${formData.city}, ${formData.state} ${formData.zipCode}, ${formData.country}`.trim();
 
       const billingData = formData.billingSameAsShipping
         ? {
@@ -472,16 +666,17 @@ export const CheckoutPage = () => {
           };
 
       if (!formData.billingSameAsShipping) {
-        const requiredBillingFields: Array<[keyof typeof billingData, string]> = [
-          ["billingFirstName", t("checkout.first.name")],
-          ["billingLastName", t("checkout.last.name")],
-          ["billingStreetAddress", t("checkout.address.search")],
-          ["billingCity", t("checkout.city")],
-          ["billingState", t("checkout.state")],
-          ["billingZipCode", t("checkout.zip")],
-          ["billingCountry", t("checkout.country")],
-          ["billingPhone", t("checkout.phone")],
-        ];
+        const requiredBillingFields: Array<[keyof typeof billingData, string]> =
+          [
+            ["billingFirstName", t("checkout.first.name")],
+            ["billingLastName", t("checkout.last.name")],
+            ["billingStreetAddress", t("checkout.address.search")],
+            ["billingCity", t("checkout.city")],
+            ["billingState", t("checkout.state")],
+            ["billingZipCode", t("checkout.zip")],
+            ["billingCountry", t("checkout.country")],
+            ["billingPhone", t("checkout.phone")],
+          ];
 
         for (const [field, label] of requiredBillingFields) {
           if (!billingData[field]?.trim()) {
@@ -491,7 +686,9 @@ export const CheckoutPage = () => {
           }
         }
 
-        const billingPhoneNumeric = sanitizePhoneNumber(billingData.billingPhone || "");
+        const billingPhoneNumeric = sanitizePhoneNumber(
+          billingData.billingPhone || ""
+        );
         if (billingPhoneNumeric.length < 8) {
           setError(t("checkout.billing.phone.invalid"));
           setIsSubmitting(false);
@@ -499,39 +696,43 @@ export const CheckoutPage = () => {
         }
       }
 
-      if (formData.paymentMethod === 'credit_card') {
+      if (formData.paymentMethod === "credit_card") {
         const cardNameTrimmed = formData.cardName.trim();
         const cardDigits = digitsOnly(formData.cardNumber);
         const expiryInfo = parseCardExpiry(formData.cardExpiry.trim());
         const cvcDigits = digitsOnly(formData.cardCvc);
 
         if (cardNameTrimmed.length < 2) {
-          setError('Please enter the name printed on your card.');
+          setError("Please enter the name printed on your card.");
           setIsSubmitting(false);
           return;
         }
 
-        if (cardDigits.length < 13 || cardDigits.length > 19 || !passesLuhnCheck(cardDigits)) {
-          setError('Please enter a valid card number (13‑19 digits).');
+        if (
+          cardDigits.length < 13 ||
+          cardDigits.length > 19 ||
+          !passesLuhnCheck(cardDigits)
+        ) {
+          setError("Please enter a valid card number (13‑19 digits).");
           setIsSubmitting(false);
           return;
         }
 
         if (!expiryInfo) {
-          setError('Expiration date must follow MM / YY format.');
+          setError("Expiration date must follow MM / YY format.");
           setIsSubmitting(false);
           return;
         }
 
         const now = new Date();
         if (expiryInfo.expiryDate < now) {
-          setError('This card appears to be expired.');
+          setError("This card appears to be expired.");
           setIsSubmitting(false);
           return;
         }
 
         if (!/^\d{3,4}$/.test(cvcDigits)) {
-          setError('Security code must be 3 or 4 digits.');
+          setError("Security code must be 3 or 4 digits.");
           setIsSubmitting(false);
           return;
         }
@@ -540,11 +741,12 @@ export const CheckoutPage = () => {
       const billingStreetLine = billingData.billingApartment
         ? `${billingData.billingStreetAddress}, ${billingData.billingApartment}`
         : billingData.billingStreetAddress;
-      const billingAddress = `${billingStreetLine}, ${billingData.billingCity}, ${billingData.billingState} ${billingData.billingZipCode}, ${billingData.billingCountry}`.trim();
+      const billingAddress =
+        `${billingStreetLine}, ${billingData.billingCity}, ${billingData.billingState} ${billingData.billingZipCode}, ${billingData.billingCountry}`.trim();
 
       // 🔍 DEBUG: Log raw cart items first
-      console.log('🛒 ========== CART ITEMS DEBUG ==========');
-      console.log('Total items in cart:', items.length);
+      console.log("🛒 ========== CART ITEMS DEBUG ==========");
+      console.log("Total items in cart:", items.length);
       items.forEach((item, index) => {
         console.log(`\n📦 Cart Item #${index + 1}:`, {
           id: item.id,
@@ -555,10 +757,10 @@ export const CheckoutPage = () => {
           color: item.color,
           size: item.size,
           price: item.price,
-          fullItem: item
+          fullItem: item,
         });
       });
-      console.log('=========================================\n');
+      console.log("=========================================\n");
 
       // Build items with products_id (PID) or product_slug fallback
       const DEFAULT_SIZE_LABEL = "One Size";
@@ -580,12 +782,16 @@ export const CheckoutPage = () => {
           quantity: item.quantity,
           color: item.color,
           size: item.size,
-          name: item.name
+          name: item.name,
         });
 
         // Validate required fields
         if (!item.quantity || item.quantity <= 0) {
-          throw new Error(`Item #${index + 1} (${item.name}) has invalid quantity: ${item.quantity}`);
+          throw new Error(
+            `Item #${index + 1} (${item.name}) has invalid quantity: ${
+              item.quantity
+            }`
+          );
         }
 
         if (!item.color) {
@@ -600,7 +806,7 @@ export const CheckoutPage = () => {
         if (!item.size) {
           console.warn(
             `[Checkout] Item ${item.name} has no size. Using fallback "${resolvedSize}".`,
-            item,
+            item
           );
         }
 
@@ -611,7 +817,7 @@ export const CheckoutPage = () => {
         };
 
         // Priority 1: Use pid (products_id) from cart item if available
-        if (item.pid && item.pid.trim() !== '') {
+        if (item.pid && item.pid.trim() !== "") {
           const result = { products_id: String(item.pid), ...base };
           console.log(`  ✅ Using products_id: ${item.pid}`, result);
           return result;
@@ -627,7 +833,7 @@ export const CheckoutPage = () => {
           }
 
           // Priority 3: Fallback: use product_slug so backend can resolve
-          if (item.productId.trim() !== '') {
+          if (item.productId.trim() !== "") {
             const result = { product_slug: item.productId, ...base };
             console.log(`  ✅ Using product_slug: ${item.productId}`, result);
             return result;
@@ -635,12 +841,19 @@ export const CheckoutPage = () => {
         }
 
         // If we get here, the item has no valid identifier
-        const errorMsg = `Item #${index + 1} (${item.name}) has no valid product identifier. productId: "${item.productId}", pid: "${item.pid}"`;
+        const errorMsg = `Item #${index + 1} (${
+          item.name
+        }) has no valid product identifier. productId: "${
+          item.productId
+        }", pid: "${item.pid}"`;
         console.error(`  ❌ ${errorMsg}`);
         throw new Error(errorMsg);
       });
 
-      console.log('\n📋 Final mapped items:', JSON.stringify(mappedItems, null, 2));
+      console.log(
+        "\n📋 Final mapped items:",
+        JSON.stringify(mappedItems, null, 2)
+      );
 
       // Final validation: ensure all items have at least one identifier
       mappedItems.forEach((item, index) => {
@@ -649,11 +862,17 @@ export const CheckoutPage = () => {
         const hasProductSlug = !!item.product_slug;
 
         if (!hasProductId && !hasProductsId && !hasProductSlug) {
-          throw new Error(`Mapped item #${index + 1} is missing all product identifiers: ${JSON.stringify(item)}`);
+          throw new Error(
+            `Mapped item #${
+              index + 1
+            } is missing all product identifiers: ${JSON.stringify(item)}`
+          );
         }
 
         if (!item.quantity || item.quantity <= 0) {
-          throw new Error(`Mapped item #${index + 1} has invalid quantity: ${item.quantity}`);
+          throw new Error(
+            `Mapped item #${index + 1} has invalid quantity: ${item.quantity}`
+          );
         }
       });
 
@@ -689,39 +908,44 @@ export const CheckoutPage = () => {
       };
 
       // 🔍 DEBUG: Log complete order data being sent to API
-      console.log('\n📦 ========== ORDER DATA TO BE SENT ==========');
+      console.log("\n📦 ========== ORDER DATA TO BE SENT ==========");
       console.log(JSON.stringify(orderData, null, 2));
-      console.log('=============================================\n');
+      console.log("=============================================\n");
 
       // Create order via API
-      const response = await ApiService.createOrder(orderData) as { order_id?: string; id?: string | number };
+      const response = (await ApiService.createOrder(orderData)) as {
+        order_id?: string;
+        id?: string | number;
+      };
 
       // 🔍 DEBUG: Log API response
-      console.log('✅ API Response:', response);
+      console.log("✅ API Response:", response);
 
       // Show success toast
-      const orderId = response.order_id || response.id || 'placed';
+      const orderId = response.order_id || response.id || "placed";
       showToast(
         t("checkout.order.success").replace("{orderId}", String(orderId)),
-        'success'
+        "success"
       );
 
       // Clear cart on success only when checking out cart contents
       if (!isDirectPurchase) {
-      clearCart();
+        clearCart();
       }
 
       // Navigate to order history
-      navigate('/profile?tab=orders');
-
+      navigate("/profile?tab=orders");
     } catch (err: unknown) {
-      console.error('❌ Order creation failed:', err);
-      console.error('Error type:', err instanceof Error ? err.constructor.name : typeof err);
-      console.error('Error details:', {
+      console.error("❌ Order creation failed:", err);
+      console.error(
+        "Error type:",
+        err instanceof Error ? err.constructor.name : typeof err
+      );
+      console.error("Error details:", {
         name: err instanceof Error ? err.name : undefined,
         message: err instanceof Error ? err.message : String(err),
         stack: err instanceof Error ? err.stack : undefined,
-        fullError: err
+        fullError: err,
       });
 
       // Extract error message from various error formats
@@ -729,11 +953,11 @@ export const CheckoutPage = () => {
 
       if (err instanceof Error) {
         message = err.message || message;
-      } else if (typeof err === 'object' && err !== null) {
+      } else if (typeof err === "object" && err !== null) {
         // Check for ApiError format
-        if ('message' in err) {
+        if ("message" in err) {
           message = String((err as { message?: unknown }).message) || message;
-        } else if ('error' in err) {
+        } else if ("error" in err) {
           message = String((err as { error?: unknown }).error) || message;
         }
       }
@@ -753,27 +977,31 @@ export const CheckoutPage = () => {
         </div>
 
         {error && (
-          <div style={{
-            padding: '1rem',
-            marginBottom: '1.5rem',
-            backgroundColor: '#fee',
-            border: '1px solid #fcc',
-            borderRadius: '4px',
-            color: '#c00'
-          }}>
+          <div
+            style={{
+              padding: "1rem",
+              marginBottom: "1.5rem",
+              backgroundColor: "#fee",
+              border: "1px solid #fcc",
+              borderRadius: "4px",
+              color: "#c00",
+            }}
+          >
             {error}
           </div>
         )}
 
         {isLoadingProfile && (
-          <div style={{
-            padding: '1rem',
-            marginBottom: '1.5rem',
-            backgroundColor: '#f0f8ff',
-            border: '1px solid #b0d4f1',
-            borderRadius: '4px',
-            color: '#1e5a8e'
-          }}>
+          <div
+            style={{
+              padding: "1rem",
+              marginBottom: "1.5rem",
+              backgroundColor: "#f0f8ff",
+              border: "1px solid #b0d4f1",
+              borderRadius: "4px",
+              color: "#1e5a8e",
+            }}
+          >
             {t("checkout.loading.profile")}
           </div>
         )}
@@ -781,7 +1009,9 @@ export const CheckoutPage = () => {
         <div className={styles.grid}>
           <form className={styles.form} onSubmit={handleSubmit}>
             <div>
-              <h2 className={styles.clientInfoTitle}>{t("checkout.client.info")}</h2>
+              <h2 className={styles.clientInfoTitle}>
+                {t("checkout.client.info")}
+              </h2>
               <div className={styles.fieldGrid}>
                 <Input
                   label={t("checkout.first.name")}
@@ -816,8 +1046,18 @@ export const CheckoutPage = () => {
                 <label className={`${styles.inputLabel} ${styles.fullWidth}`}>
                   {t("checkout.address.search")}
                   <div className={styles.addressSearchField}>
-                    <span className={styles.addressSearchIcon} aria-hidden="true">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <span
+                      className={styles.addressSearchIcon}
+                      aria-hidden="true"
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      >
                         <circle cx="11" cy="11" r="7" />
                         <line x1="16.5" y1="16.5" x2="22" y2="22" />
                       </svg>
@@ -856,32 +1096,32 @@ export const CheckoutPage = () => {
                 <label className={styles.inputLabel}>
                   {t("checkout.country")}
                   <div className={styles.selectWrapper}>
-                  <CountryDropdown
-                    value={formData.country}
-                    onChange={handleCountryChange}
+                    <CountryDropdown
+                      value={formData.country}
+                      onChange={handleCountryChange}
                       whitelist={SUPPORTED_COUNTRIES}
                       className={styles.selectField}
-                    defaultOptionLabel={t("checkout.country.placeholder")}
-                    valueType="full"
-                    name="country"
-                    aria-label={t("checkout.country")}
-                  />
+                      defaultOptionLabel={t("checkout.country.placeholder")}
+                      valueType="full"
+                      name="country"
+                      aria-label={t("checkout.country")}
+                    />
                   </div>
                 </label>
                 <label className={styles.inputLabel}>
                   {t("checkout.state")}
                   <div className={styles.selectWrapper}>
-                  <RegionDropdown
-                    country={formData.country}
-                    value={formData.state}
-                    onChange={handleRegionChange}
-                    valueType="short"
+                    <RegionDropdown
+                      country={formData.country}
+                      value={formData.state}
+                      onChange={handleRegionChange}
+                      valueType="short"
                       className={styles.selectField}
-                    blankOptionLabel={t("checkout.state.placeholder")}
-                    disableWhenEmpty
-                    name="state"
-                    aria-label={t("checkout.state")}
-                  />
+                      blankOptionLabel={t("checkout.state.placeholder")}
+                      disableWhenEmpty
+                      name="state"
+                      aria-label={t("checkout.state")}
+                    />
                   </div>
                 </label>
                 <Input
@@ -899,7 +1139,9 @@ export const CheckoutPage = () => {
                   <div className={styles.phoneInputWrapper}>
                     <CountryPhoneInput
                       value={formData.phone}
-                      onChange={(value: string) => handlePhoneChange("phone", value)}
+                      onChange={(value: string) =>
+                        handlePhoneChange("phone", value)
+                      }
                       placeholder={t("checkout.phone.placeholder")}
                       enableSearch
                       inputProps={{ name: "phone", autoComplete: "tel" }}
@@ -920,37 +1162,175 @@ export const CheckoutPage = () => {
               </div>
             </div>
 
-            {/* Shipping Method Section */}
+            {/* Shipping Method Section - Only show when address is complete */}
             <div>
-              <h2 className={styles.sectionTitle}>{t("checkout.shipping.method")}</h2>
-              <div className={styles.shippingOptions}>
-                {shippingOptions.map((method) => (
-                  <label
-                    key={method.id}
-                    className={`${styles.shippingOption} ${formData.shippingMethod === method.id ? styles.shippingOptionActive : ''}`}
+              <h2 className={styles.sectionTitle}>
+                {t("checkout.shipping.method")}
+              </h2>
+
+              {/* Show prompt when address incomplete */}
+              {!isAddressComplete && (
+                <div
+                  style={{
+                    padding: "1rem",
+                    backgroundColor: "#f8f9fa",
+                    border: "1px solid #e9ecef",
+                    borderRadius: "8px",
+                    color: "#6c757d",
+                    textAlign: "center",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    <div className="flex items-center">
-                      <input
-                        type="radio"
-                        name="shippingMethod"
-                        value={method.id}
-                        checked={formData.shippingMethod === method.id}
-                        onChange={() => handleShippingChange(method.id)}
-                        className={styles.shippingRadio}
-                      />
-                      <div className={styles.shippingInfo}>
-                        <span className={styles.shippingName}>{method.name}</span>
-                        <span className={styles.shippingTime}>{method.time}</span>
-                      </div>
-                    </div>
-                    <span className={styles.shippingPrice}>{formatCurrency(method.price)}</span>
-                  </label>
-                ))}
-              </div>
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  Please fill in your city, state, and ZIP code to see shipping
+                  options
+                </div>
+              )}
+
+              {/* Show loading spinner */}
+              {isAddressComplete && isLoadingShipping && (
+                <div
+                  style={{
+                    padding: "1.5rem",
+                    backgroundColor: "#f0f8ff",
+                    border: "1px solid #b0d4f1",
+                    borderRadius: "8px",
+                    color: "#1e5a8e",
+                    textAlign: "center",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "18px",
+                      height: "18px",
+                      border: "2px solid #b0d4f1",
+                      borderTop: "2px solid #1e5a8e",
+                      borderRadius: "50%",
+                      animation: "spin 1s linear infinite",
+                    }}
+                  />
+                  Calculating shipping rates...
+                  <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+                </div>
+              )}
+
+              {/* Show error with warning */}
+              {isAddressComplete && !isLoadingShipping && shippingError && (
+                <div
+                  style={{
+                    padding: "0.5rem 1rem",
+                    marginBottom: "0.5rem",
+                    backgroundColor: "#fff3cd",
+                    border: "1px solid #ffc107",
+                    borderRadius: "6px",
+                    color: "#856404",
+                    fontSize: "0.875rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                  {shippingError}
+                </div>
+              )}
+
+              {/* Show shipping options when loaded */}
+              {isAddressComplete &&
+                !isLoadingShipping &&
+                shippingOptions.length > 0 && (
+                  <div className={styles.shippingOptions}>
+                    {shippingOptions.map((method) => (
+                      <label
+                        key={method.id}
+                        className={`${styles.shippingOption} ${
+                          formData.shippingMethod === method.id
+                            ? styles.shippingOptionActive
+                            : ""
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            name="shippingMethod"
+                            value={method.id}
+                            checked={formData.shippingMethod === method.id}
+                            onChange={() => handleShippingChange(method.id)}
+                            className={styles.shippingRadio}
+                          />
+                          <div className={styles.shippingInfo}>
+                            <span className={styles.shippingName}>
+                              {method.provider && (
+                                <span
+                                  style={{
+                                    display: "inline-block",
+                                    padding: "0.15rem 0.4rem",
+                                    marginRight: "0.5rem",
+                                    backgroundColor: "#1e40af",
+                                    color: "white",
+                                    borderRadius: "4px",
+                                    fontSize: "0.65rem",
+                                    fontWeight: 700,
+                                    textTransform: "uppercase",
+                                  }}
+                                >
+                                  {method.provider}
+                                </span>
+                              )}
+                              {method.name.replace(`${method.provider} `, "")}
+                            </span>
+                            <span className={styles.shippingTime}>
+                              {method.time}
+                            </span>
+                          </div>
+                        </div>
+                        <span className={styles.shippingPrice}>
+                          {formatCurrency(method.price)}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
             </div>
 
             <div>
-              <h2 className={styles.sectionTitle}>{t("checkout.notes.stylist")}</h2>
+              <h2 className={styles.sectionTitle}>
+                {t("checkout.notes.stylist")}
+              </h2>
               <div className={styles.notesWrapper}>
                 <textarea
                   rows={6}
@@ -964,18 +1344,29 @@ export const CheckoutPage = () => {
             </div>
 
             <div>
-              <h2 className={styles.sectionTitle}>{t("checkout.payment.method")}</h2>
+              <h2 className={styles.sectionTitle}>
+                {t("checkout.payment.method")}
+              </h2>
 
               <div className={styles.paymentGroup}>
-                <div className={`${styles.paymentOption} ${formData.paymentMethod === 'credit_card' ? styles.paymentOptionActive : ''}`}>
-                  <label htmlFor="payment-credit-card" className={styles.paymentOptionHeader}>
+                <div
+                  className={`${styles.paymentOption} ${
+                    formData.paymentMethod === "credit_card"
+                      ? styles.paymentOptionActive
+                      : ""
+                  }`}
+                >
+                  <label
+                    htmlFor="payment-credit-card"
+                    className={styles.paymentOptionHeader}
+                  >
                     <div className={styles.paymentHeaderLeft}>
                       <input
                         type="radio"
                         id="payment-credit-card"
                         name="paymentMethod"
                         value="credit_card"
-                        checked={formData.paymentMethod === 'credit_card'}
+                        checked={formData.paymentMethod === "credit_card"}
                         onChange={handleSelectChange}
                         className={styles.paymentRadio}
                       />
@@ -984,7 +1375,7 @@ export const CheckoutPage = () => {
                         <p className={styles.paymentDesc}>
                           Pay securely with Visa, Mastercard or digital wallets
                         </p>
-                    </div>
+                      </div>
                     </div>
                     <div className={styles.paymentLogos}>
                       <img
@@ -999,70 +1390,92 @@ export const CheckoutPage = () => {
                         className={styles.paymentLogo}
                         loading="lazy"
                       />
-                  </div>
+                    </div>
                   </label>
 
-                  <div className={styles.paymentBody} aria-hidden={formData.paymentMethod !== 'credit_card'}>
-                <div className={styles.ccInputGroup}>
-                  <Input
-                    label=""
-                    name="cardNumber"
-                    value={formData.cardNumber}
-                    onChange={handleInputChange}
-                    placeholder="Card number"
-                    className="w-full"
-                  />
-                  <div className={styles.ccInputIcon}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                    </svg>
-                  </div>
-                </div>
+                  <div
+                    className={styles.paymentBody}
+                    aria-hidden={formData.paymentMethod !== "credit_card"}
+                  >
+                    <div className={styles.ccInputGroup}>
+                      <Input
+                        label=""
+                        name="cardNumber"
+                        value={formData.cardNumber}
+                        onChange={handleInputChange}
+                        placeholder="Card number"
+                        className="w-full"
+                      />
+                      <div className={styles.ccInputIcon}>
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <rect
+                            x="3"
+                            y="11"
+                            width="18"
+                            height="11"
+                            rx="2"
+                            ry="2"
+                          ></rect>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                      </div>
+                    </div>
 
                     <div className={styles.paymentBodyGrid}>
-                  <Input
-                    label=""
-                    name="cardExpiry"
-                    value={formData.cardExpiry}
-                    onChange={handleInputChange}
-                    placeholder="Expiration date (MM / YY)"
-                  />
-                  <Input
-                    label=""
-                    name="cardCvc"
-                    value={formData.cardCvc}
-                    onChange={handleInputChange}
-                    placeholder="Security code"
-                  />
-                </div>
+                      <Input
+                        label=""
+                        name="cardExpiry"
+                        value={formData.cardExpiry}
+                        onChange={handleInputChange}
+                        placeholder="Expiration date (MM / YY)"
+                      />
+                      <Input
+                        label=""
+                        name="cardCvc"
+                        value={formData.cardCvc}
+                        onChange={handleInputChange}
+                        placeholder="Security code"
+                      />
+                    </div>
 
-                <Input
-                  label=""
-                  name="cardName"
-                  value={formData.cardName}
-                  onChange={handleInputChange}
-                  placeholder="Name on card"
-                />
+                    <Input
+                      label=""
+                      name="cardName"
+                      value={formData.cardName}
+                      onChange={handleInputChange}
+                      placeholder="Name on card"
+                    />
 
-                <div className={styles.billingToggle}>
-                  <input
-                    type="checkbox"
-                    id="billingSame"
-                    checked={formData.billingSameAsShipping}
-                    onChange={handleBillingToggle}
-                    className={styles.billingCheckbox}
-                  />
-                  <label htmlFor="billingSame" className={styles.billingLabel}>
-                    Use shipping address as billing address
-                  </label>
-              </div>
+                    <div className={styles.billingToggle}>
+                      <input
+                        type="checkbox"
+                        id="billingSame"
+                        checked={formData.billingSameAsShipping}
+                        onChange={handleBillingToggle}
+                        className={styles.billingCheckbox}
+                      />
+                      <label
+                        htmlFor="billingSame"
+                        className={styles.billingLabel}
+                      >
+                        Use shipping address as billing address
+                      </label>
+                    </div>
 
                     {!formData.billingSameAsShipping && (
                       <div className={styles.billingDetails} aria-live="polite">
                         <div className={styles.billingDetailsHeader}>
                           <p className={styles.billingTitle}>Billing address</p>
-                          <p className={styles.billingSubtitle}>Enter the address that matches your payment method</p>
+                          <p className={styles.billingSubtitle}>
+                            Enter the address that matches your payment method
+                          </p>
                         </div>
                         <div className={styles.fieldGrid}>
                           <Input
@@ -1090,15 +1503,27 @@ export const CheckoutPage = () => {
                             onChange={handleInputChange}
                             className={styles.fullWidth}
                             autoComplete="billing organization"
-                  />
-                          <label className={`${styles.inputLabel} ${styles.fullWidth}`}>
+                          />
+                          <label
+                            className={`${styles.inputLabel} ${styles.fullWidth}`}
+                          >
                             {t("checkout.address.search")}
                             <div className={styles.addressSearchField}>
-                              <span className={styles.addressSearchIcon} aria-hidden="true">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                              <span
+                                className={styles.addressSearchIcon}
+                                aria-hidden="true"
+                              >
+                                <svg
+                                  width="18"
+                                  height="18"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="1.5"
+                                >
                                   <circle cx="11" cy="11" r="7" />
                                   <line x1="16.5" y1="16.5" x2="22" y2="22" />
-                      </svg>
+                                </svg>
                               </span>
                               <input
                                 name="billingStreetAddress"
@@ -1106,11 +1531,13 @@ export const CheckoutPage = () => {
                                 onChange={handleInputChange}
                                 required
                                 minLength={5}
-                                placeholder={t("checkout.address.search.placeholder")}
+                                placeholder={t(
+                                  "checkout.address.search.placeholder"
+                                )}
                                 autoComplete="billing address-line1"
                                 className={styles.addressInput}
                               />
-                    </div>
+                            </div>
                           </label>
                           <Input
                             label={t("checkout.apartment")}
@@ -1139,12 +1566,16 @@ export const CheckoutPage = () => {
                                 onChange={handleBillingCountryChange}
                                 whitelist={SUPPORTED_COUNTRIES}
                                 className={styles.selectField}
-                                defaultOptionLabel={t("checkout.country.placeholder")}
+                                defaultOptionLabel={t(
+                                  "checkout.country.placeholder"
+                                )}
                                 valueType="full"
                                 name="billingCountry"
-                                aria-label={`${t("checkout.country")} (billing)`}
+                                aria-label={`${t(
+                                  "checkout.country"
+                                )} (billing)`}
                               />
-                    </div>
+                            </div>
                           </label>
                           <label className={styles.inputLabel}>
                             {t("checkout.state")}
@@ -1155,13 +1586,15 @@ export const CheckoutPage = () => {
                                 onChange={handleBillingRegionChange}
                                 valueType="short"
                                 className={styles.selectField}
-                                blankOptionLabel={t("checkout.state.placeholder")}
+                                blankOptionLabel={t(
+                                  "checkout.state.placeholder"
+                                )}
                                 disableWhenEmpty
                                 name="billingState"
                                 aria-label={`${t("checkout.state")} (billing)`}
                               />
-                  </div>
-                </label>
+                            </div>
+                          </label>
                           <Input
                             label={t("checkout.zip")}
                             name="billingZipCode"
@@ -1177,10 +1610,15 @@ export const CheckoutPage = () => {
                             <div className={styles.phoneInputWrapper}>
                               <CountryPhoneInput
                                 value={formData.billingPhone}
-                                onChange={(value: string) => handlePhoneChange("billingPhone", value)}
+                                onChange={(value: string) =>
+                                  handlePhoneChange("billingPhone", value)
+                                }
                                 placeholder={t("checkout.phone.placeholder")}
                                 enableSearch
-                                inputProps={{ name: "billingPhone", autoComplete: "billing tel" }}
+                                inputProps={{
+                                  name: "billingPhone",
+                                  autoComplete: "billing tel",
+                                }}
                               />
                             </div>
                           </label>
@@ -1189,7 +1627,6 @@ export const CheckoutPage = () => {
                     )}
                   </div>
                 </div>
-
               </div>
             </div>
 
@@ -1200,17 +1637,18 @@ export const CheckoutPage = () => {
             >
               {isSubmitting ? t("common.loading") : t("checkout.place.order")}
             </button>
-            <p className={styles.notice}>
-              {t("checkout.submit.notice")}
-            </p>
+            <p className={styles.notice}>{t("checkout.submit.notice")}</p>
           </form>
 
           <div className={styles.summaryPanel}>
-            <h2 className={styles.summaryHeading}>{t("checkout.order.summary")}</h2>
+            <h2 className={styles.summaryHeading}>
+              {t("checkout.order.summary")}
+            </h2>
             <div className={styles.summaryList}>
               {items.length === 0 ? (
                 <p className={styles.summaryEmpty}>
-                  {t("checkout.empty.cart")}<Link to="/shop">{t("checkout.discover.shop")}</Link>
+                  {t("checkout.empty.cart")}
+                  <Link to="/shop">{t("checkout.discover.shop")}</Link>
                 </p>
               ) : (
                 items.map((item) => (
@@ -1218,7 +1656,8 @@ export const CheckoutPage = () => {
                     <div>
                       <p className={styles.summaryProductName}>{item.name}</p>
                       <p className={styles.summaryMeta}>
-                        {item.color} | {item.size} | {t("checkout.qty")} {item.quantity}
+                        {item.color} | {item.size} | {t("checkout.qty")}{" "}
+                        {item.quantity}
                       </p>
                     </div>
                     <p className={styles.summaryPrice}>
@@ -1236,7 +1675,11 @@ export const CheckoutPage = () => {
               </div>
               <div className={styles.summaryRow}>
                 <span>{t("cart.shipping")}</span>
-                <span>{shippingCost === 0 ? t("cart.complimentary") : formatCurrency(shippingCost)}</span>
+                <span>
+                  {shippingCost === 0
+                    ? t("cart.complimentary")
+                    : formatCurrency(shippingCost)}
+                </span>
               </div>
               <div className={styles.summaryRow}>
                 <span>{t("cart.concierge.service")}</span>
@@ -1265,4 +1708,3 @@ export const CheckoutPage = () => {
 };
 
 export default CheckoutPage;
-

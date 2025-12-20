@@ -102,17 +102,12 @@ services:
       # Optional: allow skipping admin token in dev only (DO NOT enable in prod)
       DISABLE_ADMIN_TOKEN: ${DISABLE_ADMIN_TOKEN:-0}
       MEDIA_ROOT: /data/admindata/picture
-      # USPS API Configuration for shipping integration
-      USPS_CONSUMER_KEY: ${USPS_CONSUMER_KEY:-}
-      USPS_CONSUMER_SECRET: ${USPS_CONSUMER_SECRET:-}
-      USPS_API_BASE_URL: ${USPS_API_BASE_URL:-https://api.usps.com}
-      USPS_ORIGIN_ZIP: ${USPS_ORIGIN_ZIP:-95127}
-      USPS_ORIGIN_CITY: ${USPS_ORIGIN_CITY:-San Jose}
-      USPS_ORIGIN_STATE: ${USPS_ORIGIN_STATE:-CA}
-      USPS_DEFAULT_WEIGHT: ${USPS_DEFAULT_WEIGHT:-1.5}
-      USPS_DEFAULT_LENGTH: ${USPS_DEFAULT_LENGTH:-14}
-      USPS_DEFAULT_WIDTH: ${USPS_DEFAULT_WIDTH:-10}
-      USPS_DEFAULT_HEIGHT: ${USPS_DEFAULT_HEIGHT:-3}
+      # Shippo API Configuration for multi-carrier shipping (USPS, UPS, FedEx)
+      SHIPPO_API_KEY: ${SHIPPO_API_KEY:-}
+      SHIPPO_ORIGIN_STREET: ${SHIPPO_ORIGIN_STREET:-236 N Claremont Ave}
+      SHIPPO_ORIGIN_CITY: ${SHIPPO_ORIGIN_CITY:-San Jose}
+      SHIPPO_ORIGIN_STATE: ${SHIPPO_ORIGIN_STATE:-CA}
+      SHIPPO_ORIGIN_ZIP: ${SHIPPO_ORIGIN_ZIP:-95127}
     volumes:
       - admin_node_data:/data
     depends_on:
