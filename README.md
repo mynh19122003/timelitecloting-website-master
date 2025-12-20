@@ -1,16 +1,59 @@
-# 🛍️ TimeLite Clothing E-Commerce Platform
+# TimeLite Clothing E-Commerce Platform
 
 > Modern e-commerce platform with user management and order processing
 
-## 🚀 Quick Start
+---
 
-### Start Backend Services
+## Features
+
+| Feature                 | Description                                           |
+| ----------------------- | ----------------------------------------------------- |
+| **User Authentication** | JWT-based login/register with secure password hashing |
+| **Product Catalog**     | Browse products with categories and filtering         |
+| **Shopping Cart**       | Add/remove items, update quantities                   |
+| **Order Management**    | Create orders, view order history                     |
+| **User Profile**        | View and update personal information                  |
+| **Admin Dashboard**     | Manage products, orders, and users                    |
+
+---
+
+## Tech Stack
+
+| Layer          | Technology                 |
+| -------------- | -------------------------- |
+| Frontend       | React, TypeScript          |
+| Backend        | Node.js 18, Express.js     |
+| Database       | MySQL 8.0                  |
+| Auth           | JWT (jsonwebtoken), bcrypt |
+| Validation     | Joi                        |
+| Infrastructure | Docker, Docker Compose     |
+
+---
+
+## Setup
+
+### Prerequisites
+
+- Node.js 18+
+- Docker & Docker Compose
+- Git
+
+### 1. Clone Repository
+
+```powershell
+git clone https://github.com/mynh19122003/timelitecloting-website-master.git
+cd timelitecloting-website-master
+```
+
+### 2. Start Backend Services
+
 ```powershell
 cd ecommerce-backend
 docker-compose up -d
 ```
 
-### Verify Services
+### 3. Verify Services
+
 ```powershell
 # Check backend health
 curl http://localhost:3001/health
@@ -19,64 +62,41 @@ curl http://localhost:3001/health
 docker ps
 ```
 
-## 📚 Documentation
-
-All documentation is organized in the [`docs/`](docs/) folder. See [docs/README.md](docs/README.md) for the complete documentation structure.
-
-**Quick Links:**
-- **[Frontend Routes Guide](docs/frontend/ROUTES_GUIDE.md)** - Routes configuration
-- **[Backend Setup](docs/backend/SETUP_GUIDE.md)** - Backend setup guide
-- **[Deployment Guide](docs/deployment/DEPLOY_GUIDE.md)** - Deployment instructions
-- **[Order API Documentation](docs/ORDER_API_DOCUMENTATION.md)** - Complete API reference
-- **[Project Summary](docs/PROJECT_SUMMARY.md)** - Full overview
-
-## 🧪 Testing
+### 4. Start Frontend
 
 ```powershell
-# Run automated tests
-.\docs\test-order-apis.ps1
+cd admin-web
+npm install
+npm run dev
 ```
 
-## 🔗 API Endpoints
+---
+
+## API Endpoints
 
 **Base URL**: `http://localhost:3001/api`
 
 ### User APIs
-- `POST /users/register` - Register new user
-- `POST /users/login` - Login and get JWT token
-- `GET /users/profile` 🔒 - Get user profile
-- `PUT /users/profile` 🔒 - Update profile
-- `PUT /users/change-password` 🔒 - Change password
+
+| Method | Endpoint                 | Auth     | Description             |
+| ------ | ------------------------ | -------- | ----------------------- |
+| POST   | `/users/register`        | -        | Register new user       |
+| POST   | `/users/login`           | -        | Login and get JWT token |
+| GET    | `/users/profile`         | Required | Get user profile        |
+| PUT    | `/users/profile`         | Required | Update profile          |
+| PUT    | `/users/change-password` | Required | Change password         |
 
 ### Order APIs
-- `POST /orders` 🔒 - Create new order
-- `GET /orders/history` 🔒 - Get order history (paginated)
-- `GET /orders/:id` 🔒 - Get order details
 
-🔒 = Requires JWT authentication
+| Method | Endpoint          | Auth     | Description       |
+| ------ | ----------------- | -------- | ----------------- |
+| POST   | `/orders`         | Required | Create new order  |
+| GET    | `/orders/history` | Required | Get order history |
+| GET    | `/orders/:id`     | Required | Get order details |
 
-## 💡 Test Account
+---
 
-**Email**: `testorder@gmail.com`  
-**Password**: `password123`
-
-## 🏗️ Tech Stack
-
-- **Backend**: Node.js 18, Express.js
-- **Database**: MySQL 8.0
-- **Auth**: JWT (jsonwebtoken)
-- **Validation**: Joi
-- **Infrastructure**: Docker, Docker Compose
-
-## 📊 Status
-
-- ✅ Backend: Running on port 3001
-- ✅ MySQL: Running on port 3306
-- ✅ All APIs: Tested & working
-- ✅ Tests: 9/9 passing (100%)
-- ✅ Production Ready: YES
-
-## 🛠️ Common Commands
+## Common Commands
 
 ```powershell
 # View logs
@@ -91,35 +111,33 @@ cd ecommerce-backend
 docker-compose down
 ```
 
-## 📂 Project Structure
+---
+
+## Project Structure
 
 ```
 timelitecloting-website-master/
-├── ecommerce-backend/          # Backend services
-│   ├── backend-node/           # Node.js API server
-│   ├── database/               # Database schema
-│   └── docker-compose.yml      # Container orchestration
-├── docs/                       # All documentation (organized by category)
-│   ├── frontend/              # Frontend docs
-│   ├── backend/               # Backend docs
-│   ├── deployment/            # Deployment guides
-│   ├── components/            # Component docs
-│   └── testing/               # Testing guides
-└── README.md                   # This file
+|-- ecommerce-backend/          # Backend services
+|   |-- backend-node/           # Node.js API server
+|   |-- database/               # Database schema
+|   |-- docker-compose.yml      # Container orchestration
+|-- docs/                       # Documentation
+|-- admin-web/                  # Admin dashboard
+|-- src/                        # Frontend source code
+|-- README.md                   # This file
 ```
-
-## 🔒 Security
-
-- JWT authentication with 24h expiration
-- bcrypt password hashing
-- Joi input validation
-- Rate limiting (5 orders/min)
-- SQL injection protection
-
-## 📞 Need Help?
-
-Check the [docs folder](docs/) for detailed documentation.
 
 ---
 
-**Status**: 🚀 Production Ready | **Tests**: ✅ 9/9 Passing
+## Documentation
+
+See [`docs/`](docs/) folder for detailed documentation.
+
+- [Frontend Routes Guide](docs/frontend/ROUTES_GUIDE.md)
+- [Backend Setup](docs/backend/SETUP_GUIDE.md)
+- [Deployment Guide](docs/deployment/DEPLOY_GUIDE.md)
+- [Order API Documentation](docs/ORDER_API_DOCUMENTATION.md)
+
+---
+
+**Status**: Production Ready | **Tests**: 9/9 Passing
