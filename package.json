@@ -3,13 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev -p 3000",
+    "dev:turbo": "next dev --turbopack -p 3000",
     "build": "next build",
-    "build:static": "next build",
-    "export": "next export -o out",
-    "start": "next start",
-    "lint": "eslint",
-    "postinstall": "node ./scripts/postinstall-lightningcss-shim.mjs"
+    "start": "next start -p 3000",
+    "lint": "next lint"
   },
   "dependencies": {
     "@fontsource/playfair-display": "^5.2.8",

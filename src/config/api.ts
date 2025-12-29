@@ -42,13 +42,14 @@ const resolveAdminBaseUrl = (): string => {
 };
 
 const resolveApiBaseUrl = (): string => {
-  // Check if running on localhost for development testing
-  const loc = getRuntimeLocation();
-  if (loc && isLocalHostname(loc.hostname)) {
-    // Local development: use Docker gateway
-    return 'http://localhost:3002';
+  // For production static export, ALWAYS use production API
+  // Runtime detection doesn't work for static export
+  // Users should use environment variable to override for local dev if needed
+  const envOverride = typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL;
+  if (envOverride) {
+    return envOverride.replace(/\/+$/, '');
   }
-  // Production: use production API
+  // FORCE production API for all cases
   return PROD_API_ORIGIN;
 };
 

@@ -80,25 +80,28 @@ if (!isProduction) {
   })
 }
 
-app.use(helmet());
-
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 200,
-  message: { error: 'ERR_RATE_LIMIT_EXCEEDED', message: 'Too many requests, try later.' }
-});
-const DISABLE_RATE_LIMIT = String(process.env.DISABLE_RATE_LIMIT || '').toLowerCase() === 'true'
-  || process.env.DISABLE_RATE_LIMIT === '1';
-if (!DISABLE_RATE_LIMIT) {
-  app.use(limiter);
-} else {
-  console.warn('⚠️  Rate limit is DISABLED via DISABLE_RATE_LIMIT env (testing mode).');
-}
-
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
-
+// ============================================
+// STATIC FILES - SERVED FIRST (NO RATE LIMIT)
+// ============================================
 const MEDIA_ROOT = process.env.MEDIA_ROOT || '/data/admindata/picture';
+
+// Set CORS headers for ALL static file requests FIRST
+app.use('/admin/media', (req, res, next) => {
+  // Set CORS headers before serving
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', '*');
+  
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
+});
+
+// Serve static files (images, etc.) - NO RATE LIMIT
 app.use('/admin/media', express.static(MEDIA_ROOT, {
   index: false,
   maxAge: process.env.NODE_ENV === 'production' ? '30d' : 0,
@@ -113,6 +116,41 @@ app.use('/admin/media', express.static(MEDIA_ROOT, {
     } catch (_) { /* ignore */ }
   }
 }));
+
+// ============================================
+// HELMET & SECURITY (after static files)
+// ============================================
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: false
+}));
+
+// ============================================
+// RATE LIMITER - ONLY FOR API ROUTES
+// ============================================
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  message: { error: 'ERR_RATE_LIMIT_EXCEEDED', message: 'Too many requests, try later.' },
+  // Skip rate limiting for media/static file requests
+  skip: (req) => {
+    return req.path.startsWith('/admin/media') || 
+           req.method === 'OPTIONS' ||
+           req.path.match(/\.(jpg|jpeg|png|gif|webp|svg|ico|css|js|woff|woff2)$/i);
+  }
+});
+
+const DISABLE_RATE_LIMIT = String(process.env.DISABLE_RATE_LIMIT || '').toLowerCase() === 'true'
+  || process.env.DISABLE_RATE_LIMIT === '1';
+if (!DISABLE_RATE_LIMIT) {
+  app.use(limiter);
+} else {
+  console.warn('⚠️  Rate limit is DISABLED via DISABLE_RATE_LIMIT env (testing mode).');
+}
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
 
 if (!isProduction) {
   app.use((req, res, next) => {

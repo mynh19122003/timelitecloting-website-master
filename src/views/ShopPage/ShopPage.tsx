@@ -557,10 +557,19 @@ export const ShopPage = ({ category }: ShopPageProps) => {
     } else if (sortBy === "price-desc") {
       filtered = [...filtered].sort((a, b) => b.price - a.price);
     } else {
-      // Featured: sort by rating and featured status
+      // Featured: prioritize Ao Dai first, then by featured status and rating
       filtered = [...filtered].sort((a, b) => {
+        // Priority 1: Ao Dai category first
+        const aIsAoDai = a.category === "ao-dai";
+        const bIsAoDai = b.category === "ao-dai";
+        if (aIsAoDai && !bIsAoDai) return -1;
+        if (!aIsAoDai && bIsAoDai) return 1;
+
+        // Priority 2: Featured status
         if (a.isFeatured && !b.isFeatured) return -1;
         if (!a.isFeatured && b.isFeatured) return 1;
+
+        // Priority 3: Rating
         return b.rating - a.rating;
       });
     }
