@@ -139,5 +139,3 @@ See [`docs/`](docs/) folder for detailed documentation.
 - [Order API Documentation](docs/ORDER_API_DOCUMENTATION.md)
 
 ---
-
-**Status**: Production Ready | **Tests**: 9/9 Passing

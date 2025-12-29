@@ -67,6 +67,11 @@ const NotFoundPage = lazy(() =>
 const AdminApp = lazy(() =>
   import("./admin/AdminApp").then((m) => ({ default: m.default }))
 );
+const TaxTestPage = lazy(() =>
+  import("./views/TaxTestPage/TaxTestPage").then((m) => ({
+    default: m.default,
+  }))
+);
 
 // Loading component
 const PageLoader = () => (
@@ -210,6 +215,14 @@ export default function AppRoot() {
                       element={
                         <Suspense fallback={<PageLoader />}>
                           <NotFoundPage />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="/tax-test"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <TaxTestPage />
                         </Suspense>
                       }
                     />

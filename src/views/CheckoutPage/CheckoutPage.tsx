@@ -10,6 +10,7 @@ import { getUserData } from "../../utils/auth";
 import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
 import CountryPhoneInput from "react-country-phone-input";
 import "react-country-phone-input/lib/style.css";
+import { calculateSalesTax } from "../../data/salesTaxRates";
 // We no longer rely on static numeric productId map.
 import styles from "./CheckoutPage.module.css";
 
@@ -107,14 +108,6 @@ interface ShippingRate {
 // Fallback rates if API fails
 const FALLBACK_SHIPPING_RATES: ShippingRate[] = [
   {
-    id: "fallback_ground",
-    name: "USPS Ground Advantage",
-    price: 7.49,
-    time: "3-5 business days",
-    provider: "USPS",
-    fallback: true,
-  },
-  {
     id: "fallback_priority",
     name: "USPS Priority Mail",
     price: 9.99,
@@ -122,17 +115,9 @@ const FALLBACK_SHIPPING_RATES: ShippingRate[] = [
     provider: "USPS",
     fallback: true,
   },
-  {
-    id: "fallback_express",
-    name: "USPS Priority Mail Express",
-    price: 29.99,
-    time: "1-2 business days",
-    provider: "USPS",
-    fallback: true,
-  },
 ];
 
-const DEFAULT_SHIPPING_METHOD = "fallback_ground";
+const DEFAULT_SHIPPING_METHOD = "fallback_priority";
 const SUPPORTED_COUNTRIES = ["US", "CA"];
 
 const digitsOnly = (value: string) => value.replace(/\D/g, "");
@@ -316,6 +301,8 @@ export const CheckoutPage = () => {
   // Fetch shipping rates when address is complete
   // Using a ref to track if we already fetched for this address to avoid re-fetching
   const shippingFetchKeyRef = useRef<string>("");
+  // Track the current address key to prevent stale updates
+  const currentAddressKeyRef = useRef<string>("");
 
   useEffect(() => {
     if (!isAddressComplete) {
@@ -323,16 +310,29 @@ export const CheckoutPage = () => {
       setShippingRates([]);
       setShippingError(null);
       shippingFetchKeyRef.current = "";
+      currentAddressKeyRef.current = "";
       return;
     }
 
     // Create a key from address to avoid re-fetching same address
     const addressKey = `${formData.city}-${formData.state}-${formData.zipCode}`;
+
+    // Update the current address key immediately
+    currentAddressKeyRef.current = addressKey;
+
+    // Skip if we already fetched for this exact address
     if (shippingFetchKeyRef.current === addressKey) {
       return; // Already fetched for this address
     }
 
+    // Reset the fetch key to allow new fetch when address changes
+    // This ensures that changing address will trigger a new API call
+    shippingFetchKeyRef.current = "";
+
     const fetchShippingRates = async () => {
+      // Capture the address key at the time fetch starts
+      const fetchAddressKey = addressKey;
+
       setIsLoadingShipping(true);
       setShippingError(null);
 
@@ -356,57 +356,78 @@ export const CheckoutPage = () => {
 
         const data = await response.json();
 
+        // Check if address has changed while fetching - if so, discard results
+        if (currentAddressKeyRef.current !== fetchAddressKey) {
+          console.log("Address changed during fetch, discarding stale results");
+          return;
+        }
+
         if (data.success && data.rates && data.rates.length > 0) {
-          setShippingRates(data.rates);
-          shippingFetchKeyRef.current = addressKey;
-          // Only auto-select if no method selected yet
-          setFormData((prev) => {
-            if (
-              !prev.shippingMethod ||
-              prev.shippingMethod.startsWith("fallback")
-            ) {
-              return { ...prev, shippingMethod: data.rates[0].id };
-            }
-            // Check if current method exists in new rates
-            const exists = data.rates.some(
-              (r: ShippingRate) => r.id === prev.shippingMethod
+          // Filter to only include Priority Mail (not Ground Advantage or Express)
+          const filteredRates = data.rates.filter(
+            (rate: ShippingRate) =>
+              rate.name.toLowerCase().includes("priority mail") &&
+              !rate.name.toLowerCase().includes("express")
+          );
+
+          if (filteredRates.length > 0) {
+            // Override the time to "4-5 business days" for Priority Mail
+            const updatedRates = filteredRates.map((rate: ShippingRate) => ({
+              ...rate,
+              time: "4-5 business days",
+            }));
+            setShippingRates(updatedRates);
+            shippingFetchKeyRef.current = fetchAddressKey;
+            // Only auto-select if no method selected yet
+            setFormData((prev) => {
+              if (
+                !prev.shippingMethod ||
+                prev.shippingMethod.startsWith("fallback")
+              ) {
+                return { ...prev, shippingMethod: updatedRates[0].id };
+              }
+              // Check if current method exists in new rates
+              const exists = updatedRates.some(
+                (r: ShippingRate) => r.id === prev.shippingMethod
+              );
+              if (!exists) {
+                return { ...prev, shippingMethod: updatedRates[0].id };
+              }
+              return prev; // Keep current selection
+            });
+          } else {
+            // No Priority Mail found, show error
+            setShippingRates([]);
+            setShippingError(
+              "Could not load shipping rates. Please try again later."
             );
-            if (!exists) {
-              return { ...prev, shippingMethod: data.rates[0].id };
-            }
-            return prev; // Keep current selection
-          });
+            shippingFetchKeyRef.current = fetchAddressKey;
+          }
         } else {
-          // Use fallback rates
-          setShippingRates(FALLBACK_SHIPPING_RATES);
-          setShippingError("Using estimated rates");
-          shippingFetchKeyRef.current = addressKey;
-          setFormData((prev) => {
-            if (
-              !prev.shippingMethod ||
-              !prev.shippingMethod.startsWith("fallback")
-            ) {
-              return { ...prev, shippingMethod: FALLBACK_SHIPPING_RATES[0].id };
-            }
-            return prev;
-          });
+          // API returned no rates, show error
+          setShippingRates([]);
+          setShippingError(
+            "Could not load shipping rates. Please try again later."
+          );
+          shippingFetchKeyRef.current = fetchAddressKey;
         }
       } catch (err) {
+        // Check if address has changed while fetching
+        if (currentAddressKeyRef.current !== fetchAddressKey) {
+          return;
+        }
         console.error("Failed to fetch shipping rates:", err);
-        setShippingRates(FALLBACK_SHIPPING_RATES);
-        setShippingError("Could not fetch live rates. Using estimates.");
-        shippingFetchKeyRef.current = addressKey;
-        setFormData((prev) => {
-          if (
-            !prev.shippingMethod ||
-            !prev.shippingMethod.startsWith("fallback")
-          ) {
-            return { ...prev, shippingMethod: FALLBACK_SHIPPING_RATES[0].id };
-          }
-          return prev;
-        });
+        // Show error instead of fallback rates
+        setShippingRates([]);
+        setShippingError(
+          "Could not load shipping rates. Please check your address and try again."
+        );
+        shippingFetchKeyRef.current = fetchAddressKey;
       } finally {
-        setIsLoadingShipping(false);
+        // Only set loading to false if this is still the current address
+        if (currentAddressKeyRef.current === fetchAddressKey) {
+          setIsLoadingShipping(false);
+        }
       }
     };
 
@@ -540,7 +561,12 @@ export const CheckoutPage = () => {
   };
 
   const shippingCost = getShippingCost();
-  const finalTotal = total + shippingCost;
+
+  // Calculate sales tax based on user's state
+  const taxInfo = calculateSalesTax(total, formData.state, formData.country);
+  const taxAmount = taxInfo.taxAmount;
+
+  const finalTotal = total + shippingCost + taxAmount;
   // Use dynamic shipping rates (from API or fallback)
   const shippingOptions = shippingRates.length > 0 ? shippingRates : [];
 
@@ -1681,10 +1707,20 @@ export const CheckoutPage = () => {
                     : formatCurrency(shippingCost)}
                 </span>
               </div>
-              <div className={styles.summaryRow}>
-                <span>{t("cart.concierge.service")}</span>
-                <span>{t("cart.included")}</span>
-              </div>
+              {taxInfo.hasTax && (
+                <div className={styles.summaryRow}>
+                  <span>
+                    Tax ({taxInfo.stateName} {taxInfo.displayRate})
+                  </span>
+                  <span>{formatCurrency(taxAmount)}</span>
+                </div>
+              )}
+              {!taxInfo.hasTax && formData.state && (
+                <div className={styles.summaryRow}>
+                  <span>Tax ({taxInfo.stateName})</span>
+                  <span style={{ color: "#22c55e" }}>No Tax</span>
+                </div>
+              )}
             </div>
 
             <div className={styles.totalWrapper}>
@@ -1692,13 +1728,6 @@ export const CheckoutPage = () => {
                 <span>{t("cart.total")}</span>
                 <span>{formatCurrency(finalTotal)}</span>
               </div>
-            </div>
-
-            <div className={styles.perkCard}>
-              <p className={styles.perkTitle}>{t("checkout.concierge.perk")}</p>
-              <p className={styles.perkDescription}>
-                {t("checkout.concierge.perk.description")}
-              </p>
             </div>
           </div>
         </div>

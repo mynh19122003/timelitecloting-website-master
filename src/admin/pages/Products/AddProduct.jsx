@@ -68,7 +68,7 @@ const toCategorySlug = (value = '') => {
 // Default categories as fallback
 const DEFAULT_CATEGORIES = PRIMARY_CATEGORIES
 
-const SIZES = ['XS', 'S', 'M', 'L', 'XL']
+const SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL']
 const SIZELESS_CATEGORY_SLUGS = new Set([
   'accessories',
   'lunar-new-year-decor',

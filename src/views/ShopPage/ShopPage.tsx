@@ -3,13 +3,21 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FiChevronDown, FiGrid, FiList, FiSliders } from "react-icons/fi";
-import { defaultCategorySlug, shopCatalog, toCategorySlug } from "../../components/Shop/shop.data";
+import {
+  defaultCategorySlug,
+  shopCatalog,
+  toCategorySlug,
+} from "../../components/Shop/shop.data";
 import { ProductCard } from "../../components/ui/ProductCard/ProductCard";
 import { FilterDropdown } from "../../components/ui/FilterDropdown/FilterDropdown";
 import { useI18n } from "../../context/I18nContext";
 import styles from "./ShopPage.module.css";
 import ApiService from "../../services/api";
-import { getAdminMediaUrl, normalizePossibleMediaUrl, toProductsPid } from "../../config/api";
+import {
+  getAdminMediaUrl,
+  normalizePossibleMediaUrl,
+  toProductsPid,
+} from "../../config/api";
 import {
   normalizeCategory,
   type Category,
@@ -34,7 +42,6 @@ const slugToCategoryMap: Record<string, Category> = {
 // Curated variant names per category, aligned with admin variants & navbar
 const VARIANTS_BY_CATEGORY_SLUG: Record<string, string[]> = {
   [toCategorySlug("Ao Dai")]: [
-    "Ao Dai (All)",
     "Bridal Ao Dai",
     "Designer Ao Dai (Women)",
     "Traditional Ao Dai (Women)",
@@ -132,11 +139,13 @@ export const ShopPage = ({ category }: ShopPageProps) => {
   const { t } = useI18n();
   const searchParams = useMemo(
     () => new URLSearchParams(location.search),
-    [location.search],
+    [location.search]
   );
   const facet = searchParams.get("facet")?.trim() ?? "";
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc">("featured");
+  const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc">(
+    "featured"
+  );
   const [allProducts, setAllProducts] = useState<UiProduct[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
@@ -166,12 +175,16 @@ export const ShopPage = ({ category }: ShopPageProps) => {
     if (!category) {
       const urlCategory = searchParams.get("category");
       if (urlCategory) {
-        const directMatch = shopCatalog[urlCategory] ? urlCategory : toCategorySlug(urlCategory);
+        const directMatch = shopCatalog[urlCategory]
+          ? urlCategory
+          : toCategorySlug(urlCategory);
         return shopCatalog[directMatch] ? directMatch : defaultCategorySlug;
       }
       return defaultCategorySlug;
     }
-    const directMatch = shopCatalog[category] ? category : toCategorySlug(category);
+    const directMatch = shopCatalog[category]
+      ? category
+      : toCategorySlug(category);
     return shopCatalog[directMatch] ? directMatch : defaultCategorySlug;
   }, [category, searchParams]);
 
@@ -179,45 +192,52 @@ export const ShopPage = ({ category }: ShopPageProps) => {
 
   // Translate category title and subtitle
   const getCategoryTranslation = (slugValue: string) => {
-    const translationMap: Record<string, { title: string; subtitle: string }> = {
-      [defaultCategorySlug]: {
-        title: t("shop.all.collections"),
-        subtitle: t("shop.all.collections.subtitle"),
-      },
-      [toCategorySlug("Ao Dai")]: {
-        title: t("shop.ao.dai.title"),
-        subtitle: t("shop.ao.dai.subtitle"),
-      },
-      [toCategorySlug("Suiting")]: {
-        title: t("shop.suiting.title"),
-        subtitle: t("shop.suiting.subtitle"),
-      },
-      [toCategorySlug("Bridal Gowns")]: {
-        title: t("shop.bridal.title"),
-        subtitle: t("shop.bridal.subtitle"),
-      },
-      [toCategorySlug("Evening Couture")]: {
-        title: t("shop.evening.title"),
-        subtitle: t("shop.evening.subtitle"),
-      },
-      [toCategorySlug("Conical Hats")]: {
-        title: t("shop.conical.hats.title"),
-        subtitle: t("shop.conical.hats.subtitle"),
-      },
-      [toCategorySlug("Kidswear")]: {
-        title: t("shop.kidswear.title"),
-        subtitle: t("shop.kidswear.subtitle"),
-      },
-      [toCategorySlug("Gift Procession Sets")]: {
-        title: t("shop.gift.procession.title"),
-        subtitle: t("shop.gift.procession.subtitle"),
-      },
-      [toCategorySlug("Wedding Gift Trays")]: {
-        title: "Wedding Gift Trays",
-        subtitle: "Traditional mâm quả sets for your engagement and wedding ceremonies.",
-      },
-    };
-    return translationMap[slugValue] || { title: catalog.title, subtitle: catalog.subtitle };
+    const translationMap: Record<string, { title: string; subtitle: string }> =
+      {
+        [defaultCategorySlug]: {
+          title: t("shop.all.collections"),
+          subtitle: t("shop.all.collections.subtitle"),
+        },
+        [toCategorySlug("Ao Dai")]: {
+          title: t("shop.ao.dai.title"),
+          subtitle: t("shop.ao.dai.subtitle"),
+        },
+        [toCategorySlug("Suiting")]: {
+          title: t("shop.suiting.title"),
+          subtitle: t("shop.suiting.subtitle"),
+        },
+        [toCategorySlug("Bridal Gowns")]: {
+          title: t("shop.bridal.title"),
+          subtitle: t("shop.bridal.subtitle"),
+        },
+        [toCategorySlug("Evening Couture")]: {
+          title: t("shop.evening.title"),
+          subtitle: t("shop.evening.subtitle"),
+        },
+        [toCategorySlug("Conical Hats")]: {
+          title: t("shop.conical.hats.title"),
+          subtitle: t("shop.conical.hats.subtitle"),
+        },
+        [toCategorySlug("Kidswear")]: {
+          title: t("shop.kidswear.title"),
+          subtitle: t("shop.kidswear.subtitle"),
+        },
+        [toCategorySlug("Gift Procession Sets")]: {
+          title: t("shop.gift.procession.title"),
+          subtitle: t("shop.gift.procession.subtitle"),
+        },
+        [toCategorySlug("Wedding Gift Trays")]: {
+          title: "Wedding Gift Trays",
+          subtitle:
+            "Traditional mâm quả sets for your engagement and wedding ceremonies.",
+        },
+      };
+    return (
+      translationMap[slugValue] || {
+        title: catalog.title,
+        subtitle: catalog.subtitle,
+      }
+    );
   };
 
   const categoryTranslation = getCategoryTranslation(slug);
@@ -227,7 +247,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
   // Translate chips
   const translateChip = (chip: string): string => {
     const chipMap: Record<string, string> = {
-      "Highlights": t("shop.highlights"),
+      Highlights: t("shop.highlights"),
       "Best sellers": t("shop.best.sellers"),
       "New arrivals": t("shop.new.arrivals"),
       "Limited edition": t("shop.limited.edition"),
@@ -238,7 +258,8 @@ export const ShopPage = ({ category }: ShopPageProps) => {
   useEffect(() => {
     let isMounted = true;
     const mapProduct = (p: ApiProduct): UiProduct => {
-      const slug: string | undefined = typeof p.slug === "string" ? p.slug : undefined;
+      const slug: string | undefined =
+        typeof p.slug === "string" ? p.slug : undefined;
       const productsId: string | undefined =
         typeof p.products_id === "string" || typeof p.products_id === "number"
           ? String(p.products_id)
@@ -249,11 +270,16 @@ export const ShopPage = ({ category }: ShopPageProps) => {
         if (!s) return "other";
         if (s.startsWith("ao-dai-")) return "ao-dai";
         if (s.startsWith("vest-")) return "vest";
-        if (s.startsWith("wedding-") || s.startsWith("bridal-")) return "wedding";
+        if (s.startsWith("wedding-") || s.startsWith("bridal-"))
+          return "wedding";
         if (s.startsWith("evening-")) return "evening";
         if (s.startsWith("non-la")) return "conical-hats";
         if (s.startsWith("kidswear")) return "kidswear";
-        if (s.startsWith("gift-procession") || s.startsWith("giftset") || s.includes("procession")) {
+        if (
+          s.startsWith("gift-procession") ||
+          s.startsWith("giftset") ||
+          s.includes("procession")
+        ) {
           return "gift-procession-sets";
         }
         return "other";
@@ -262,18 +288,28 @@ export const ShopPage = ({ category }: ShopPageProps) => {
       const pickImage = (): string => {
         if (productsId) return getAdminMediaUrl(String(productsId));
         const raw = typeof p.image_url === "string" ? p.image_url.trim() : "";
-        if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("/")) return raw;
+        if (
+          raw.startsWith("http://") ||
+          raw.startsWith("https://") ||
+          raw.startsWith("/")
+        )
+          return raw;
         return "/images/image_1.png";
       };
 
       const imageRaw = pickImage();
-      const image = normalizePossibleMediaUrl(imageRaw) || "/images/image_1.png";
-      const galleryRaw = Array.isArray(p.gallery) && p.gallery.length > 0 ? p.gallery : [image];
+      const image =
+        normalizePossibleMediaUrl(imageRaw) || "/images/image_1.png";
+      const galleryRaw =
+        Array.isArray(p.gallery) && p.gallery.length > 0 ? p.gallery : [image];
       const gallery = galleryRaw.map((g) => normalizePossibleMediaUrl(g) || g);
 
       // Normalize category from API (could be label like "Bridal Gowns" or slug like "wedding")
-      const apiCategory = p.category ? normalizeCategory(p.category) : fromSlug(slug);
-      const finalCategory = apiCategory !== "other" ? apiCategory : fromSlug(slug);
+      const apiCategory = p.category
+        ? normalizeCategory(p.category)
+        : fromSlug(slug);
+      const finalCategory =
+        apiCategory !== "other" ? apiCategory : fromSlug(slug);
 
       // Helper to safely parse JSON strings
       const parseJsonField = <T,>(value: unknown, fallback: T): T => {
@@ -293,19 +329,22 @@ export const ShopPage = ({ category }: ShopPageProps) => {
       const pid = productsId
         ? toProductsPid(productsId)
         : p.id != null
-          ? toProductsPid(p.id)
-          : undefined;
+        ? toProductsPid(p.id)
+        : undefined;
 
       return {
         id: slug ?? String(p.id),
         pid,
         name: p.name ?? "",
-        category: (finalCategory === "other" ? "other" : finalCategory) as Category,
+        category: (finalCategory === "other"
+          ? "other"
+          : finalCategory) as Category,
         variant: p.variant ?? undefined,
         shortDescription: p.short_description ?? "",
         description: p.description ?? "",
         price: Number(p.price ?? 0),
-        originalPrice: p.original_price != null ? Number(p.original_price) : undefined,
+        originalPrice:
+          p.original_price != null ? Number(p.original_price) : undefined,
         colors: parseJsonField(p.colors, []),
         sizes: parseJsonField(p.sizes, ["S", "M", "L"]),
         image: image,
@@ -331,11 +370,19 @@ export const ShopPage = ({ category }: ShopPageProps) => {
         let page = 1;
         const aggregated: ApiProduct[] = [];
         const categoryParam = slug !== defaultCategorySlug ? slug : undefined;
-        const variantParam = selectedVariant && !selectedVariant.includes('(All)') ? selectedVariant : undefined;
+        const variantParam =
+          selectedVariant && !selectedVariant.includes("(All)")
+            ? selectedVariant
+            : undefined;
 
         while (true) {
           const response = await ApiService.getProducts(
-            { page, limit: pageSize, category: categoryParam, variant: variantParam },
+            {
+              page,
+              limit: pageSize,
+              category: categoryParam,
+              variant: variantParam,
+            },
             false
           );
           const pageProducts = (response?.products ?? []) as ApiProduct[];
@@ -344,7 +391,8 @@ export const ShopPage = ({ category }: ShopPageProps) => {
           const total = response?.total ?? aggregated.length;
           const fetchedCount = aggregated.length;
 
-          const reachedEnd = pageProducts.length < pageSize || fetchedCount >= total;
+          const reachedEnd =
+            pageProducts.length < pageSize || fetchedCount >= total;
           if (reachedEnd) {
             break;
           }
@@ -357,7 +405,9 @@ export const ShopPage = ({ category }: ShopPageProps) => {
         if (slug === toCategorySlug("Ceremonial Attire") && !selectedVariant) {
           const allowedVariants = VARIANTS_BY_CATEGORY_SLUG[slug] || [];
           if (allowedVariants.length > 0) {
-            finalProducts = aggregated.filter(p => p.variant && allowedVariants.includes(p.variant));
+            finalProducts = aggregated.filter(
+              (p) => p.variant && allowedVariants.includes(p.variant)
+            );
           }
         }
 
@@ -375,8 +425,8 @@ export const ShopPage = ({ category }: ShopPageProps) => {
           error instanceof Error
             ? error.message
             : typeof error === "object" && error !== null && "message" in error
-              ? String((error as { message: unknown }).message)
-              : String(error);
+            ? String((error as { message: unknown }).message)
+            : String(error);
         const status =
           typeof error === "object" && error !== null && "status" in error
             ? (error as { status?: unknown }).status
@@ -420,7 +470,9 @@ export const ShopPage = ({ category }: ShopPageProps) => {
       };
     }
 
-    const categoryProducts = allProducts.filter((p) => p.category === targetCategory);
+    const categoryProducts = allProducts.filter(
+      (p) => p.category === targetCategory
+    );
     const options = {
       silhouette: new Set<string>(),
       fabric: new Set<string>(),
@@ -467,10 +519,13 @@ export const ShopPage = ({ category }: ShopPageProps) => {
 
     // Filter by chip (tags or variant)
     if (selectedChip) {
-      filtered = filtered.filter((p) =>
-        p.tags.some((tag) => tag.toLowerCase().includes(selectedChip.toLowerCase())) ||
-        p.variant?.toLowerCase().includes(selectedChip.toLowerCase()) ||
-        p.name.toLowerCase().includes(selectedChip.toLowerCase())
+      filtered = filtered.filter(
+        (p) =>
+          p.tags.some((tag) =>
+            tag.toLowerCase().includes(selectedChip.toLowerCase())
+          ) ||
+          p.variant?.toLowerCase().includes(selectedChip.toLowerCase()) ||
+          p.name.toLowerCase().includes(selectedChip.toLowerCase())
       );
     }
 
@@ -491,7 +546,9 @@ export const ShopPage = ({ category }: ShopPageProps) => {
       filtered = filtered.filter((p) => p.length === filters.length);
     }
     if (filters.embellishment) {
-      filtered = filtered.filter((p) => p.embellishment === filters.embellishment);
+      filtered = filtered.filter(
+        (p) => p.embellishment === filters.embellishment
+      );
     }
 
     // Sort
@@ -509,7 +566,15 @@ export const ShopPage = ({ category }: ShopPageProps) => {
     }
 
     return filtered;
-  }, [allProducts, slug, facet, sortBy, selectedVariant, selectedChip, filters]);
+  }, [
+    allProducts,
+    slug,
+    facet,
+    sortBy,
+    selectedVariant,
+    selectedChip,
+    filters,
+  ]);
 
   const handleVariantChange = (variant: string | null) => {
     setSelectedVariant(variant);
@@ -519,7 +584,10 @@ export const ShopPage = ({ category }: ShopPageProps) => {
     } else {
       params.delete("variant");
     }
-    navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
+    navigate(
+      { pathname: location.pathname, search: params.toString() },
+      { replace: true }
+    );
   };
 
   // Initialize filters from URL
@@ -570,7 +638,10 @@ export const ShopPage = ({ category }: ShopPageProps) => {
     });
   }, [location.search]);
 
-  const handleFilterChange = (filterName: keyof typeof filters, value: string | null) => {
+  const handleFilterChange = (
+    filterName: keyof typeof filters,
+    value: string | null
+  ) => {
     setFilters((prev) => ({ ...prev, [filterName]: value }));
     const params = new URLSearchParams(searchParams.toString());
     if (value) {
@@ -578,7 +649,10 @@ export const ShopPage = ({ category }: ShopPageProps) => {
     } else {
       params.delete(filterName);
     }
-    navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
+    navigate(
+      { pathname: location.pathname, search: params.toString() },
+      { replace: true }
+    );
   };
 
   const handleChipClick = (chip: string) => {
@@ -605,7 +679,10 @@ export const ShopPage = ({ category }: ShopPageProps) => {
       setSelectedVariant(null);
     }
 
-    navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
+    navigate(
+      { pathname: location.pathname, search: params.toString() },
+      { replace: true }
+    );
   };
 
   return (
@@ -616,7 +693,10 @@ export const ShopPage = ({ category }: ShopPageProps) => {
             {t("shop.home")}
           </button>
           <span aria-hidden="true">/</span>
-          <button type="button" onClick={() => navigate(`/shop?category=${slug}`)}>
+          <button
+            type="button"
+            onClick={() => navigate(`/shop?category=${slug}`)}
+          >
             {readableCategory}
           </button>
           {facet ? (
@@ -633,10 +713,16 @@ export const ShopPage = ({ category }: ShopPageProps) => {
 
         {/* Chỉ hiển thị bộ lọc biến thể ở cấp category chính (không có facet con) */}
         {availableVariants.length > 0 && !facet && (
-          <div className={styles.variantFilters} role="group" aria-label="Variant filters">
+          <div
+            className={styles.variantFilters}
+            role="group"
+            aria-label="Variant filters"
+          >
             <button
               type="button"
-              className={`${styles.variantChip} ${!selectedVariant ? styles.variantChipActive : ""}`}
+              className={`${styles.variantChip} ${
+                !selectedVariant ? styles.variantChipActive : ""
+              }`}
               onClick={() => handleVariantChange(null)}
             >
               {t("common.all")}
@@ -645,7 +731,9 @@ export const ShopPage = ({ category }: ShopPageProps) => {
               <button
                 key={variant}
                 type="button"
-                className={`${styles.variantChip} ${selectedVariant === variant ? styles.variantChipActive : ""}`}
+                className={`${styles.variantChip} ${
+                  selectedVariant === variant ? styles.variantChipActive : ""
+                }`}
                 onClick={() => handleVariantChange(variant)}
               >
                 {variant}
@@ -656,70 +744,87 @@ export const ShopPage = ({ category }: ShopPageProps) => {
 
         <div className={styles.toolbar}>
           <div className={styles.filters}>
-            <button type="button" className={`${styles.filter} ${styles.filterPrimary}`}>
+            <button
+              type="button"
+              className={`${styles.filter} ${styles.filterPrimary}`}
+            >
               <FiSliders size={16} />
               Filter
             </button>
-            {catalog.filters.includes("Silhouette") && availableFilterOptions.silhouette.length > 0 && (
-              <FilterDropdown
-                label="Silhouette"
-                options={availableFilterOptions.silhouette}
-                selectedValue={filters.silhouette}
-                onSelect={(value) => handleFilterChange("silhouette", value)}
-                placeholder="All Silhouette"
-              />
-            )}
-            {catalog.filters.includes("Fabric") && availableFilterOptions.fabric.length > 0 && (
-              <FilterDropdown
-                label="Fabric"
-                options={availableFilterOptions.fabric}
-                selectedValue={filters.fabric}
-                onSelect={(value) => handleFilterChange("fabric", value)}
-                placeholder="All Fabric"
-              />
-            )}
-            {catalog.filters.includes("Occasion") && availableFilterOptions.occasion.length > 0 && (
-              <FilterDropdown
-                label="Occasion"
-                options={availableFilterOptions.occasion}
-                selectedValue={filters.occasion}
-                onSelect={(value) => handleFilterChange("occasion", value)}
-                placeholder="All Occasion"
-              />
-            )}
-            {catalog.filters.includes("Sleeve") && availableFilterOptions.sleeve.length > 0 && (
-              <FilterDropdown
-                label="Sleeve"
-                options={availableFilterOptions.sleeve}
-                selectedValue={filters.sleeve}
-                onSelect={(value) => handleFilterChange("sleeve", value)}
-                placeholder="All Sleeve"
-              />
-            )}
-            {catalog.filters.includes("Length") && availableFilterOptions.length.length > 0 && (
-              <FilterDropdown
-                label="Length"
-                options={availableFilterOptions.length}
-                selectedValue={filters.length}
-                onSelect={(value) => handleFilterChange("length", value)}
-                placeholder="All Length"
-              />
-            )}
-            {catalog.filters.includes("Embellishment") && availableFilterOptions.embellishment.length > 0 && (
-              <FilterDropdown
-                label="Embellishment"
-                options={availableFilterOptions.embellishment}
-                selectedValue={filters.embellishment}
-                onSelect={(value) => handleFilterChange("embellishment", value)}
-                placeholder="All Embellishment"
-              />
-            )}
+            {catalog.filters.includes("Silhouette") &&
+              availableFilterOptions.silhouette.length > 0 && (
+                <FilterDropdown
+                  label="Silhouette"
+                  options={availableFilterOptions.silhouette}
+                  selectedValue={filters.silhouette}
+                  onSelect={(value) => handleFilterChange("silhouette", value)}
+                  placeholder="All Silhouette"
+                />
+              )}
+            {catalog.filters.includes("Fabric") &&
+              availableFilterOptions.fabric.length > 0 && (
+                <FilterDropdown
+                  label="Fabric"
+                  options={availableFilterOptions.fabric}
+                  selectedValue={filters.fabric}
+                  onSelect={(value) => handleFilterChange("fabric", value)}
+                  placeholder="All Fabric"
+                />
+              )}
+            {catalog.filters.includes("Occasion") &&
+              availableFilterOptions.occasion.length > 0 && (
+                <FilterDropdown
+                  label="Occasion"
+                  options={availableFilterOptions.occasion}
+                  selectedValue={filters.occasion}
+                  onSelect={(value) => handleFilterChange("occasion", value)}
+                  placeholder="All Occasion"
+                />
+              )}
+            {catalog.filters.includes("Sleeve") &&
+              availableFilterOptions.sleeve.length > 0 && (
+                <FilterDropdown
+                  label="Sleeve"
+                  options={availableFilterOptions.sleeve}
+                  selectedValue={filters.sleeve}
+                  onSelect={(value) => handleFilterChange("sleeve", value)}
+                  placeholder="All Sleeve"
+                />
+              )}
+            {catalog.filters.includes("Length") &&
+              availableFilterOptions.length.length > 0 && (
+                <FilterDropdown
+                  label="Length"
+                  options={availableFilterOptions.length}
+                  selectedValue={filters.length}
+                  onSelect={(value) => handleFilterChange("length", value)}
+                  placeholder="All Length"
+                />
+              )}
+            {catalog.filters.includes("Embellishment") &&
+              availableFilterOptions.embellishment.length > 0 && (
+                <FilterDropdown
+                  label="Embellishment"
+                  options={availableFilterOptions.embellishment}
+                  selectedValue={filters.embellishment}
+                  onSelect={(value) =>
+                    handleFilterChange("embellishment", value)
+                  }
+                  placeholder="All Embellishment"
+                />
+              )}
           </div>
           <div className={styles.view}>
-            <div className={styles.viewToggle} role="group" aria-label="View options">
+            <div
+              className={styles.viewToggle}
+              role="group"
+              aria-label="View options"
+            >
               <button
                 type="button"
-                className={`${styles.viewButton} ${viewMode === "grid" ? styles.viewButtonActive : ""}`}
+                className={`${styles.viewButton} ${
+                  viewMode === "grid" ? styles.viewButtonActive : ""
+                }`}
                 aria-label={t("profile.grid.view")}
                 onClick={() => setViewMode("grid")}
               >
@@ -727,7 +832,9 @@ export const ShopPage = ({ category }: ShopPageProps) => {
               </button>
               <button
                 type="button"
-                className={`${styles.viewButton} ${viewMode === "list" ? styles.viewButtonActive : ""}`}
+                className={`${styles.viewButton} ${
+                  viewMode === "list" ? styles.viewButtonActive : ""
+                }`}
                 aria-label={t("profile.list.view")}
                 onClick={() => setViewMode("list")}
               >
@@ -739,11 +846,22 @@ export const ShopPage = ({ category }: ShopPageProps) => {
               className={styles.sort}
               onClick={() => {
                 const nextSort: typeof sortBy =
-                  sortBy === "featured" ? "price-asc" : sortBy === "price-asc" ? "price-desc" : "featured";
+                  sortBy === "featured"
+                    ? "price-asc"
+                    : sortBy === "price-asc"
+                    ? "price-desc"
+                    : "featured";
                 setSortBy(nextSort);
               }}
             >
-              {t("shop.sort.by")} <strong>{sortBy === "featured" ? t("shop.sort.featured") : sortBy === "price-asc" ? t("shop.sort.price.asc") : t("shop.sort.price.desc")}</strong>
+              {t("shop.sort.by")}{" "}
+              <strong>
+                {sortBy === "featured"
+                  ? t("shop.sort.featured")
+                  : sortBy === "price-asc"
+                  ? t("shop.sort.price.asc")
+                  : t("shop.sort.price.desc")}
+              </strong>
               <FiChevronDown size={14} />
             </button>
           </div>

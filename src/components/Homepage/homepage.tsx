@@ -10,19 +10,19 @@ const heroFeatures = [
   {
     id: "ao-dai",
     label: "Ao Dai",
-    image: "/images/image_1.png",
+    image: "/images/categories/ao-dai.png",
     category: "Ao Dai",
   },
   {
     id: "suits",
     label: "Suits",
-    image: "/images/image_2.png",
+    image: "/images/categories/suits.png",
     category: "Suits",
   },
   {
     id: "bridal-formal",
     label: "Bridal & Formal Dresses",
-    image: "/images/image_3.png",
+    image: "/images/categories/bridal-formal-dresses.png",
     category: "Bridal & Formal Dresses",
   },
 ];
@@ -31,25 +31,25 @@ const curationItems = [
   {
     id: "accessories",
     label: "Accessories",
-    image: "/images/image_4.png",
+    image: "/images/categories/accessories.png",
     category: "Accessories",
   },
   {
     id: "lunar-decor",
     label: "Lunar New Year Décor",
-    image: "/images/image_5.png",
+    image: "/images/categories/lunar-new-year-decor.png",
     category: "Lunar New Year Décor",
   },
   {
     id: "ceremonial-attire",
     label: "Ceremonial Attire",
-    image: "/images/image_6.png",
+    image: "/images/categories/ceremonial-attire.png",
     category: "Ceremonial Attire",
   },
   {
     id: "uniforms",
     label: "Uniforms & Teamwear",
-    image: "/images/image_7.png",
+    image: "/images/categories/uniforms-teamwear.png",
     category: "Uniforms & Teamwear",
   },
 ];
@@ -59,7 +59,9 @@ const getCategoryPath = (categoryLabel?: string) => {
     return "/shop";
   }
   const slug = toCategorySlug(categoryLabel);
-  return slug === defaultCategorySlug ? "/shop" : `/shop?category=${encodeURIComponent(slug)}`;
+  return slug === defaultCategorySlug
+    ? "/shop"
+    : `/shop?category=${encodeURIComponent(slug)}`;
 };
 
 type HomePageProps = {
@@ -85,7 +87,11 @@ export default function HomePage({ showFooter = true }: HomePageProps = {}) {
       <div className={`homepage${isLoading ? " is-loading" : ""}`}>
         {isLoading ? (
           <div className="homepage__full-bleed">
-            <div className="homepage__skeleton" role="status" aria-live="polite">
+            <div
+              className="homepage__skeleton"
+              role="status"
+              aria-live="polite"
+            >
               <div className="skeleton-row">
                 <span className="skeleton skeleton--brand" />
                 <span className="skeleton skeleton--search" />
@@ -124,12 +130,14 @@ export default function HomePage({ showFooter = true }: HomePageProps = {}) {
                     aria-label={`${copy.viewHero} ${feature.label}`}
                   >
                     <figure className="hero__feature">
-                    <div 
-                      className="hero__feature-image" 
-                      style={{ backgroundImage: `url(${feature.image})` }}
-                    />
-                      <figcaption className="hero__feature-caption">{feature.label}</figcaption>
-                  </figure>
+                      <div
+                        className="hero__feature-image"
+                        style={{ backgroundImage: `url(${feature.image})` }}
+                      />
+                      <figcaption className="hero__feature-caption">
+                        {feature.label}
+                      </figcaption>
+                    </figure>
                   </Link>
                 ))}
               </section>
@@ -145,12 +153,12 @@ export default function HomePage({ showFooter = true }: HomePageProps = {}) {
                     aria-label={`${copy.viewCategory} ${item.label}`}
                   >
                     <article className="curation__card">
-                    <div 
-                      className="curation__image" 
-                      style={{ backgroundImage: `url(${item.image})` }}
-                    />
+                      <div
+                        className="curation__image"
+                        style={{ backgroundImage: `url(${item.image})` }}
+                      />
                       <p className="curation__caption">{item.label}</p>
-                  </article>
+                    </article>
                   </Link>
                 ))}
               </div>
