@@ -72,6 +72,40 @@ class ProductController
             $this->sendErrorResponse(500, 'ERR_GET_TAGS_FAILED', 'Failed to get tags');
         }
     }
+    
+    public function getCategories(): void
+    {
+        try {
+            $categories = $this->productModel->getAllCategories();
+            $this->sendSuccessResponse(200, 'Categories retrieved successfully', ['categories' => $categories]);
+        } catch (\Exception $e) {
+            error_log('Get categories error: ' . $e->getMessage());
+            $this->sendErrorResponse(500, 'ERR_GET_CATEGORIES_FAILED', 'Failed to get categories');
+        }
+    }
+    
+    public function getVariants(): void
+    {
+        try {
+            $categorySlug = $_GET['category'] ?? null;
+            $variants = $this->productModel->getAllVariants($categorySlug);
+            $this->sendSuccessResponse(200, 'Variants retrieved successfully', ['variants' => $variants]);
+        } catch (\Exception $e) {
+            error_log('Get variants error: ' . $e->getMessage());
+            $this->sendErrorResponse(500, 'ERR_GET_VARIANTS_FAILED', 'Failed to get variants');
+        }
+    }
+    
+    public function getVariantsGrouped(): void
+    {
+        try {
+            $grouped = $this->productModel->getVariantsGroupedByCategory();
+            $this->sendSuccessResponse(200, 'Variants grouped by category retrieved successfully', ['variantsByCategory' => $grouped]);
+        } catch (\Exception $e) {
+            error_log('Get grouped variants error: ' . $e->getMessage());
+            $this->sendErrorResponse(500, 'ERR_GET_VARIANTS_FAILED', 'Failed to get variants');
+        }
+    }
 
     private function sendSuccessResponse(int $statusCode, string $message, array $data = []): void
     {
@@ -94,6 +128,7 @@ class ProductController
         ]);
     }
 }
+
 
 
 

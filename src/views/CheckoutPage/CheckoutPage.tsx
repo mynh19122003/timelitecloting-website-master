@@ -1,16 +1,16 @@
-import { useState, useEffect, FormEvent, useRef } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useCart, type CartItem } from "../../context/CartContext";
 import { useToast } from "../../context/ToastContext";
 import { useI18n } from "../../context/I18nContext";
 import { formatCurrency } from "../../utils/currency";
 import { ApiService } from "../../services/api";
-import { API_CONFIG } from "../../config/api";
 import { getUserData } from "../../utils/auth";
 import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
 import CountryPhoneInput from "react-country-phone-input";
 import "react-country-phone-input/lib/style.css";
-import { calculateSalesTax } from "../../data/salesTaxRates";
+// Tax calculation removed - no longer needed
+import { calculateUSPSShipping } from "../../utils/uspsShippingRates";
 // We no longer rely on static numeric productId map.
 import styles from "./CheckoutPage.module.css";
 
@@ -93,31 +93,8 @@ interface FormData {
   billingPhone: string;
 }
 
-// Shipping rate type from Shippo API
-interface ShippingRate {
-  id: string;
-  name: string;
-  price: number;
-  time: string;
-  provider?: string;
-  service?: string;
-  estimatedDays?: number;
-  fallback?: boolean;
-}
-
-// Fallback rates if API fails
-const FALLBACK_SHIPPING_RATES: ShippingRate[] = [
-  {
-    id: "fallback_priority",
-    name: "USPS Priority Mail",
-    price: 9.99,
-    time: "1-3 business days",
-    provider: "USPS",
-    fallback: true,
-  },
-];
-
-const DEFAULT_SHIPPING_METHOD = "fallback_priority";
+// USPS Flat Rate shipping is now calculated locally based on item quantity
+// No API call needed - uses calculateUSPSShipping from uspsShippingRates.ts
 const SUPPORTED_COUNTRIES = ["US", "CA"];
 
 const digitsOnly = (value: string) => value.replace(/\D/g, "");
@@ -194,7 +171,7 @@ export const CheckoutPage = () => {
     country: "United States",
     notes: "",
     paymentMethod: "credit_card",
-    shippingMethod: DEFAULT_SHIPPING_METHOD,
+    shippingMethod: "usps_priority_flat_rate",
     cardName: "",
     cardNumber: "",
     cardExpiry: "",
@@ -216,12 +193,12 @@ export const CheckoutPage = () => {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Shipping rates state (fetched from Shippo API)
-  const [shippingRates, setShippingRates] = useState<ShippingRate[]>([]);
-  const [isLoadingShipping, setIsLoadingShipping] = useState(false);
-  const [shippingError, setShippingError] = useState<string | null>(null);
+  // USPS Flat Rate shipping is calculated based on total item count
+  // No API call needed - calculated locally
+  const totalItemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const uspsShipping = calculateUSPSShipping(totalItemCount);
 
-  // Check if address is complete for shipping calculation
+  // Check if address is complete for display purposes
   const isAddressComplete = Boolean(
     formData.city.trim() &&
       formData.state.trim() &&
@@ -298,145 +275,8 @@ export const CheckoutPage = () => {
     loadUserProfile();
   }, []);
 
-  // Fetch shipping rates when address is complete
-  // Using a ref to track if we already fetched for this address to avoid re-fetching
-  const shippingFetchKeyRef = useRef<string>("");
-  // Track the current address key to prevent stale updates
-  const currentAddressKeyRef = useRef<string>("");
-
-  useEffect(() => {
-    if (!isAddressComplete) {
-      // Reset shipping when address becomes incomplete
-      setShippingRates([]);
-      setShippingError(null);
-      shippingFetchKeyRef.current = "";
-      currentAddressKeyRef.current = "";
-      return;
-    }
-
-    // Create a key from address to avoid re-fetching same address
-    const addressKey = `${formData.city}-${formData.state}-${formData.zipCode}`;
-
-    // Update the current address key immediately
-    currentAddressKeyRef.current = addressKey;
-
-    // Skip if we already fetched for this exact address
-    if (shippingFetchKeyRef.current === addressKey) {
-      return; // Already fetched for this address
-    }
-
-    // Reset the fetch key to allow new fetch when address changes
-    // This ensures that changing address will trigger a new API call
-    shippingFetchKeyRef.current = "";
-
-    const fetchShippingRates = async () => {
-      // Capture the address key at the time fetch starts
-      const fetchAddressKey = addressKey;
-
-      setIsLoadingShipping(true);
-      setShippingError(null);
-
-      try {
-        const response = await fetch(
-          `${API_CONFIG.BASE_URL}/api/shipping/calculate-rates`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              destination: {
-                city: formData.city,
-                state: formData.state,
-                zipCode: formData.zipCode,
-                streetAddress: formData.streetAddress || "123 Main St",
-              },
-              items: [{ quantity: 1, weight: 1.5 }],
-            }),
-          }
-        );
-
-        const data = await response.json();
-
-        // Check if address has changed while fetching - if so, discard results
-        if (currentAddressKeyRef.current !== fetchAddressKey) {
-          console.log("Address changed during fetch, discarding stale results");
-          return;
-        }
-
-        if (data.success && data.rates && data.rates.length > 0) {
-          // Filter to only include Priority Mail (not Ground Advantage or Express)
-          const filteredRates = data.rates.filter(
-            (rate: ShippingRate) =>
-              rate.name.toLowerCase().includes("priority mail") &&
-              !rate.name.toLowerCase().includes("express")
-          );
-
-          if (filteredRates.length > 0) {
-            // Override the time to "4-5 business days" for Priority Mail
-            const updatedRates = filteredRates.map((rate: ShippingRate) => ({
-              ...rate,
-              time: "4-5 business days",
-            }));
-            setShippingRates(updatedRates);
-            shippingFetchKeyRef.current = fetchAddressKey;
-            // Only auto-select if no method selected yet
-            setFormData((prev) => {
-              if (
-                !prev.shippingMethod ||
-                prev.shippingMethod.startsWith("fallback")
-              ) {
-                return { ...prev, shippingMethod: updatedRates[0].id };
-              }
-              // Check if current method exists in new rates
-              const exists = updatedRates.some(
-                (r: ShippingRate) => r.id === prev.shippingMethod
-              );
-              if (!exists) {
-                return { ...prev, shippingMethod: updatedRates[0].id };
-              }
-              return prev; // Keep current selection
-            });
-          } else {
-            // No Priority Mail found, show error
-            setShippingRates([]);
-            setShippingError(
-              "Could not load shipping rates. Please try again later."
-            );
-            shippingFetchKeyRef.current = fetchAddressKey;
-          }
-        } else {
-          // API returned no rates, show error
-          setShippingRates([]);
-          setShippingError(
-            "Could not load shipping rates. Please try again later."
-          );
-          shippingFetchKeyRef.current = fetchAddressKey;
-        }
-      } catch (err) {
-        // Check if address has changed while fetching
-        if (currentAddressKeyRef.current !== fetchAddressKey) {
-          return;
-        }
-        console.error("Failed to fetch shipping rates:", err);
-        // Show error instead of fallback rates
-        setShippingRates([]);
-        setShippingError(
-          "Could not load shipping rates. Please check your address and try again."
-        );
-        shippingFetchKeyRef.current = fetchAddressKey;
-      } finally {
-        // Only set loading to false if this is still the current address
-        if (currentAddressKeyRef.current === fetchAddressKey) {
-          setIsLoadingShipping(false);
-        }
-      }
-    };
-
-    // Debounce to avoid too many API calls
-    const timer = setTimeout(fetchShippingRates, 600);
-    return () => clearTimeout(timer);
-    // Only depend on address fields, not items or shippingMethod
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAddressComplete, formData.city, formData.state, formData.zipCode]);
+  // Note: Shipping is now calculated locally based on item quantity
+  // No API call needed - uses calculateUSPSShipping from uspsShippingRates.ts
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -552,23 +392,11 @@ export const CheckoutPage = () => {
     if (error) setError(null);
   };
 
-  // Calculate shipping cost from dynamic rates
-  const getShippingCost = () => {
-    const rates =
-      shippingRates.length > 0 ? shippingRates : FALLBACK_SHIPPING_RATES;
-    const method = rates.find((m) => m.id === formData.shippingMethod);
-    return method ? method.price : 0;
-  };
+  // Calculate shipping cost from USPS Flat Rate based on item quantity
+  const shippingCost = uspsShipping.totalPrice;
 
-  const shippingCost = getShippingCost();
-
-  // Calculate sales tax based on user's state
-  const taxInfo = calculateSalesTax(total, formData.state, formData.country);
-  const taxAmount = taxInfo.taxAmount;
-
-  const finalTotal = total + shippingCost + taxAmount;
-  // Use dynamic shipping rates (from API or fallback)
-  const shippingOptions = shippingRates.length > 0 ? shippingRates : [];
+  // Tax removed - no longer needed
+  const finalTotal = total + shippingCost;
 
   const sanitizePhoneNumber = (value: string) => value.replace(/[^\d+]/g, "");
 
@@ -1229,128 +1057,64 @@ export const CheckoutPage = () => {
                 </div>
               )}
 
-              {/* Show loading spinner */}
-              {isAddressComplete && isLoadingShipping && (
-                <div
-                  style={{
-                    padding: "1.5rem",
-                    backgroundColor: "#f0f8ff",
-                    border: "1px solid #b0d4f1",
-                    borderRadius: "8px",
-                    color: "#1e5a8e",
-                    textAlign: "center",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "0.5rem",
-                  }}
-                >
+              {/* Show USPS Flat Rate shipping - calculated instantly based on item count */}
+              {totalItemCount > 0 ? (
+                <div className={styles.shippingOptions}>
                   <div
-                    style={{
-                      width: "18px",
-                      height: "18px",
-                      border: "2px solid #b0d4f1",
-                      borderTop: "2px solid #1e5a8e",
-                      borderRadius: "50%",
-                      animation: "spin 1s linear infinite",
-                    }}
-                  />
-                  Calculating shipping rates...
-                  <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+                    className={`${styles.shippingOption} ${styles.shippingOptionActive}`}
+                  >
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="shippingMethod"
+                        value="usps_priority_flat_rate"
+                        checked={true}
+                        readOnly
+                        className={styles.shippingRadio}
+                      />
+                      <div className={styles.shippingInfo}>
+                        <span className={styles.shippingName}>
+                          <span
+                            style={{
+                              display: "inline-block",
+                              padding: "0.15rem 0.4rem",
+                              marginRight: "0.5rem",
+                              backgroundColor: "#1e40af",
+                              color: "white",
+                              borderRadius: "4px",
+                              fontSize: "0.65rem",
+                              fontWeight: 700,
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            USPS
+                          </span>
+                          {uspsShipping.displayName.replace("USPS ", "")}
+                        </span>
+                        <span className={styles.shippingTime}>
+                          {uspsShipping.estimatedDays}
+                        </span>
+                      </div>
+                    </div>
+                    <span className={styles.shippingPrice}>
+                      {formatCurrency(uspsShipping.totalPrice)}
+                    </span>
+                  </div>
                 </div>
-              )}
-
-              {/* Show error with warning */}
-              {isAddressComplete && !isLoadingShipping && shippingError && (
+              ) : (
                 <div
                   style={{
-                    padding: "0.5rem 1rem",
-                    marginBottom: "0.5rem",
-                    backgroundColor: "#fff3cd",
-                    border: "1px solid #ffc107",
-                    borderRadius: "6px",
-                    color: "#856404",
-                    fontSize: "0.875rem",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
+                    padding: "1rem",
+                    backgroundColor: "#f8f9fa",
+                    border: "1px solid #e9ecef",
+                    borderRadius: "8px",
+                    color: "#6c757d",
+                    textAlign: "center",
                   }}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                    <line x1="12" y1="9" x2="12" y2="13" />
-                    <line x1="12" y1="17" x2="12.01" y2="17" />
-                  </svg>
-                  {shippingError}
+                  Add items to see shipping cost
                 </div>
               )}
-
-              {/* Show shipping options when loaded */}
-              {isAddressComplete &&
-                !isLoadingShipping &&
-                shippingOptions.length > 0 && (
-                  <div className={styles.shippingOptions}>
-                    {shippingOptions.map((method) => (
-                      <label
-                        key={method.id}
-                        className={`${styles.shippingOption} ${
-                          formData.shippingMethod === method.id
-                            ? styles.shippingOptionActive
-                            : ""
-                        }`}
-                      >
-                        <div className="flex items-center">
-                          <input
-                            type="radio"
-                            name="shippingMethod"
-                            value={method.id}
-                            checked={formData.shippingMethod === method.id}
-                            onChange={() => handleShippingChange(method.id)}
-                            className={styles.shippingRadio}
-                          />
-                          <div className={styles.shippingInfo}>
-                            <span className={styles.shippingName}>
-                              {method.provider && (
-                                <span
-                                  style={{
-                                    display: "inline-block",
-                                    padding: "0.15rem 0.4rem",
-                                    marginRight: "0.5rem",
-                                    backgroundColor: "#1e40af",
-                                    color: "white",
-                                    borderRadius: "4px",
-                                    fontSize: "0.65rem",
-                                    fontWeight: 700,
-                                    textTransform: "uppercase",
-                                  }}
-                                >
-                                  {method.provider}
-                                </span>
-                              )}
-                              {method.name.replace(`${method.provider} `, "")}
-                            </span>
-                            <span className={styles.shippingTime}>
-                              {method.time}
-                            </span>
-                          </div>
-                        </div>
-                        <span className={styles.shippingPrice}>
-                          {formatCurrency(method.price)}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                )}
             </div>
 
             <div>
@@ -1707,20 +1471,6 @@ export const CheckoutPage = () => {
                     : formatCurrency(shippingCost)}
                 </span>
               </div>
-              {taxInfo.hasTax && (
-                <div className={styles.summaryRow}>
-                  <span>
-                    Tax ({taxInfo.stateName} {taxInfo.displayRate})
-                  </span>
-                  <span>{formatCurrency(taxAmount)}</span>
-                </div>
-              )}
-              {!taxInfo.hasTax && formData.state && (
-                <div className={styles.summaryRow}>
-                  <span>Tax ({taxInfo.stateName})</span>
-                  <span style={{ color: "#22c55e" }}>No Tax</span>
-                </div>
-              )}
             </div>
 
             <div className={styles.totalWrapper}>

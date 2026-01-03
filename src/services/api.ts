@@ -1,6 +1,6 @@
 import { API_CONFIG, getAdminMediaUrl } from '../config/api';
 import logger from '../utils/logger';
-import { apiCache, ApiCache } from '../utils/apiCache';
+// Cache removed - hosting handles caching
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
@@ -450,7 +450,7 @@ export class ApiService {
     }
   }
 
-  // Products
+  // Products - No local cache, hosting handles caching
   static async getProducts(params?: {
     page?: number;
     limit?: number;
@@ -459,7 +459,7 @@ export class ApiService {
     variant?: string;
     sortBy?: 'price' | 'created_at';
     sortOrder?: 'asc' | 'desc';
-  }, useCache: boolean = true): Promise<{
+  }): Promise<{
     products: unknown[];
     total: number;
     page: number;
@@ -476,90 +476,47 @@ export class ApiService {
 
     const queryString = queryParams.toString();
     const endpoint = `${API_CONFIG.ENDPOINTS.PRODUCTS}${queryString ? `?${queryString}` : ''}`;
-    const cacheKey = ApiCache.generateKey(endpoint, params);
-
-    if (useCache && !params?.search) {
-      const cached = apiCache.get<{
-        products: unknown[];
-        total: number;
-        page: number;
-        limit: number;
-      }>(cacheKey);
-      if (cached) {
-        return cached;
-      }
-    }
 
     try {
       const res = await httpClient.get<ApiResponse<unknown>>(endpoint, true);
       const data = (res as ApiResponse<unknown>).data ?? res;
       const pagination = (data as { pagination?: { page?: number; limit?: number; total?: number }; total?: number })?.pagination
         ?? { page: Number(params?.page || 1), limit: Number(params?.limit || 10), total: (data as { total?: number })?.total ?? 0 };
-      const result = {
+      return {
         products: (data as { products?: unknown[] }).products ?? [],
         total: Number(pagination.total ?? 0),
         page: Number(pagination.page ?? 1),
         limit: Number(pagination.limit ?? 10),
       };
-
-      if (useCache && !params?.search) {
-        apiCache.set(cacheKey, result, 2 * 60 * 1000);
-      }
-
-      return result;
     } catch {
       try {
         const res = await httpClient.get<ApiResponse<unknown>>(`${API_CONFIG.ENDPOINTS.PHP.PRODUCTS}${queryString ? `?${queryString}` : ''}`, true);
         const data = (res as ApiResponse<unknown>).data ?? res;
         const pagination = (data as { pagination?: { page?: number; limit?: number; total?: number }; total?: number })?.pagination
           ?? { page: Number(params?.page || 1), limit: Number(params?.limit || 10), total: (data as { total?: number })?.total ?? 0 };
-        const result = {
+        return {
           products: (data as { products?: unknown[] }).products ?? [],
           total: Number(pagination.total ?? 0),
           page: Number(pagination.page ?? 1),
           limit: Number(pagination.limit ?? 10),
         };
-
-        if (useCache && !params?.search) {
-          apiCache.set(cacheKey, result, 2 * 60 * 1000);
-        }
-
-        return result;
       } catch {
         return { products: [], total: 0, page: Number(params?.page || 1), limit: Number(params?.limit || 10) };
       }
     }
   }
 
-  static async getProduct(idOrSlug: number | string, useCache: boolean = true): Promise<unknown> {
+  static async getProduct(idOrSlug: number | string): Promise<unknown> {
     const idStr = String(idOrSlug);
-    const cacheKey = `product:${idStr}`;
-
-    if (useCache) {
-      const cached = apiCache.get<unknown>(cacheKey);
-      if (cached) {
-        return cached;
-      }
-    }
 
     const pidMatch = /^pid(\d+)$/i.test(idStr);
     if (pidMatch) {
       const numericIdMatch = idStr.match(/^pid(\d+)$/i)?.[1];
       if (numericIdMatch) {
-        // Use full PID string as requested by user
-        // const numericId = parseInt(numericIdMatch, 10);
         try {
-          const result = await httpClient.get(`${API_CONFIG.ENDPOINTS.PRODUCT_DETAIL}/${idStr}`);
-          if (useCache) {
-            apiCache.set(cacheKey, result, 5 * 60 * 1000);
-          }
-          return result;
+          return await httpClient.get(`${API_CONFIG.ENDPOINTS.PRODUCT_DETAIL}/${idStr}`);
         } catch {
-          const result = await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.PRODUCT_DETAIL}/${idStr}`);
-          if (useCache) {
-            apiCache.set(cacheKey, result, 5 * 60 * 1000);
-          }
-          return result;
+          return await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.PRODUCT_DETAIL}/${idStr}`);
         }
       }
     }
@@ -567,26 +524,14 @@ export class ApiService {
     const isNumeric = typeof idOrSlug === 'number' || (typeof idOrSlug === 'string' && /^\d+$/.test(idStr));
     if (isNumeric) {
       try {
-        const result = await httpClient.get(`${API_CONFIG.ENDPOINTS.PRODUCT_DETAIL}/${idOrSlug}`);
-        if (useCache) {
-          apiCache.set(cacheKey, result, 5 * 60 * 1000);
-        }
-        return result;
+        return await httpClient.get(`${API_CONFIG.ENDPOINTS.PRODUCT_DETAIL}/${idOrSlug}`);
       } catch {
-        const result = await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.PRODUCT_DETAIL}/${idOrSlug}`);
-        if (useCache) {
-          apiCache.set(cacheKey, result, 5 * 60 * 1000);
-        }
-        return result;
+        return await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.PRODUCT_DETAIL}/${idOrSlug}`);
       }
     }
 
     const slug = idStr;
-    const result = await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.PRODUCT_DETAIL}?product_id=${encodeURIComponent(slug)}`);
-    if (useCache) {
-      apiCache.set(cacheKey, result, 5 * 60 * 1000);
-    }
-    return result;
+    return await httpClient.get(`${API_CONFIG.ENDPOINTS.PHP.PRODUCT_DETAIL}?product_id=${encodeURIComponent(slug)}`);
   }
 
   static async getProductBySlug(slug: string): Promise<unknown> {

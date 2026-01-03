@@ -18,9 +18,13 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Timelite Couture | Áo Dài Cao Cấp Cho Thị Trường Mỹ",
+  title: "Timelite Clothing | Vietnamese Ao Dai Store in San Jose, California",
   description:
-    "Website thương mại điện tử cho áo dài cao cấp Việt Nam, được may đo cho khách hàng hiện đại tại Hoa Kỳ.",
+    "The Vietnamese Ao Dai store in San Jose California. We always want to bring elegant and elegant ao dai to the most satisfaction possible.",
+  icons: {
+    icon: "/Image/Logo.png",
+    apple: "/Image/Logo.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

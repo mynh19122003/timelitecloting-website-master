@@ -2,26 +2,13 @@ import axios from 'axios'
 import { getApiBaseUrl } from './config'
 
 // Create a pre-configured Axios instance for the app
-// Supports both Next.js and Vite
-const isNext = typeof process !== 'undefined' && process.env
-const isVite = typeof import.meta !== 'undefined' && import.meta.env
-const isDev = (isNext && process.env.NODE_ENV === 'development')
-  || (isVite && import.meta?.env?.DEV)
+const isDev = process.env.NODE_ENV === 'development'
 
 const apiBaseUrl = getApiBaseUrl()
 // Log API base URL trong dev mode để debug
 if (isDev) {
   // eslint-disable-next-line no-console
   console.info('[Admin API] Base URL:', apiBaseUrl)
-  // eslint-disable-next-line no-console
-  console.info('[Admin API] Config check:', {
-    isNext,
-    isVite,
-    NODE_ENV: isNext ? process.env.NODE_ENV : undefined,
-    VITE_DEV: isVite ? import.meta?.env?.DEV : undefined,
-    NEXT_PUBLIC_API_URL: isNext ? process.env.NEXT_PUBLIC_API_URL : undefined,
-    VITE_API_URL: isVite ? import.meta?.env?.VITE_API_URL : undefined
-  })
 }
 
 const shouldAutoNavigateOnAuthError = !isDev

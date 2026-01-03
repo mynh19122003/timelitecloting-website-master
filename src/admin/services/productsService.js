@@ -193,7 +193,7 @@ export const createProduct = async (formData = {}) => {
   }
 
   // Dev debug: in ra payload đúng lúc POST để kiểm tra trường gửi lên API
-  if (import.meta?.env?.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     try {
       // eslint-disable-next-line no-console
       console.groupCollapsed('[DEBUG] POST /admin/products payload')
@@ -406,7 +406,7 @@ export const updateProduct = async (idOrCode, formData = {}) => {
   }
 
   // Dev debug
-  if (import.meta?.env?.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     try {
       console.groupCollapsed('[DEBUG] PATCH /admin/products/:id payload')
       console.log('Product ID:', idOrCode)
@@ -609,7 +609,8 @@ export default {
   listProducts,
   updateProduct,
   getTags,
-  getCategories
+  getCategories,
+  listCategories: getCategories
 }
 
 

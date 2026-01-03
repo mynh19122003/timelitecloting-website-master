@@ -21,14 +21,14 @@ const isLocalHostname = (hostname) => {
 // REMOVED: forceProdIfDeployed - runtime detection removed to force API subdomain
 
 export const getApiBaseUrl = () => {
-  // FORCE: Always use production API subdomain for admin
-  return PROD_ADMIN_BASE
+  // LOCAL: Dùng localhost để test API
+  return LOCAL_ADMIN_BASE
 }
 
 // Resolve Public API base URL (catalog/orders)
 export const getPublicApiBaseUrl = () => {
-  // FORCE: Always use production API subdomain for public API calls from admin
-  return PROD_PUBLIC_BASE
+  // LOCAL: Dùng localhost để test API
+  return LOCAL_API_ORIGIN
 }
 
 

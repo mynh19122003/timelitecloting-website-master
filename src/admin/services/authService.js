@@ -29,7 +29,7 @@ export const signIn = async (email, password) => {
   if (token) {
     try {
       window.localStorage.setItem('fastcart:token', token)
-  if (import.meta?.env?.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         const masked = typeof token === 'string' && token.length > 12
           ? `${token.slice(0, 6)}…${token.slice(-6)}`
           : token

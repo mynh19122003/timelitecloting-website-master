@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { FaPlus, FaFileExport, FaEdit, FaTrash, FaCloudUploadAlt, FaSpinner } from 'react-icons/fa'
+import { FaPlus, FaFileExport, FaEdit, FaTrash, FaCloudUploadAlt, FaSpinner, FaTags } from 'react-icons/fa'
 import Button from '../../components/Button/Button'
 import DataTable from '../../components/DataTable/DataTable'
 import styles from './Products.module.css'
 import defaultProductImage from '../../assets/products/product-01.svg'
 import productsService from '../../services/productsService'
 import BulkProductModal from '../../components/BulkProductModal/BulkProductModal'
+import VariantsModal from '../../components/VariantsModal/VariantsModal'
 
 const ensureId = (value, fallback) => {
   // Ensure value is a string
@@ -134,6 +135,7 @@ const Products = () => {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
   const [showBulkModal, setShowBulkModal] = useState(false)
+  const [showVariantsModal, setShowVariantsModal] = useState(false)
 
   // Bulk Upload State
   const [bulkUploadState, setBulkUploadState] = useState({
@@ -505,6 +507,9 @@ const Products = () => {
               <FaTrash /> {isBulkDeleting ? 'Deleting…' : `Delete ${selectedIds.size} selected`}
             </Button>
           )}
+          <Button variant="secondary" onClick={() => setShowVariantsModal(true)}>
+            <FaTags /> Add Variants
+          </Button>
           <Button variant="ghost" onClick={handleExport} title="Export">
             <FaFileExport /> Export
           </Button>
@@ -583,6 +588,16 @@ const Products = () => {
         <BulkProductModal
           onClose={() => setShowBulkModal(false)}
           onStartUpload={handleStartBulkUpload}
+        />
+      )}
+
+      {showVariantsModal && (
+        <VariantsModal
+          onClose={() => setShowVariantsModal(false)}
+          onVariantCreated={() => {
+            // Optionally reload page to show new variants
+            console.log('Variant created successfully');
+          }}
         />
       )}
     </div>

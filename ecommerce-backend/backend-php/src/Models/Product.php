@@ -485,5 +485,100 @@ class Product
         }
     }
 
+    /**
+     * Get all unique categories from products table
+     * @return array Array of category objects with label and slug
+     */
+    public function getAllCategories(): array
+    {
+        try {
+            $stmt = $this->db->query('
+                SELECT DISTINCT category 
+                FROM products 
+                WHERE category IS NOT NULL AND category != "" 
+                ORDER BY category ASC
+            ');
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            $categories = [];
+            foreach ($rows as $row) {
+                $label = $row['category'];
+                $slug = $this->normalizeFilterKey($label);
+                $categories[] = [
+                    'label' => $label,
+                    'slug' => $slug
+                ];
+            }
+            
+            return $categories;
+        } catch (PDOException $e) {
+            error_log('Get categories error: ' . $e->getMessage());
+            throw new \Exception('ERR_GET_CATEGORIES_FAILED');
+        }
+    }
+    
+    /**
+     * Get all variants from product_variants table
+     * @param string|null $categorySlug Optional category slug to filter variants
+     * @return array Array of variant objects
+     */
+    public function getAllVariants(?string $categorySlug = null): array
+    {
+        try {
+            if ($categorySlug) {
+                $stmt = $this->db->prepare('
+                    SELECT id, variant_name, category_slug, sort_order, created_at 
+                    FROM product_variants 
+                    WHERE category_slug = ? 
+                    ORDER BY sort_order ASC, variant_name ASC
+                ');
+                $stmt->execute([$categorySlug]);
+            } else {
+                $stmt = $this->db->query('
+                    SELECT id, variant_name, category_slug, sort_order, created_at 
+                    FROM product_variants 
+                    ORDER BY category_slug ASC, sort_order ASC, variant_name ASC
+                ');
+            }
+            
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log('Get variants error: ' . $e->getMessage());
+            throw new \Exception('ERR_GET_VARIANTS_FAILED');
+        }
+    }
+    
+    /**
+     * Get variants grouped by category
+     * @return array Associative array with category_slug as key and variant names as values
+     */
+    public function getVariantsGroupedByCategory(): array
+    {
+        try {
+            $stmt = $this->db->query('
+                SELECT category_slug, variant_name, sort_order 
+                FROM product_variants 
+                ORDER BY category_slug ASC, sort_order ASC, variant_name ASC
+            ');
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            $grouped = [];
+            foreach ($rows as $row) {
+                $categorySlug = $row['category_slug'];
+                $variantName = $row['variant_name'];
+                
+                if (!isset($grouped[$categorySlug])) {
+                    $grouped[$categorySlug] = [];
+                }
+                $grouped[$categorySlug][] = $variantName;
+            }
+            
+            return $grouped;
+        } catch (PDOException $e) {
+            error_log('Get grouped variants error: ' . $e->getMessage());
+            throw new \Exception('ERR_GET_VARIANTS_FAILED');
+        }
+    }
+
     // JSON parsing no longer required with minimal schema
 }

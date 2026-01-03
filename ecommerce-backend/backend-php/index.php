@@ -202,6 +202,30 @@ if ($apiIndex !== false && count($pathParts) > $apiIndex + 1) {
                         sendErrorResponse(405, 'ERR_METHOD_NOT_ALLOWED', 'Method not allowed');
                     }
                 }
+                // Handle /api/products/categories endpoint
+                elseif ($action === 'categories') {
+                    if ($requestMethod === 'GET') {
+                        $controller->getCategories();
+                    } else {
+                        sendErrorResponse(405, 'ERR_METHOD_NOT_ALLOWED', 'Method not allowed');
+                    }
+                }
+                // Handle /api/products/variants endpoint
+                elseif ($action === 'variants') {
+                    if ($requestMethod === 'GET') {
+                        $controller->getVariants();
+                    } else {
+                        sendErrorResponse(405, 'ERR_METHOD_NOT_ALLOWED', 'Method not allowed');
+                    }
+                }
+                // Handle /api/products/variants-grouped endpoint
+                elseif ($action === 'variants-grouped') {
+                    if ($requestMethod === 'GET') {
+                        $controller->getVariantsGrouped();
+                    } else {
+                        sendErrorResponse(405, 'ERR_METHOD_NOT_ALLOWED', 'Method not allowed');
+                    }
+                }
                 // Check if action is a numeric ID or PID string (e.g., /api/products/1 or /api/products/PID10050)
                 // Use case-insensitive check for PID
                 elseif ($action && (is_numeric($action) || (stripos($action, 'PID') === 0 || preg_match('/^PID\d+/i', $action)))) {

@@ -842,8 +842,8 @@ const AddProduct = () => {
       const createdUi = await createProduct(payload)
       console.log('[AddProduct] Product created successfully:', createdUi)
 
-      // Điều hướng lại trang danh sách sản phẩm cùng dữ liệu mới
-      navigate('/admin/products', { replace: true, state: { newProduct: createdUi } })
+      // Reload trang hoàn toàn để hiển thị sản phẩm mới
+      window.location.href = '/admin/products'
     } catch (err) {
       console.error('[AddProduct] Error creating product:', err)
       console.error('[AddProduct] Error details:', {

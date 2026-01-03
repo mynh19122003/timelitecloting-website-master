@@ -1,8 +1,8 @@
 // API hosts for different environments
-// NOTE: Theo yêu cầu production, frontend LUÔN trỏ về domain API chính thức.
-// Nếu muốn override cho môi trường đặc biệt, hãy dùng biến môi trường.
-const PROD_API_ORIGIN = 'https://api.timeliteclothing.com';
-const PROD_ADMIN_ORIGIN = 'https://api.timeliteclothing.com';
+// NOTE: Đang test local - trỏ về localhost
+// Để deploy production, đổi lại về domain API chính thức.
+const PROD_API_ORIGIN = 'http://localhost:3002';
+const PROD_ADMIN_ORIGIN = 'http://localhost:3001';
 
 const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '0.0.0.0', '[::1]']);
 
@@ -36,20 +36,12 @@ const normalizeAbsoluteUrl = (input: string | undefined | null, fallback: string
 
 
 const resolveAdminBaseUrl = (): string => {
-  // FORCE: LUÔN LUÔN dùng production API subdomain
-  // Không check NODE_ENV, không check env variables
+  // LOCAL: Dùng localhost để test API
   return PROD_ADMIN_ORIGIN;
 };
 
 const resolveApiBaseUrl = (): string => {
-  // For production static export, ALWAYS use production API
-  // Runtime detection doesn't work for static export
-  // Users should use environment variable to override for local dev if needed
-  const envOverride = typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL;
-  if (envOverride) {
-    return envOverride.replace(/\/+$/, '');
-  }
-  // FORCE production API for all cases
+  // LOCAL: Dùng localhost để test API
   return PROD_API_ORIGIN;
 };
 

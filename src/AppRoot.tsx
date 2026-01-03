@@ -72,6 +72,11 @@ const TaxTestPage = lazy(() =>
     default: m.default,
   }))
 );
+const CatalogTestPage = lazy(() =>
+  import("./views/CatalogTestPage/CatalogTestPage").then((m) => ({
+    default: m.default,
+  }))
+);
 
 // Loading component
 const PageLoader = () => (
@@ -223,6 +228,14 @@ export default function AppRoot() {
                       element={
                         <Suspense fallback={<PageLoader />}>
                           <TaxTestPage />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="/catalog-test"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <CatalogTestPage />
                         </Suspense>
                       }
                     />

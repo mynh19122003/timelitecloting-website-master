@@ -165,12 +165,6 @@ export const shopNavMenu: ShopNavItem[] = [
       },
     ],
     quickLinks: ["View all Ao Dai"],
-    highlight: {
-      eyebrow: "Signature drop",
-      title: "Timelite Ao Dai Capsule",
-      description: "Curated looks that blend heritage details with contemporary proportions.",
-      cta: "Shop Ao Dai capsule",
-    },
   },
   {
     label: "Suits",
@@ -205,12 +199,6 @@ export const shopNavMenu: ShopNavItem[] = [
       },
     ],
     quickLinks: ["View all Bridal & Formal"],
-    highlight: {
-      eyebrow: "Bridal studio",
-      title: "Book a fitting",
-      description: "Explore silhouettes with 1:1 styling support in our studio.",
-      cta: "Explore bridal",
-    },
   },
   {
     label: "Accessories",

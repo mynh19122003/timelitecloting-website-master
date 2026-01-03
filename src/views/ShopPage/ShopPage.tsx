@@ -23,6 +23,11 @@ import {
   type Category,
   type Product as UiProduct,
 } from "../../data/products";
+import {
+  getVariantsByCategory,
+  getVariantsByCategorySync,
+  type VariantsByCategory,
+} from "../../services/variantsService";
 
 const slugToCategoryMap: Record<string, Category> = {
   [toCategorySlug("Ao Dai")]: "ao-dai",
@@ -39,7 +44,11 @@ const slugToCategoryMap: Record<string, Category> = {
   [toCategorySlug("Wedding Gift Trays")]: "wedding-gift-trays",
 };
 
-// Curated variant names per category, aligned with admin variants & navbar
+// Variants are now loaded dynamically from API via variantsService
+// Fallback initial values from sync getter (cache or defaults)
+const INITIAL_VARIANTS_BY_CATEGORY = getVariantsByCategorySync();
+
+// Legacy - kept for reference, now loaded from API
 const VARIANTS_BY_CATEGORY_SLUG: Record<string, string[]> = {
   [toCategorySlug("Ao Dai")]: [
     "Bridal Ao Dai",
@@ -165,6 +174,23 @@ export const ShopPage = ({ category }: ShopPageProps) => {
     length: null,
     embellishment: null,
   });
+
+  // Dynamic variants loaded from API (with fallback to cached/defaults)
+  const [variantsByCategory, setVariantsByCategory] =
+    useState<VariantsByCategory>(INITIAL_VARIANTS_BY_CATEGORY);
+
+  // Fetch variants from API on mount
+  useEffect(() => {
+    let isMounted = true;
+    getVariantsByCategory().then((data) => {
+      if (isMounted) {
+        setVariantsByCategory(data);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const categoryFromSlug = (slugValue?: string | null): Category | null => {
     if (!slugValue || slugValue === defaultCategorySlug) return null;
@@ -403,7 +429,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
         // This is needed because backend returns all Ao Dai for this category slug
         let finalProducts = aggregated;
         if (slug === toCategorySlug("Ceremonial Attire") && !selectedVariant) {
-          const allowedVariants = VARIANTS_BY_CATEGORY_SLUG[slug] || [];
+          const allowedVariants = variantsByCategory[slug] || [];
           if (allowedVariants.length > 0) {
             finalProducts = aggregated.filter(
               (p) => p.variant && allowedVariants.includes(p.variant)
@@ -449,11 +475,11 @@ export const ShopPage = ({ category }: ShopPageProps) => {
   }, [slug, selectedVariant]);
 
   // Get available variants for current category:
-  // use curated list so it always matches navbar & admin variant options
+  // Now uses dynamic data from API with fallback to cached/defaults
   const availableVariants = useMemo(() => {
     const categoryKey = toCategorySlug(readableCategory);
-    return VARIANTS_BY_CATEGORY_SLUG[categoryKey] ?? [];
-  }, [readableCategory]);
+    return variantsByCategory[categoryKey] ?? [];
+  }, [readableCategory, variantsByCategory]);
 
   // Get available filter options for current category
   const availableFilterOptions = useMemo(() => {
