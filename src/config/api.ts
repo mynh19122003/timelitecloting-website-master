@@ -1,8 +1,7 @@
 // API hosts for different environments
-// NOTE: Đang test local - trỏ về localhost
-// Để deploy production, đổi lại về domain API chính thức.
-const PROD_API_ORIGIN = 'http://localhost:3002';
-const PROD_ADMIN_ORIGIN = 'http://localhost:3001';
+// Production URLs for VPS deployment
+const PROD_API_ORIGIN = 'https://api.timeliteclothing.com';
+const PROD_ADMIN_ORIGIN = 'https://api.timeliteclothing.com';
 
 const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '0.0.0.0', '[::1]']);
 
@@ -36,12 +35,12 @@ const normalizeAbsoluteUrl = (input: string | undefined | null, fallback: string
 
 
 const resolveAdminBaseUrl = (): string => {
-  // LOCAL: Dùng localhost để test API
+  // PRODUCTION: Dùng production API
   return PROD_ADMIN_ORIGIN;
 };
 
 const resolveApiBaseUrl = (): string => {
-  // LOCAL: Dùng localhost để test API
+  // PRODUCTION: Dùng production API
   return PROD_API_ORIGIN;
 };
 
