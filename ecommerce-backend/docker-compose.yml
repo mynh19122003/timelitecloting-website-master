@@ -150,8 +150,11 @@ services:
 volumes:
   mysql_data:
     driver: local
+  # For VPS: set ADMIN_DATA_EXTERNAL=true and ADMIN_DATA_VOLUME_NAME to use existing volume
+  # Example on VPS: ADMIN_DATA_EXTERNAL=true ADMIN_DATA_VOLUME_NAME=admin-web-main_admin_node_data
   admin_node_data:
-    driver: local
+    name: ${ADMIN_DATA_VOLUME_NAME:-admin_node_data}
+    external: ${ADMIN_DATA_EXTERNAL:-false}
 
 networks:
   ecommerce_network:
