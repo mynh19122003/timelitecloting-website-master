@@ -101,6 +101,7 @@ services:
       ADMIN_API_TOKEN: ${ADMIN_API_TOKEN:-changeme-admin-token}
       # Optional: allow skipping admin token in dev only (DO NOT enable in prod)
       DISABLE_ADMIN_TOKEN: ${DISABLE_ADMIN_TOKEN:-0}
+      # Media root - admin_node_data volume mounts to /data, pictures are in /data/admindata/picture
       MEDIA_ROOT: /data/admindata/picture
       # Shippo API Configuration for multi-carrier shipping (USPS, UPS, FedEx)
       SHIPPO_API_KEY: ${SHIPPO_API_KEY:-}
@@ -109,7 +110,8 @@ services:
       SHIPPO_ORIGIN_STATE: ${SHIPPO_ORIGIN_STATE:-CA}
       SHIPPO_ORIGIN_ZIP: ${SHIPPO_ORIGIN_ZIP:-95127}
     volumes:
-      - admin_node_data:/data
+      # Use external volume if available (for VPS with existing data), otherwise create local
+      - ${ADMIN_DATA_VOLUME:-admin_node_data}:/data
     depends_on:
       - mysql
       - backend-node

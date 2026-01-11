@@ -1,7 +1,7 @@
 // API hosts for different environments
 // Production URLs
-const PROD_API_ORIGIN = 'http://localhost:3002';
-const PROD_ADMIN_ORIGIN = 'http://localhost:3001';
+const PROD_API_ORIGIN = 'https://api.timeliteclothing.com';
+const PROD_ADMIN_ORIGIN = 'https://api.timeliteclothing.com';
 
 // PRODUCTION: Dùng production API
 const resolveAdminBaseUrl = (): string => {
