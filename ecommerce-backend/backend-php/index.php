@@ -270,6 +270,13 @@ if ($apiIndex !== false && count($pathParts) > $apiIndex + 1) {
                     } else {
                         sendErrorResponse(405, 'ERR_METHOD_NOT_ALLOWED', 'Method not allowed');
                     }
+                // Check if action is 'lookup' (for guest order lookup)
+                } elseif ($action === 'lookup') {
+                    if ($requestMethod === 'POST') {
+                        $controller->lookupOrder();
+                    } else {
+                        sendErrorResponse(405, 'ERR_METHOD_NOT_ALLOWED', 'Method not allowed');
+                    }
                 // Check if action is a numeric ID (e.g., /api/orders/1)
                 } elseif ($action && is_numeric($action)) {
                     $_GET['id'] = $action;

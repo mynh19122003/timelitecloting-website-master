@@ -4,7 +4,7 @@ services:
   mysql:
     image: mysql:8.0
     container_name: ecommerce_mysql
-    restart: always
+    restart: "no"
     command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
@@ -26,7 +26,7 @@ services:
       context: ./backend-php
       dockerfile: Dockerfile
     container_name: ecommerce-backend-php
-    restart: always
+    restart: "no"
     expose:
       - "9000"
     environment:
@@ -47,7 +47,7 @@ services:
       context: ./backend-node
       dockerfile: Dockerfile
     container_name: ecommerce-backend-node
-    restart: always
+    restart: "no"
     expose:
       - "3001"
     environment:
@@ -78,7 +78,7 @@ services:
       context: ./ecommerce-admin-backend-node
       dockerfile: Dockerfile
     container_name: ecommerce-admin-backend-node
-    restart: always
+    restart: "no"
     expose:
       - "3001"
     ports:
@@ -121,7 +121,7 @@ services:
       context: ./gateway
       dockerfile: Dockerfile
     container_name: ecommerce-gateway
-    restart: always
+    restart: "no"
     ports:
       - "3002:80"
     depends_on:
@@ -134,7 +134,7 @@ services:
   phpmyadmin:
     image: phpmyadmin:latest
     container_name: ecommerce_phpmyadmin
-    restart: always
+    restart: "no"
     ports:
       - "3003:80"
     environment:
@@ -149,8 +149,7 @@ volumes:
   mysql_data:
     driver: local
   admin_node_data:
-    external: true
-    name: admin-web-main_admin_node_data
+    driver: local
 
 networks:
   ecommerce_network:

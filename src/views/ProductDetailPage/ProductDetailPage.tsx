@@ -305,7 +305,6 @@ export const ProductDetailPage = () => {
 
   const shippingNotes = [
     t("product.shipping.info"),
-    t("product.shipping.arrives"),
     t("product.alterations"),
   ];
 

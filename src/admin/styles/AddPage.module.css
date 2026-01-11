@@ -46,7 +46,8 @@
   color: #142a5c;
   box-shadow: 0 6px 16px -10px rgba(20, 42, 92, 0.6);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease,
+    color 0.2s ease;
 }
 
 .button:hover {
@@ -574,19 +575,19 @@
 
 .sizeSelector {
   display: flex;
-  gap: 16px;
+  gap: 8px;
   flex-wrap: wrap;
   margin-top: 4px;
 }
 
 .sizeButton {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 2px solid rgba(148, 163, 184, 0.35);
   background: #ffffff;
   color: #475569;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -644,4 +645,3 @@
     gap: 20px;
   }
 }
-

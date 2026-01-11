@@ -16,10 +16,11 @@ class Order
     }
 
     public function create(
-        int $userId,
+        ?int $userId,
         string $userName,
         ?string $userAddress,
         ?string $userPhone,
+        ?string $email,
         float $productsPrice,
         float $totalPrice,
         string $paymentMethod,
@@ -36,6 +37,7 @@ class Order
                     user_name,
                     user_address,
                     user_phone,
+                    email,
                     products_price,
                     total_price,
                     payment_method,
@@ -43,9 +45,9 @@ class Order
                     status,
                     products_name,
                     products_items
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
             );
-            $stmt->execute([$userId, $userName, $userAddress, $userPhone, $productsPrice, $totalPrice, $paymentMethod, $paymentStatus, $status, $productsName, $productsItems]);
+            $stmt->execute([$userId, $userName, $userAddress, $userPhone, $email, $productsPrice, $totalPrice, $paymentMethod, $paymentStatus, $status, $productsName, $productsItems]);
             
             $orderId = (int) $this->db->lastInsertId();
 
@@ -99,13 +101,21 @@ class Order
         }
     }
 
-    public function findById(int $orderId, int $userId): array
+    public function findById(int $orderId, ?int $userId): array
     {
         try {
-            $stmt = $this->db->prepare(
-                'SELECT id, order_id, user_id, user_name, user_address, user_phone, products_name, products_items, products_price, total_price, payment_method, payment_status, status, create_date, update_date FROM orders WHERE id = ? AND user_id = ?'
-            );
-            $stmt->execute([$orderId, $userId]);
+            // For guest orders (userId is null), only query by orderId
+            if ($userId === null) {
+                $stmt = $this->db->prepare(
+                    'SELECT id, order_id, user_id, user_name, user_address, user_phone, products_name, products_items, products_price, total_price, payment_method, payment_status, status, create_date, update_date FROM orders WHERE id = ? AND user_id IS NULL'
+                );
+                $stmt->execute([$orderId]);
+            } else {
+                $stmt = $this->db->prepare(
+                    'SELECT id, order_id, user_id, user_name, user_address, user_phone, products_name, products_items, products_price, total_price, payment_method, payment_status, status, create_date, update_date FROM orders WHERE id = ? AND user_id = ?'
+                );
+                $stmt->execute([$orderId, $userId]);
+            }
             
             $order = $stmt->fetch();
             if (!$order) {
@@ -115,6 +125,25 @@ class Order
             return $order;
         } catch (PDOException $e) {
             throw new \Exception('ERR_GET_ORDER_FAILED');
+        }
+    }
+
+    /**
+     * Find order by order_id (ORD00001) and email for guest lookup
+     */
+    public function findByOrderNumberAndEmail(string $orderNumber, string $email): ?array
+    {
+        try {
+            $stmt = $this->db->prepare(
+                'SELECT id, order_id, user_id, user_name, user_address, user_phone, email, products_name, products_items, products_price, total_price, payment_method, payment_status, status, create_date, update_date FROM orders WHERE order_id = ? AND email = ?'
+            );
+            $stmt->execute([$orderNumber, $email]);
+            
+            $order = $stmt->fetch();
+            return $order ?: null;
+        } catch (PDOException $e) {
+            error_log('findByOrderNumberAndEmail error: ' . $e->getMessage());
+            return null;
         }
     }
 }

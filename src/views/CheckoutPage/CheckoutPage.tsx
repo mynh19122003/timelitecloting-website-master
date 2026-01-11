@@ -7,8 +7,6 @@ import { formatCurrency } from "../../utils/currency";
 import { ApiService } from "../../services/api";
 import { getUserData } from "../../utils/auth";
 import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
-import CountryPhoneInput from "react-country-phone-input";
-import "react-country-phone-input/lib/style.css";
 // Tax calculation removed - no longer needed
 import { calculateUSPSShipping } from "../../utils/uspsShippingRates";
 // We no longer rely on static numeric productId map.
@@ -398,13 +396,24 @@ export const CheckoutPage = () => {
   // Tax removed - no longer needed
   const finalTotal = total + shippingCost;
 
-  const sanitizePhoneNumber = (value: string) => value.replace(/[^\d+]/g, "");
+  const sanitizePhoneNumber = (value: string) => value.replace(/[^\d]/g, "");
+
+  // Format phone as (XXX)XXX-XXXX
+  const formatUSPhone = (value: string): string => {
+    const digits = value.replace(/\D/g, "").slice(0, 10);
+    if (digits.length === 0) return "";
+    if (digits.length <= 3) return `(${digits}`;
+    if (digits.length <= 6) return `(${digits.slice(0, 3)})${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)})${digits.slice(3, 6)}-${digits.slice(6)}`;
+  };
 
   const handlePhoneChange = (
     field: "phone" | "billingPhone",
     value: string
   ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Store formatted value
+    const formatted = formatUSPhone(value);
+    setFormData((prev) => ({ ...prev, [field]: formatted }));
     if (error) setError(null);
   };
 
@@ -436,9 +445,9 @@ export const CheckoutPage = () => {
         return;
       }
 
-      // Phone validation (allow international)
+      // Phone validation (US format - 10 digits)
       const numericPhone = sanitizePhoneNumber(formData.phone);
-      if (numericPhone.length < 8) {
+      if (numericPhone.length !== 10) {
         setError(t("checkout.phone.invalid"));
         setIsSubmitting(false);
         return;
@@ -770,6 +779,19 @@ export const CheckoutPage = () => {
       const response = (await ApiService.createOrder(orderData)) as {
         order_id?: string;
         id?: string | number;
+        data?: {
+          order_id?: string;
+          id?: number;
+          user_name?: string;
+          user_address?: string;
+          user_phone?: string;
+          email?: string;
+          products_items?: string;
+          products_price?: number;
+          total_price?: number;
+          payment_method?: string;
+          status?: string;
+        };
       };
 
       // 🔍 DEBUG: Log API response
@@ -787,8 +809,29 @@ export const CheckoutPage = () => {
         clearCart();
       }
 
-      // Navigate to order history
-      navigate("/profile?tab=orders");
+      // Navigate to order confirmation page with order data
+      // For guests, this is the only way they can see their order
+      const orderConfirmationData = response.data || {
+        order_id: response.order_id,
+        id: response.id,
+        user_name: `${formData.firstName} ${formData.lastName}`,
+        user_address: `${formData.streetAddress}, ${formData.city}, ${formData.state} ${formData.zipCode}, ${formData.country}`,
+        user_phone: formData.phone,
+        email: formData.email,
+        products_items: JSON.stringify(items.map((item) => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          color: item.color,
+          size: item.size,
+        }))),
+        products_price: total,
+        total_price: finalTotal,
+        payment_method: formData.paymentMethod,
+        status: "pending",
+      };
+      const orderDataParam = encodeURIComponent(JSON.stringify(orderConfirmationData));
+      navigate(`/order-confirmation?data=${orderDataParam}`);
     } catch (err: unknown) {
       console.error("❌ Order creation failed:", err);
       console.error(
@@ -988,20 +1031,16 @@ export const CheckoutPage = () => {
                   placeholder="90001"
                   autoComplete="postal-code"
                 />
-                <label className={styles.inputLabel}>
-                  {t("checkout.phone")}
-                  <div className={styles.phoneInputWrapper}>
-                    <CountryPhoneInput
-                      value={formData.phone}
-                      onChange={(value: string) =>
-                        handlePhoneChange("phone", value)
-                      }
-                      placeholder={t("checkout.phone.placeholder")}
-                      enableSearch
-                      inputProps={{ name: "phone", autoComplete: "tel" }}
-                    />
-                  </div>
-                </label>
+                <Input
+                  label={t("checkout.phone")}
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={(e) => handlePhoneChange("phone", e.target.value)}
+                  required
+                  placeholder="(555)123-4567"
+                  autoComplete="tel"
+                />
                 <Input
                   label={t("checkout.email")}
                   type="email"
@@ -1166,20 +1205,6 @@ export const CheckoutPage = () => {
                           Pay securely with Visa, Mastercard or digital wallets
                         </p>
                       </div>
-                    </div>
-                    <div className={styles.paymentLogos}>
-                      <img
-                        src="/images/apple-pay-seeklogo.png"
-                        alt="Apple Pay"
-                        className={styles.paymentLogo}
-                        loading="lazy"
-                      />
-                      <img
-                        src="/images/google-pay.png"
-                        alt="Google Pay"
-                        className={styles.paymentLogo}
-                        loading="lazy"
-                      />
                     </div>
                   </label>
 
@@ -1395,23 +1420,16 @@ export const CheckoutPage = () => {
                             placeholder="90001"
                             autoComplete="billing postal-code"
                           />
-                          <label className={styles.inputLabel}>
-                            {t("checkout.phone")}
-                            <div className={styles.phoneInputWrapper}>
-                              <CountryPhoneInput
-                                value={formData.billingPhone}
-                                onChange={(value: string) =>
-                                  handlePhoneChange("billingPhone", value)
-                                }
-                                placeholder={t("checkout.phone.placeholder")}
-                                enableSearch
-                                inputProps={{
-                                  name: "billingPhone",
-                                  autoComplete: "billing tel",
-                                }}
-                              />
-                            </div>
-                          </label>
+                          <Input
+                            label={t("checkout.phone")}
+                            type="tel"
+                            name="billingPhone"
+                            value={formData.billingPhone}
+                            onChange={(e) => handlePhoneChange("billingPhone", e.target.value)}
+                            required
+                            placeholder="(555)123-4567"
+                            autoComplete="billing tel"
+                          />
                         </div>
                       </div>
                     )}

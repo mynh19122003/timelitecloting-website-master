@@ -77,6 +77,16 @@ const CatalogTestPage = lazy(() =>
     default: m.default,
   }))
 );
+const OrderConfirmationPage = lazy(() =>
+  import("./views/OrderConfirmationPage").then((m) => ({
+    default: m.default,
+  }))
+);
+const OrderLookupPage = lazy(() =>
+  import("./views/OrderLookupPage").then((m) => ({
+    default: m.default,
+  }))
+);
 
 // Loading component
 const PageLoader = () => (
@@ -236,6 +246,22 @@ export default function AppRoot() {
                       element={
                         <Suspense fallback={<PageLoader />}>
                           <CatalogTestPage />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="/order-confirmation"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <OrderConfirmationPage />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="/order-lookup"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <OrderLookupPage />
                         </Suspense>
                       }
                     />

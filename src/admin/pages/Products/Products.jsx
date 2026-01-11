@@ -6,6 +6,7 @@ import DataTable from '../../components/DataTable/DataTable'
 import styles from './Products.module.css'
 import defaultProductImage from '../../assets/products/product-01.svg'
 import productsService from '../../services/productsService'
+import variantsService from '../../services/variantsService'
 import BulkProductModal from '../../components/BulkProductModal/BulkProductModal'
 import VariantsModal from '../../components/VariantsModal/VariantsModal'
 
@@ -130,6 +131,9 @@ const Products = () => {
   const [error, setError] = useState('')
   const [query, setQuery] = useState('')
   const [filterCategory, setFilterCategory] = useState('All')
+  const [filterVariant, setFilterVariant] = useState('All')
+  const [apiCategories, setApiCategories] = useState([])
+  const [apiVariants, setApiVariants] = useState([])
   const [page, setPage] = useState(1)
   const [deletingId, setDeletingId] = useState('')
   const [selectedIds, setSelectedIds] = useState(new Set())
@@ -153,7 +157,9 @@ const Products = () => {
         try {
           setLoading(true)
           setError('')
-          const { items } = await productsService.listProducts({ page: 1, limit: 1000 })
+          const categoryParam = filterCategory !== 'All' ? filterCategory : ''
+          const variantParam = filterVariant !== 'All' ? filterVariant : ''
+          const { items } = await productsService.listProducts({ page: 1, limit: 1000, category: categoryParam, variant: variantParam })
           if (mounted) setProducts(items)
         } catch (e) {
           if (mounted) setError(e?.message || 'Failed to load products')
@@ -162,7 +168,54 @@ const Products = () => {
         }
       })()
     return () => { mounted = false }
+  }, [filterCategory, filterVariant])
+
+  useEffect(() => {
+    let mounted = true
+    productsService.getCategories()
+      .then(data => {
+        if (mounted && Array.isArray(data)) {
+          setApiCategories(data)
+        }
+      })
+      .catch(err => console.warn('[Products] Failed to load categories', err))
+    return () => { mounted = false }
   }, [])
+
+  // Fetch variants when category changes (or load all variants when category is 'All')
+  useEffect(() => {
+    let mounted = true
+    // Convert category name to slug format (e.g., "Ao Dai" -> "ao-dai")
+    const toSlug = (name) => {
+      if (!name) return undefined
+      return name
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+        .replace(/đ/g, 'd')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+    }
+    const categorySlug = filterCategory !== 'All' ? toSlug(filterCategory) : undefined
+    console.log('[Products] Fetching variants for category:', filterCategory, '-> slug:', categorySlug)
+    variantsService.listVariants(categorySlug)
+      .then(data => {
+        console.log('[Products] Variants API response:', data)
+        if (mounted && Array.isArray(data)) {
+          // Normalize variants to strings
+          const normalized = data.map(v => {
+            if (typeof v === 'string') return v
+            if (v && typeof v === 'object') return v.variant_name || v.name || v.label || String(v.id || '')
+            return String(v || '')
+          }).filter(Boolean)
+          console.log('[Products] Normalized variants:', normalized)
+          setApiVariants(normalized)
+        }
+      })
+      .catch(err => console.warn('[Products] Failed to load variants', err))
+    setFilterVariant('All') // Reset variant filter when category changes
+    return () => { mounted = false }
+  }, [filterCategory])
 
   useEffect(() => {
     const incoming = location.state?.newProduct
@@ -184,18 +237,29 @@ const Products = () => {
   }, [location.state, navigate])
 
   const categories = useMemo(() => {
+    if (apiCategories.length > 0) {
+      // Normalize categories: handle both strings and objects like { id, name }
+      const normalized = apiCategories.map(c => {
+        if (typeof c === 'string') return c
+        if (c && typeof c === 'object') return c.name || c.category || c.label || String(c.id || '')
+        return String(c || '')
+      }).filter(Boolean)
+      return ['All', ...normalized]
+    }
     const setCats = new Set(products.map((p) => p.category))
     return ['All', ...Array.from(setCats)]
-  }, [products])
+  }, [products, apiCategories])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     return products.filter((p) => {
       if (filterCategory !== 'All' && p.category !== filterCategory) return false
+      // Client-side variant filtering (in case API doesn't filter by variant)
+      if (filterVariant !== 'All' && p.variant !== filterVariant) return false
       if (!q) return true
       return p.name.toLowerCase().includes(q) || p.sku?.toLowerCase().includes(q)
     })
-  }, [products, query, filterCategory])
+  }, [products, query, filterCategory, filterVariant])
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
   const paginated = useMemo(() => {
@@ -540,6 +604,16 @@ const Products = () => {
               </option>
             ))}
           </select>
+          {apiVariants.length > 0 && (
+            <select value={filterVariant} onChange={(e) => setFilterVariant(e.target.value)}>
+              <option value="All">All Variants</option>
+              {apiVariants.map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+          )}
           <input
             placeholder="Search by name or SKU..."
             value={query}

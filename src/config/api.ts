@@ -1,46 +1,14 @@
 // API hosts for different environments
-// Production URLs for VPS deployment
-const PROD_API_ORIGIN = 'https://api.timeliteclothing.com';
-const PROD_ADMIN_ORIGIN = 'https://api.timeliteclothing.com';
+// Production URLs
+const PROD_API_ORIGIN = 'http://localhost:3002';
+const PROD_ADMIN_ORIGIN = 'http://localhost:3001';
 
-const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '0.0.0.0', '[::1]']);
-
-const isLocalHostname = (hostname: string | undefined | null): boolean => {
-  if (!hostname) return false;
-  return LOCAL_HOSTNAMES.has(hostname.toLowerCase());
-};
-
-const getRuntimeLocation = (): Location | null => {
-  if (typeof window !== 'undefined' && window.location) return window.location;
-  if (typeof globalThis !== 'undefined' && typeof (globalThis as { location?: Location }).location !== 'undefined') {
-    return (globalThis as { location?: Location }).location ?? null;
-  }
-  return null;
-};
-
-const normalizeAbsoluteUrl = (input: string | undefined | null, fallback: string): string => {
-  const trimmed = (input || '').trim();
-  if (!trimmed) return fallback;
-  try {
-    const url = new URL(trimmed);
-    // Remove trailing slash to keep consistent concatenation later
-    return url.toString().replace(/\/+$/, '');
-  } catch {
-    return fallback;
-  }
-};
-
-// REMOVED: forceProdIfDeployed() - runtime detection không hoạt động đúng với static export
-// Production URL sẽ được hardcode dựa trên NODE_ENV
-
-
+// PRODUCTION: Dùng production API
 const resolveAdminBaseUrl = (): string => {
-  // PRODUCTION: Dùng production API
   return PROD_ADMIN_ORIGIN;
 };
 
 const resolveApiBaseUrl = (): string => {
-  // PRODUCTION: Dùng production API
   return PROD_API_ORIGIN;
 };
 

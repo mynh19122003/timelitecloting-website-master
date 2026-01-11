@@ -27,6 +27,32 @@ class AuthMiddleware
         }
     }
 
+    /**
+     * Optional authentication - returns user data if token is valid, null if no token.
+     * Use this for endpoints that support both authenticated and guest users.
+     */
+    public static function optionalAuth(): ?array
+    {
+        error_log('[AuthMiddleware] optionalAuth - Start');
+        $token = self::extractToken();
+        error_log('[AuthMiddleware] optionalAuth - Token extracted: ' . ($token ? substr($token, 0, 20) . '...' : 'null'));
+        
+        if (!$token) {
+            error_log('[AuthMiddleware] optionalAuth - No token found, allowing guest');
+            return null;
+        }
+
+        try {
+            $decoded = JWTConfig::verifyToken($token);
+            error_log('[AuthMiddleware] optionalAuth - Token verified: ' . json_encode($decoded));
+            return $decoded;
+        } catch (\Exception $e) {
+            error_log('[AuthMiddleware] optionalAuth - Token verification failed: ' . $e->getMessage());
+            // For optional auth, treat invalid token as guest instead of error
+            return null;
+        }
+    }
+
     private static function extractToken(): ?string
     {
         // Check Authorization header first

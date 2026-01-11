@@ -507,11 +507,13 @@ export const bulkDeleteProducts = async (productIds) => {
   }
 }
 
-export const listProducts = async ({ page = 1, limit = 1000, search = '', category = '' } = {}) => {
+export const listProducts = async ({ page = 1, limit = 1000, search = '', category = '', variant = '' } = {}) => {
   try {
-    const res = await AdminApi.get('/products', {
-      params: { page, limit, q: search, category }
-    })
+    const params = { page, limit, q: search, category }
+    if (variant) {
+      params.variant = variant
+    }
+    const res = await AdminApi.get('/products', { params })
 
     // Debug: log raw API response
     console.log('[listProducts] response', { status: res?.status, data: res?.data })

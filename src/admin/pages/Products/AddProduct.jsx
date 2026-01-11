@@ -69,6 +69,20 @@ const toCategorySlug = (value = '') => {
 const DEFAULT_CATEGORIES = PRIMARY_CATEGORIES
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL']
+const KIDS_SIZES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16']
+
+// Keywords that indicate kids/children variants
+const KIDS_VARIANT_KEYWORDS = [
+  'boy', 'boys', 'girl', 'girls', 'kid', 'kids', 'child', 'children',
+  'bé trai', 'bé gái', 'trẻ em', 'be trai', 'be gai', 'tre em'
+]
+
+// Helper function to check if variant is for kids
+const isKidsVariant = (variantName = '') => {
+  if (!variantName) return false
+  const lowerVariant = variantName.toLowerCase()
+  return KIDS_VARIANT_KEYWORDS.some(keyword => lowerVariant.includes(keyword))
+}
 const SIZELESS_CATEGORY_SLUGS = new Set([
   'accessories',
   'lunar-new-year-decor',
@@ -184,6 +198,14 @@ const AddProduct = () => {
     () => variantOptions.some((variant) => variant.variant_name === formData.variant),
     [variantOptions, formData.variant]
   )
+  
+  // Determine which sizes to show based on variant type (kids vs adults)
+  const currentSizes = useMemo(() => {
+    if (isKidsVariant(formData.variant)) {
+      return KIDS_SIZES
+    }
+    return SIZES
+  }, [formData.variant])
 
   useEffect(() => {
     const fetchVariants = async () => {
@@ -1089,9 +1111,9 @@ const AddProduct = () => {
                   {showSizes ? (
                     <div className={styles.fieldRow}>
                       <label className={styles.field}>
-                        Sizes
+                        Sizes {isKidsVariant(product.variant) && <span style={{fontSize: '0.85em', color: '#666'}}>(Kids: 1-16)</span>}
                         <div className={styles.sizeSelector}>
-                          {SIZES.map((size) => (
+                          {(isKidsVariant(product.variant) ? KIDS_SIZES : SIZES).map((size) => (
                             <button
                               key={`${product.id}-${size}`}
                               type='button'
@@ -1480,9 +1502,9 @@ const AddProduct = () => {
               {shouldShowSizeSelector ? (
                 <div className={styles.fieldRow}>
                   <label className={styles.field}>
-                    Sizes
+                    Sizes {isKidsVariant(formData.variant) && <span style={{fontSize: '0.85em', color: '#666'}}>(Kids: 1-16)</span>}
                     <div className={styles.sizeSelector}>
-                      {SIZES.map((size) => (
+                      {currentSizes.map((size) => (
                         <button
                           key={size}
                           type='button'

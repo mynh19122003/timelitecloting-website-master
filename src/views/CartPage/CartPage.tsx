@@ -82,14 +82,6 @@ export const CartPage = () => {
                 <span>{t("cart.subtotal")}</span>
                 <span>{formatCurrency(total)}</span>
               </div>
-              <div className={styles.summaryRow}>
-                <span>{t("cart.shipping")}</span>
-                <span>{t("cart.complimentary")}</span>
-              </div>
-              <div className={styles.summaryRow}>
-                <span>{t("cart.concierge.service")}</span>
-                <span>{t("cart.included")}</span>
-              </div>
             </div>
 
             <div className={styles.summaryTotal}>

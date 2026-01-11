@@ -18,8 +18,10 @@ class OrderController
     {
         try {
             error_log('[OrderController] createOrder called');
-            $user = AuthMiddleware::authenticate();
-            error_log('[OrderController] User authenticated: ' . json_encode(['userId' => $user['userId'] ?? 'unknown']));
+            // Use optional auth to support guest checkout
+            $user = AuthMiddleware::optionalAuth();
+            $userId = $user['userId'] ?? null;
+            error_log('[OrderController] User: ' . ($userId ? 'authenticated (userId: ' . $userId . ')' : 'guest'));
             
             $rawInput = file_get_contents('php://input');
             error_log('[OrderController] Raw input: ' . $rawInput);
@@ -72,6 +74,7 @@ class OrderController
             $orderDetails = [
                 'firstname' => $input['firstname'] ?? null,
                 'lastname' => $input['lastname'] ?? null,
+                'email' => $input['email'] ?? null,
                 'address' => $input['address'] ?? null,
                 'phonenumber' => $input['phonenumber'] ?? null,
                 'customer_info' => $input['customer_info'] ?? null,
@@ -81,11 +84,11 @@ class OrderController
                 'payment_method' => $input['payment_method'] ?? null
             ];
 
-            error_log('[OrderController] Calling orderService->createOrder with userId: ' . $user['userId']);
+            error_log('[OrderController] Calling orderService->createOrder with userId: ' . ($userId ?? 'guest'));
             error_log('[OrderController] Items: ' . json_encode($input['items']));
             error_log('[OrderController] Order details: ' . json_encode($orderDetails));
             
-            $order = $this->orderService->createOrder($user['userId'], $input['items'], $orderDetails);
+            $order = $this->orderService->createOrder($userId, $input['items'], $orderDetails);
             
             error_log('[OrderController] Order created successfully: ' . json_encode($order));
             $this->sendSuccessResponse(201, 'Order created successfully', $order);
@@ -141,6 +144,51 @@ class OrderController
             } else {
                 $this->sendErrorResponse(500, 'ERR_GET_ORDER_FAILED', 'Failed to get order');
             }
+        }
+    }
+
+    /**
+     * Lookup order by order number and email (for guest users)
+     * No authentication required
+     */
+    public function lookupOrder(): void
+    {
+        try {
+            error_log('[OrderController] lookupOrder called');
+            
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $this->sendErrorResponse(400, 'ERR_VALIDATION_FAILED', 'Invalid JSON');
+                return;
+            }
+            
+            $orderNumber = $input['order_number'] ?? null;
+            $email = $input['email'] ?? null;
+            
+            if (!$orderNumber || !$email) {
+                $this->sendErrorResponse(400, 'ERR_VALIDATION_FAILED', 'Order number and email are required');
+                return;
+            }
+            
+            // Sanitize inputs
+            $orderNumber = trim(strtoupper($orderNumber));
+            $email = trim(strtolower($email));
+            
+            error_log("[OrderController] Looking up order: $orderNumber, email: $email");
+            
+            $order = $this->orderService->getOrderByNumberAndEmail($orderNumber, $email);
+            
+            if (!$order) {
+                $this->sendErrorResponse(404, 'ERR_ORDER_NOT_FOUND', 'Order not found. Please check your order number and email.');
+                return;
+            }
+            
+            $this->sendSuccessResponse(200, 'Order found', $order);
+        } catch (\Exception $e) {
+            error_log('[OrderController] lookupOrder error: ' . $e->getMessage());
+            $this->sendErrorResponse(500, 'ERR_LOOKUP_FAILED', 'Failed to lookup order');
         }
     }
 

@@ -19,7 +19,7 @@ class OrderService
         $this->db = Database::getInstance();
     }
 
-    public function createOrder(int $userId, array $items, array $orderDetails = []): array
+    public function createOrder(?int $userId, array $items, array $orderDetails = []): array
     {
         $this->db->beginTransaction();
 
@@ -108,6 +108,7 @@ class OrderService
             $userName = trim($first . ' ' . $last);
             $userAddress = $orderDetails['address'] ?? null;
             $userPhone = $orderDetails['phonenumber'] ?? null;
+            $userEmail = isset($orderDetails['email']) ? strtolower(trim((string)$orderDetails['email'])) : null;
             $paymentMethod = $orderDetails['payment_method'] ?? 'cod';
             $paymentStatus = $paymentMethod === 'bank_transfer' ? 'paid' : 'unpaid';
             $totalPrice = $finalTotal; // có thể thêm phí vận chuyển sau
@@ -120,6 +121,7 @@ class OrderService
                 $userName,
                 $userAddress,
                 $userPhone,
+                $userEmail,
                 $finalTotal,
                 $totalPrice,
                 $paymentMethod,
@@ -153,5 +155,10 @@ class OrderService
     public function getOrderById(int $orderId, int $userId): array
     {
         return $this->orderModel->findById($orderId, $userId);
+    }
+
+    public function getOrderByNumberAndEmail(string $orderNumber, string $email): ?array
+    {
+        return $this->orderModel->findByOrderNumberAndEmail($orderNumber, $email);
     }
 }

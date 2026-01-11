@@ -908,6 +908,28 @@ export class ApiService {
   static getToken(): string | null {
     return httpClient.getAuthToken();
   }
+
+  // Guest order lookup by order number and email
+  static async lookupOrder(orderNumber: string, email: string): Promise<unknown> {
+    try {
+      const response = await httpClient.post<unknown>(
+        `${API_CONFIG.ENDPOINTS.ORDERS}/lookup`,
+        { order_number: orderNumber, email }
+      );
+      return response;
+    } catch (error) {
+      // Try PHP fallback
+      try {
+        const response = await httpClient.post<unknown>(
+          `${API_CONFIG.ENDPOINTS.PHP.ORDERS}/lookup`,
+          { order_number: orderNumber, email }
+        );
+        return response;
+      } catch {
+        throw error;
+      }
+    }
+  }
 }
 
 // Export default instance

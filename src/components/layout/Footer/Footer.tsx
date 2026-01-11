@@ -138,13 +138,16 @@ export const Footer = () => {
 
       <div className={styles.legal}>
         <p>&copy; 2025 Timeliteclothing. All rights reserved.</p>
-        {process.env.NODE_ENV === "development" && (
-          <div className={styles.legalLinks}>
+        <div className={styles.legalLinks}>
+          <Link to="/order-lookup" style={{ color: "#c79b61", fontSize: "0.85rem", marginRight: "1rem" }}>
+            Track Order
+          </Link>
+          {process.env.NODE_ENV === "development" && (
             <Link to="/404" style={{ color: "#ff6b6b", fontSize: "0.85rem" }}>
               [Dev] Preview 404
             </Link>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </footer>
   );

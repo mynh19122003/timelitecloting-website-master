@@ -817,7 +817,7 @@ export const Navbar = () => {
             <button
               className="header__action"
               aria-label={t("header.order.tracking")}
-              onClick={() => navigate("/profile?tab=orders")}
+              onClick={() => navigate(isAuthenticated ? "/profile?tab=orders" : "/order-lookup")}
             >
               <PiPackageLight size={18} />
             </button>

@@ -22,6 +22,8 @@ export const STOREFRONT_ROUTES = [
   { slug: ['checkout'] },
   { slug: ['profile'] },
   { slug: ['orders'] },
+  { slug: ['order-confirmation'] }, // Order confirmation page (for guests and logged-in users)
+  { slug: ['order-lookup'] }, // Order lookup page (for guests to find their orders)
   { slug: ['login'] },
   { slug: ['register'] },
   { slug: ['forgot-password'] },
