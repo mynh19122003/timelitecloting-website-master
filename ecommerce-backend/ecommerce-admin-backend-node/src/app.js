@@ -85,14 +85,18 @@ if (!isProduction) {
 // ============================================
 const MEDIA_ROOT = process.env.MEDIA_ROOT || '/data/admindata/picture';
 
+// Log media root for debugging
+console.log('[MEDIA] MEDIA_ROOT:', MEDIA_ROOT);
+
 // Set CORS headers for ALL static file requests FIRST
 app.use('/admin/media', (req, res, next) => {
-  // Set CORS headers before serving
+  // Set permissive CORS headers for images
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', '*');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  // Do NOT set Cross-Origin-Opener-Policy or Cross-Origin-Embedder-Policy for images
+  // as they can cause OpaqueResponseBlocking
   
   // Handle preflight
   if (req.method === 'OPTIONS') {
@@ -105,10 +109,16 @@ app.use('/admin/media', (req, res, next) => {
 app.use('/admin/media', express.static(MEDIA_ROOT, {
   index: false,
   maxAge: process.env.NODE_ENV === 'production' ? '30d' : 0,
-  setHeaders: (res) => {
+  fallthrough: false, // Return 404 if file not found instead of falling through
+  setHeaders: (res, path) => {
     try {
+      console.log('[MEDIA] Serving file:', path);
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      // Set proper content type for webp
+      if (path.endsWith('.webp')) {
+        res.setHeader('Content-Type', 'image/webp');
+      }
       const cache = process.env.NODE_ENV === 'production'
         ? 'public, max-age=2592000, immutable'
         : 'no-cache';
@@ -116,6 +126,12 @@ app.use('/admin/media', express.static(MEDIA_ROOT, {
     } catch (_) { /* ignore */ }
   }
 }));
+
+// Handle 404 for media files specifically
+app.use('/admin/media', (req, res) => {
+  console.log('[MEDIA] File not found:', req.path);
+  res.status(404).json({ error: 'ERR_MEDIA_NOT_FOUND', message: `File not found: ${req.path}` });
+});
 
 // ============================================
 // HELMET & SECURITY (after static files)
