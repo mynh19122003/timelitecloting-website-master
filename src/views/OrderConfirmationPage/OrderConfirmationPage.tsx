@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 import styles from "./OrderConfirmationPage.module.css";
 
@@ -26,23 +26,22 @@ interface OrderData {
   create_date?: string;
 }
 
+interface LocationState {
+  orderData?: OrderData;
+}
+
 export default function OrderConfirmationPage() {
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const [orderData, setOrderData] = useState<OrderData | null>(null);
 
   useEffect(() => {
-    // Get order data from URL params
-    const orderJson = searchParams.get("data");
-    if (orderJson) {
-      try {
-        const data = JSON.parse(decodeURIComponent(orderJson));
-        setOrderData(data);
-      } catch {
-        console.error("Failed to parse order data");
-      }
+    // Get order data from location state (passed via navigate)
+    const state = location.state as LocationState | null;
+    if (state?.orderData) {
+      setOrderData(state.orderData);
     }
-  }, [searchParams]);
+  }, [location.state]);
 
   const parseItems = (): OrderItem[] => {
     if (!orderData?.products_items) return [];

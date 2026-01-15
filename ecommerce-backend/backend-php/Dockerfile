@@ -5,6 +5,7 @@ FROM php:8.2-fpm-alpine
 RUN apk add --no-cache \
     git \
     curl \
+    curl-dev \
     libpng-dev \
     libxml2-dev \
     zip \
@@ -20,7 +21,8 @@ RUN docker-php-ext-install \
     pcntl \
     bcmath \
     gd \
-    zip
+    zip \
+    curl
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

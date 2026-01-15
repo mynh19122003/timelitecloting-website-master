@@ -107,12 +107,12 @@ class Order
             // For guest orders (userId is null), only query by orderId
             if ($userId === null) {
                 $stmt = $this->db->prepare(
-                    'SELECT id, order_id, user_id, user_name, user_address, user_phone, products_name, products_items, products_price, total_price, payment_method, payment_status, status, create_date, update_date FROM orders WHERE id = ? AND user_id IS NULL'
+                    'SELECT id, order_id, user_id, user_name, user_address, user_phone, email, products_name, products_items, products_price, total_price, payment_method, payment_status, status, create_date, update_date FROM orders WHERE id = ? AND user_id IS NULL'
                 );
                 $stmt->execute([$orderId]);
             } else {
                 $stmt = $this->db->prepare(
-                    'SELECT id, order_id, user_id, user_name, user_address, user_phone, products_name, products_items, products_price, total_price, payment_method, payment_status, status, create_date, update_date FROM orders WHERE id = ? AND user_id = ?'
+                    'SELECT id, order_id, user_id, user_name, user_address, user_phone, email, products_name, products_items, products_price, total_price, payment_method, payment_status, status, create_date, update_date FROM orders WHERE id = ? AND user_id = ?'
                 );
                 $stmt->execute([$orderId, $userId]);
             }

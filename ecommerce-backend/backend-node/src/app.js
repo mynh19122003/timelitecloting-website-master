@@ -134,6 +134,43 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/shipping', shippingRoutes);
 
+// Order confirmation email endpoint (called by PHP backend)
+const orderEmailService = require('./services/orderEmailService');
+
+app.post('/api/send-order-email', async (req, res) => {
+  try {
+    const orderData = req.body;
+    
+    if (!orderData || !orderData.email) {
+      return res.status(400).json({
+        success: false,
+        error: 'ERR_VALIDATION_FAILED',
+        message: 'Order data with email is required'
+      });
+    }
+
+    logger.info('Sending order confirmation email', {
+      orderId: orderData.order_id,
+      email: orderData.email
+    });
+
+    const result = await orderEmailService.sendOrderConfirmation(orderData);
+    
+    res.json({
+      success: true,
+      message: 'Order confirmation email processed',
+      ...result
+    });
+  } catch (error) {
+    logger.error('Failed to send order confirmation email', error);
+    res.status(500).json({
+      success: false,
+      error: 'ERR_EMAIL_FAILED',
+      message: error.message || 'Failed to send email'
+    });
+  }
+});
+
 // 404 handler
 app.use('*', (req, res) => {
   logger.warn('404 Not Found', {

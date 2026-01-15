@@ -138,12 +138,59 @@ class OrderService
 
             $this->db->commit();
 
+            // Send order confirmation email via Node backend
+            $orderForEmail = $this->orderModel->findById($orderId, $userId);
+            $this->sendOrderConfirmationEmail($orderForEmail);
+
             // Get created order with items
             return $this->orderModel->findById($orderId, $userId);
         } catch (\Exception $e) {
             $this->db->rollBack();
             error_log('Order creation error: ' . $e->getMessage());
             throw $e;
+        }
+    }
+
+    /**
+     * Send order confirmation email via Node backend
+     */
+    private function sendOrderConfirmationEmail(array $orderData): void
+    {
+        try {
+            // Node backend URL inside Docker network
+            $nodeBackendUrl = 'http://backend-node:3001/api/send-order-email';
+            
+            $postData = json_encode($orderData);
+            
+            $ch = curl_init($nodeBackendUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen($postData)
+            ]);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10); // 10 second timeout
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+            
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $error = curl_error($ch);
+            curl_close($ch);
+            
+            if ($error) {
+                error_log('[OrderService] Failed to send order email - cURL error: ' . $error);
+                return;
+            }
+            
+            if ($httpCode >= 200 && $httpCode < 300) {
+                error_log('[OrderService] Order confirmation email sent successfully for order: ' . ($orderData['order_id'] ?? 'unknown'));
+            } else {
+                error_log('[OrderService] Order email request failed with HTTP ' . $httpCode . ': ' . $response);
+            }
+        } catch (\Exception $e) {
+            // Don't fail order creation if email fails
+            error_log('[OrderService] Exception sending order email: ' . $e->getMessage());
         }
     }
 

@@ -3,25 +3,29 @@
 const PROD_API_ORIGIN = 'https://api.timeliteclothing.com';
 const PROD_ADMIN_ORIGIN = 'https://api.timeliteclothing.com';
 
-// PRODUCTION: Dùng production API
+// Local URLs
+const LOCAL_API_ORIGIN = 'http://localhost:3002';
+const LOCAL_ADMIN_ORIGIN = 'http://localhost:3002';
+
+// LOCAL: Dùng local API
 const resolveAdminBaseUrl = (): string => {
-  return PROD_ADMIN_ORIGIN;
+  return LOCAL_ADMIN_ORIGIN;
 };
 
 const resolveApiBaseUrl = (): string => {
-  return PROD_API_ORIGIN;
+  return LOCAL_API_ORIGIN;
 };
 
 const RESOLVED_ADMIN_BASE = resolveAdminBaseUrl();
 
 export const API_CONFIG = {
   // Base URL for API calls
-  BASE_URL: resolveApiBaseUrl(),
+  BASE_URL: resolveApiBaseUrl(), 
   // Admin base for media (images served by admin)
   ADMIN_BASE_URL: RESOLVED_ADMIN_BASE,
 
   // API endpoints
-  ENDPOINTS: {
+  ENDPOINTS: {  
     // User endpoints (use PHP auth in current setup to avoid Node 404s)
     LOGIN: '/api/php/users/login',
     REGISTER: '/api/php/users/register',

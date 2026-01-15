@@ -293,16 +293,6 @@ export const CheckoutPage = () => {
     } else if (name === "zipCode" || name === "billingZipCode") {
       // Only allow digits and hyphen for ZIP
       sanitizedValue = value.replace(/[^\d-]/g, "").slice(0, 10);
-    } else if (
-      name === "firstName" ||
-      name === "lastName" ||
-      name === "city" ||
-      name === "billingFirstName" ||
-      name === "billingLastName" ||
-      name === "billingCity"
-    ) {
-      // Prevent numbers and special chars in names
-      sanitizedValue = value.replace(/[^a-zA-Z\s'-]/g, "");
     } else if (name === "email") {
       // No spaces in email
       sanitizedValue = value.replace(/\s/g, "").toLowerCase();
@@ -313,8 +303,10 @@ export const CheckoutPage = () => {
     } else if (name === "cardCvc") {
       sanitizedValue = digitsOnly(value).slice(0, 4);
     } else if (name === "cardName") {
+      // Card name: allow letters, spaces, hyphens, apostrophes (uppercase for display)
       sanitizedValue = value.replace(/[^a-zA-Z\s'-]/g, "").toUpperCase();
     }
+    // Note: firstName, lastName, city, streetAddress, etc. accept all characters (including Vietnamese)
 
     setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
     // Clear error when user starts typing
@@ -809,8 +801,8 @@ export const CheckoutPage = () => {
         clearCart();
       }
 
-      // Navigate to order confirmation page with order data
-      // For guests, this is the only way they can see their order
+      // Navigate to order confirmation page with order data via state (not URL)
+      // This prevents customer data from being exposed in the URL
       const orderConfirmationData = response.data || {
         order_id: response.order_id,
         id: response.id,
@@ -830,8 +822,7 @@ export const CheckoutPage = () => {
         payment_method: formData.paymentMethod,
         status: "pending",
       };
-      const orderDataParam = encodeURIComponent(JSON.stringify(orderConfirmationData));
-      navigate(`/order-confirmation?data=${orderDataParam}`);
+      navigate("/order-confirmation", { state: { orderData: orderConfirmationData } });
     } catch (err: unknown) {
       console.error("❌ Order creation failed:", err);
       console.error(
