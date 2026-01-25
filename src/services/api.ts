@@ -740,8 +740,8 @@ export class ApiService {
   static async createPoyntOrder(orderData: any): Promise<unknown> {
       console.log('[ApiService] createPoyntOrder (Node Force) called');
       // Direct fetch to bypass HttpClient BASE_URL confusion
-      // Target: Local Node.js backend
-      const url = 'http://localhost:3002/api/orders';
+      // Target: Public Node.js backend
+      const url = 'https://api.timeliteclothing.com/api/orders';
       
       const token = typeof window !== 'undefined' ? localStorage.getItem('timelite:jwt-token') : null;
       

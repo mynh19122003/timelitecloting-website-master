@@ -9,11 +9,11 @@ const LOCAL_ADMIN_ORIGIN = 'http://localhost:3002';
 
 // LOCAL: Dùng local API
 const resolveAdminBaseUrl = (): string => {
-  return LOCAL_ADMIN_ORIGIN;
+  return PROD_ADMIN_ORIGIN;
 };
 
 const resolveApiBaseUrl = (): string => {
-  return LOCAL_API_ORIGIN;
+  return PROD_API_ORIGIN;
 };
 
 const RESOLVED_ADMIN_BASE = resolveAdminBaseUrl();
@@ -26,21 +26,21 @@ export const API_CONFIG = {
 
   // API endpoints
   ENDPOINTS: {  
-    // User endpoints (use PHP auth in current setup to avoid Node 404s)
-    LOGIN: '/api/php/users/login',
-    REGISTER: '/api/php/users/register',
-    PROFILE: '/api/php/users/profile',
-    CHANGE_PASSWORD: '/api/php/users/change-password',
-    FORGOT_PASSWORD: '/api/php/users/forgot-password',
-    RESET_PASSWORD: '/api/php/users/reset-password',
+    // User endpoints
+    LOGIN: '/api/users/login',
+    REGISTER: '/api/users/register',
+    PROFILE: '/api/users/profile',
+    CHANGE_PASSWORD: '/api/users/change-password',
+    FORGOT_PASSWORD: '/api/users/forgot-password',
+    RESET_PASSWORD: '/api/users/reset-password',
 
     // Product endpoints
-    PRODUCTS: '/api/php/products',
-    PRODUCT_DETAIL: '/api/php/products',
+    PRODUCTS: '/api/products',
+    PRODUCT_DETAIL: '/api/products',
 
-    // Order endpoints (route directly to PHP backend)
-    ORDERS: '/api/php/orders',
-    ORDER_HISTORY: '/api/php/orders/history',
+    // Order endpoints
+    ORDERS: '/api/orders',
+    ORDER_HISTORY: '/api/orders/history',
     CONTACT: '/api/contact',
 
     // Fallback PHP endpoints
