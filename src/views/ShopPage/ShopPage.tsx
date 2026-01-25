@@ -148,12 +148,12 @@ export const ShopPage = ({ category }: ShopPageProps) => {
   const { t } = useI18n();
   const searchParams = useMemo(
     () => new URLSearchParams(location.search),
-    [location.search]
+    [location.search],
   );
   const facet = searchParams.get("facet")?.trim() ?? "";
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc">(
-    "featured"
+    "featured",
   );
   const [allProducts, setAllProducts] = useState<UiProduct[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -355,8 +355,8 @@ export const ShopPage = ({ category }: ShopPageProps) => {
       const pid = productsId
         ? toProductsPid(productsId)
         : p.id != null
-        ? toProductsPid(p.id)
-        : undefined;
+          ? toProductsPid(p.id)
+          : undefined;
 
       return {
         id: slug ?? String(p.id),
@@ -402,15 +402,12 @@ export const ShopPage = ({ category }: ShopPageProps) => {
             : undefined;
 
         while (true) {
-          const response = await ApiService.getProducts(
-            {
-              page,
-              limit: pageSize,
-              category: categoryParam,
-              variant: variantParam,
-            },
-            false
-          );
+          const response = await ApiService.getProducts({
+            page,
+            limit: pageSize,
+            category: categoryParam,
+            variant: variantParam,
+          });
           const pageProducts = (response?.products ?? []) as ApiProduct[];
           aggregated.push(...pageProducts);
 
@@ -432,7 +429,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
           const allowedVariants = variantsByCategory[slug] || [];
           if (allowedVariants.length > 0) {
             finalProducts = aggregated.filter(
-              (p) => p.variant && allowedVariants.includes(p.variant)
+              (p) => p.variant && allowedVariants.includes(p.variant),
             );
           }
         }
@@ -451,8 +448,8 @@ export const ShopPage = ({ category }: ShopPageProps) => {
           error instanceof Error
             ? error.message
             : typeof error === "object" && error !== null && "message" in error
-            ? String((error as { message: unknown }).message)
-            : String(error);
+              ? String((error as { message: unknown }).message)
+              : String(error);
         const status =
           typeof error === "object" && error !== null && "status" in error
             ? (error as { status?: unknown }).status
@@ -497,7 +494,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
     }
 
     const categoryProducts = allProducts.filter(
-      (p) => p.category === targetCategory
+      (p) => p.category === targetCategory,
     );
     const options = {
       silhouette: new Set<string>(),
@@ -548,10 +545,10 @@ export const ShopPage = ({ category }: ShopPageProps) => {
       filtered = filtered.filter(
         (p) =>
           p.tags.some((tag) =>
-            tag.toLowerCase().includes(selectedChip.toLowerCase())
+            tag.toLowerCase().includes(selectedChip.toLowerCase()),
           ) ||
           p.variant?.toLowerCase().includes(selectedChip.toLowerCase()) ||
-          p.name.toLowerCase().includes(selectedChip.toLowerCase())
+          p.name.toLowerCase().includes(selectedChip.toLowerCase()),
       );
     }
 
@@ -573,7 +570,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
     }
     if (filters.embellishment) {
       filtered = filtered.filter(
-        (p) => p.embellishment === filters.embellishment
+        (p) => p.embellishment === filters.embellishment,
       );
     }
 
@@ -621,7 +618,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
     }
     navigate(
       { pathname: location.pathname, search: params.toString() },
-      { replace: true }
+      { replace: true },
     );
   };
 
@@ -675,7 +672,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
 
   const handleFilterChange = (
     filterName: keyof typeof filters,
-    value: string | null
+    value: string | null,
   ) => {
     setFilters((prev) => ({ ...prev, [filterName]: value }));
     const params = new URLSearchParams(searchParams.toString());
@@ -686,7 +683,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
     }
     navigate(
       { pathname: location.pathname, search: params.toString() },
-      { replace: true }
+      { replace: true },
     );
   };
 
@@ -716,7 +713,7 @@ export const ShopPage = ({ category }: ShopPageProps) => {
 
     navigate(
       { pathname: location.pathname, search: params.toString() },
-      { replace: true }
+      { replace: true },
     );
   };
 
@@ -884,8 +881,8 @@ export const ShopPage = ({ category }: ShopPageProps) => {
                   sortBy === "featured"
                     ? "price-asc"
                     : sortBy === "price-asc"
-                    ? "price-desc"
-                    : "featured";
+                      ? "price-desc"
+                      : "featured";
                 setSortBy(nextSort);
               }}
             >
@@ -894,8 +891,8 @@ export const ShopPage = ({ category }: ShopPageProps) => {
                 {sortBy === "featured"
                   ? t("shop.sort.featured")
                   : sortBy === "price-asc"
-                  ? t("shop.sort.price.asc")
-                  : t("shop.sort.price.desc")}
+                    ? t("shop.sort.price.asc")
+                    : t("shop.sort.price.desc")}
               </strong>
               <FiChevronDown size={14} />
             </button>

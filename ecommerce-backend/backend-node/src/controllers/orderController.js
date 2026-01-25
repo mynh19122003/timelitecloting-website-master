@@ -1,4 +1,6 @@
 const orderService = require('../services/orderService');
+const poyntService = require('../services/poyntService');
+
 
 // Simple in-memory rate limiting (for production, use Redis)
 const orderRateLimits = new Map();
@@ -93,10 +95,71 @@ class OrderController {
       
       const order = await orderService.createOrder(userId, items, orderDetails);
       
+      // Calculate total price for payment processing
+      const totalPrice = total_amount || order.total_price || 0;
+      
+      let paymentUrl = null;
+      let paymentErrorMsg = null;
+      let transactionResult = null;
+
+      if (payment_method === 'poynt') {
+        try {
+          // If we have a nonce, we perform a direct charge (Poynt Collect flow)
+          if (req.body.payment_nonce) {
+             console.log('Processing Poynt Collect Payment (Nonce)...');
+             transactionResult = await poyntService.chargeNonce(
+                 req.body.payment_nonce, 
+                 totalPrice, 
+                 order.order_id
+             );
+             paymentUrl = null; 
+          }
+          // Server-Side Tokenization Fallback
+          else if (req.body.payment_card) {
+               console.log('Processing Poynt Direct Card Payment (Server Tokenization)...');
+               transactionResult = await poyntService.chargeCard(
+                   req.body.payment_card,
+                   totalPrice,
+                   order.order_id
+               );
+               paymentUrl = null;
+          } 
+          else {
+             // Fallback to Hosted Checkout/Pay Link flow (Legacy/Backwards compatibility)
+             console.log('Generating Poynt Payment URL (Hosted)...');
+             /* ... existing hosted logic ... */
+             
+              // Use enriched items from the order result (which includes prices fetched from DB)
+              /* ... */
+              let enrichedItems = [];
+              if (typeof order.products_items === 'string') {
+                  try { enrichedItems = JSON.parse(order.products_items); } catch (e) { enrichedItems = items; }
+              } else if (Array.isArray(order.products_items)) {
+                  enrichedItems = order.products_items;
+              } else {
+                  enrichedItems = items;
+              }
+
+              const poyntPayload = {
+                ...orderDetails,
+                items: enrichedItems,
+                order_id: order.order_id 
+              };
+              paymentUrl = await poyntService.createPaymentUrl(poyntPayload);
+              console.log('Poynt URL Generated:', paymentUrl);
+          }
+        } catch (poyntError) {
+          console.error('Failed to process Poynt Payment:', poyntError);
+          paymentErrorMsg = poyntError.message || JSON.stringify(poyntError);
+        }
+      }
+
       res.status(201).json({
         success: true,
         message: 'Order created successfully',
-        data: order
+        data: order,
+        paymentUrl: paymentUrl, // Add payment URL to response
+        paymentError: paymentErrorMsg // Return error if any
       });
     } catch (error) {
       if (error.message === 'ERR_PRODUCT_NOT_FOUND') {

@@ -18,74 +18,79 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ScrollToTop } from "./components/layout/ScrollToTop";
 
 const HomePage = lazy(() =>
-  import("./views/HomePage").then((m) => ({ default: m.HomePage }))
+  import("./views/HomePage").then((m) => ({ default: m.HomePage })),
 );
 const ShopPage = lazy(() =>
-  import("./views/ShopPage").then((m) => ({ default: m.ShopPage }))
+  import("./views/ShopPage").then((m) => ({ default: m.ShopPage })),
 );
 const ProductsPage = lazy(() =>
-  import("./views/ProductsPage").then((m) => ({ default: m.default }))
+  import("./views/ProductsPage").then((m) => ({ default: m.default })),
 );
 const ProductDetailPage = lazy(() =>
   import("./views/ProductDetailPage").then((m) => ({
     default: m.ProductDetailPage,
-  }))
+  })),
 );
 const CartPage = lazy(() =>
-  import("./views/CartPage").then((m) => ({ default: m.CartPage }))
+  import("./views/CartPage").then((m) => ({ default: m.CartPage })),
 );
 const CheckoutPage = lazy(() =>
-  import("./views/CheckoutPage").then((m) => ({ default: m.CheckoutPage }))
+  import("./views/CheckoutPage").then((m) => ({ default: m.CheckoutPage })),
 );
 const LoginPage = lazy(() =>
-  import("./views/LoginPage").then((m) => ({ default: m.LoginPage }))
+  import("./views/LoginPage").then((m) => ({ default: m.LoginPage })),
 );
 const RegisterPage = lazy(() =>
-  import("./views/RegisterPage").then((m) => ({ default: m.RegisterPage }))
+  import("./views/RegisterPage").then((m) => ({ default: m.RegisterPage })),
 );
 const ProfilePage = lazy(() =>
-  import("./views/ProfilePage").then((m) => ({ default: m.ProfilePage }))
+  import("./views/ProfilePage").then((m) => ({ default: m.ProfilePage })),
 );
 const ForgotPasswordPage = lazy(() =>
   import("./views/ForgotPasswordPage").then((m) => ({
     default: m.ForgotPasswordPage,
-  }))
+  })),
 );
 const ResetPasswordPage = lazy(() =>
   import("./views/ResetPasswordPage").then((m) => ({
     default: m.ResetPasswordPage,
-  }))
+  })),
 );
 const VerifyEmailPage = lazy(() =>
   import("./views/VerifyEmailPage").then((m) => ({
     default: m.VerifyEmailPage,
-  }))
+  })),
 );
 const NotFoundPage = lazy(() =>
-  import("./views/NotFoundPage").then((m) => ({ default: m.NotFoundPage }))
+  import("./views/NotFoundPage").then((m) => ({ default: m.NotFoundPage })),
 );
 const AdminApp = lazy(() =>
-  import("./admin/AdminApp").then((m) => ({ default: m.default }))
+  import("./admin/AdminApp").then((m) => ({ default: m.default })),
 );
 const TaxTestPage = lazy(() =>
   import("./views/TaxTestPage/TaxTestPage").then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const CatalogTestPage = lazy(() =>
   import("./views/CatalogTestPage/CatalogTestPage").then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const OrderConfirmationPage = lazy(() =>
   import("./views/OrderConfirmationPage").then((m) => ({
     default: m.default,
-  }))
+  })),
 );
 const OrderLookupPage = lazy(() =>
   import("./views/OrderLookupPage").then((m) => ({
     default: m.default,
-  }))
+  })),
+);
+const TestPoyntPage = lazy(() =>
+  import("./views/TestPoyntPage").then((m) => ({
+    default: m.default,
+  })),
 );
 
 // Loading component
@@ -262,6 +267,14 @@ export default function AppRoot() {
                       element={
                         <Suspense fallback={<PageLoader />}>
                           <OrderLookupPage />
+                        </Suspense>
+                      }
+                    />
+                    <Route
+                      path="/test-payment"
+                      element={
+                        <Suspense fallback={<PageLoader />}>
+                          <TestPoyntPage />
                         </Suspense>
                       }
                     />

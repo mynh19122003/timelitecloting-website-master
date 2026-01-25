@@ -96,11 +96,12 @@ app.use(helmet());
 // CORS configuration
 // When running behind the API gateway, set ENABLE_NODE_CORS=false (default)
 // to avoid duplicate CORS headers. Enable only for direct access in dev.
-// Force enable CORS with wildcard (no credentials)
-app.use(cors({
-  origin: corsOrigin === '*' ? '*' : corsOrigin,
-  credentials: false,
-}));
+if (process.env.ENABLE_NODE_CORS === 'true') {
+  app.use(cors({
+    origin: corsOrigin === '*' ? '*' : corsOrigin,
+    credentials: false,
+  }));
+}
 
 // Rate limiting
 const limiter = rateLimit({

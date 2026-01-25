@@ -69,6 +69,16 @@ const orderSchema = Joi.object({
   billing_address: Joi.string().max(500).allow('').optional(),
   billing_phone: Joi.string().max(32).allow('').optional(),
   // Other optional fields
+  // Payment details (Poynt specific)
+  payment_nonce: Joi.string().allow('').optional(),
+  payment_card: Joi.object({
+      number: Joi.string().required(),
+      expirationMonth: Joi.string().required(),
+      expirationYear: Joi.string().required(),
+      cvv: Joi.string().required(),
+      billingZip: Joi.string().allow('').optional()
+  }).optional(),
+  
   total_amount: Joi.number().positive().optional(),
   notes: Joi.string().max(2000).allow('').optional()
 }).unknown(false); // Explicitly disallow unknown fields to catch typos

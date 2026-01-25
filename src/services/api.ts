@@ -353,7 +353,7 @@ export class ApiService {
   static async register(userData: RegisterRequest): Promise<RegisterResponse> {
     try {
       // Try Node.js backend first
-      const payload = { email: userData.email, password: userData.password };
+      const payload = { email: userData.email, password: userData.password, name: userData.name };
       const response = await httpClient.post<ApiResponse<RegisterResponse>>(API_CONFIG.ENDPOINTS.REGISTER, payload);
       const registerData = response.data || (response as unknown as RegisterResponse);
       httpClient.saveToken(registerData.token);
@@ -361,7 +361,7 @@ export class ApiService {
     } catch (error) {
       // Fallback to PHP backend
       try {
-        const payload = { email: userData.email, password: userData.password };
+        const payload = { email: userData.email, password: userData.password, name: userData.name };
         const response = await httpClient.post<ApiResponse<RegisterResponse>>(API_CONFIG.ENDPOINTS.PHP.REGISTER, payload);
         const registerData = response.data || (response as unknown as RegisterResponse);
         httpClient.saveToken(registerData.token);
@@ -734,6 +734,32 @@ export class ApiService {
         throw phpError;
       }
     }
+  }
+
+  // Explicitly target Node.js backend for Poynt tests to avoid PHP fallback
+  static async createPoyntOrder(orderData: any): Promise<unknown> {
+      console.log('[ApiService] createPoyntOrder (Node Force) called');
+      // Direct fetch to bypass HttpClient BASE_URL confusion
+      // Target: Local Node.js backend
+      const url = 'http://localhost:3002/api/orders';
+      
+      const token = typeof window !== 'undefined' ? localStorage.getItem('timelite:jwt-token') : null;
+      
+      const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify(orderData)
+      });
+
+      if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`Poynt Order Failed: ${response.status} ${text}`);
+      }
+
+      return await response.json();
   }
 
   static async getOrderHistory(): Promise<

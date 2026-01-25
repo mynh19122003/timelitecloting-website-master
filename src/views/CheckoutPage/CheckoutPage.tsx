@@ -199,9 +199,9 @@ export const CheckoutPage = () => {
   // Check if address is complete for display purposes
   const isAddressComplete = Boolean(
     formData.city.trim() &&
-      formData.state.trim() &&
-      formData.zipCode.trim() &&
-      formData.zipCode.length >= 5
+    formData.state.trim() &&
+    formData.zipCode.trim() &&
+    formData.zipCode.length >= 5,
   );
 
   // Load user profile on mount
@@ -238,7 +238,7 @@ export const CheckoutPage = () => {
         if (addressParts.length >= 3) {
           const stateZip = addressParts[2] || "";
           const stateZipMatch = stateZip.match(
-            /^([A-Z]{2})\s+(\d{5})(?:-\d{4})?$/i
+            /^([A-Z]{2})\s+(\d{5})(?:-\d{4})?$/i,
           );
           state = stateZipMatch ? stateZipMatch[1].toUpperCase() : "";
           zipCode = stateZipMatch ? stateZipMatch[2] : "";
@@ -277,7 +277,7 @@ export const CheckoutPage = () => {
   // No API call needed - uses calculateUSPSShipping from uspsShippingRates.ts
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
 
@@ -314,7 +314,7 @@ export const CheckoutPage = () => {
   };
 
   const handleSelectChange = (
-    e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
+    e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -401,7 +401,7 @@ export const CheckoutPage = () => {
 
   const handlePhoneChange = (
     field: "phone" | "billingPhone",
-    value: string
+    value: string,
   ) => {
     // Store formatted value
     const formatted = formatUSPhone(value);
@@ -542,7 +542,7 @@ export const CheckoutPage = () => {
         }
 
         const billingPhoneNumeric = sanitizePhoneNumber(
-          billingData.billingPhone || ""
+          billingData.billingPhone || "",
         );
         if (billingPhoneNumeric.length < 8) {
           setError(t("checkout.billing.phone.invalid"));
@@ -645,7 +645,7 @@ export const CheckoutPage = () => {
           throw new Error(
             `Item #${index + 1} (${item.name}) has invalid quantity: ${
               item.quantity
-            }`
+            }`,
           );
         }
 
@@ -661,7 +661,7 @@ export const CheckoutPage = () => {
         if (!item.size) {
           console.warn(
             `[Checkout] Item ${item.name} has no size. Using fallback "${resolvedSize}".`,
-            item
+            item,
           );
         }
 
@@ -707,7 +707,7 @@ export const CheckoutPage = () => {
 
       console.log(
         "\n📋 Final mapped items:",
-        JSON.stringify(mappedItems, null, 2)
+        JSON.stringify(mappedItems, null, 2),
       );
 
       // Final validation: ensure all items have at least one identifier
@@ -720,16 +720,22 @@ export const CheckoutPage = () => {
           throw new Error(
             `Mapped item #${
               index + 1
-            } is missing all product identifiers: ${JSON.stringify(item)}`
+            } is missing all product identifiers: ${JSON.stringify(item)}`,
           );
         }
 
         if (!item.quantity || item.quantity <= 0) {
           throw new Error(
-            `Mapped item #${index + 1} has invalid quantity: ${item.quantity}`
+            `Mapped item #${index + 1} has invalid quantity: ${item.quantity}`,
           );
         }
       });
+
+      const billingZip = formData.billingSameAsShipping
+        ? formData.zipCode
+        : formData.billingZipCode;
+
+      const expiryInfo = parseCardExpiry(formData.cardExpiry.trim());
 
       const orderData = {
         firstname: formData.firstName,
@@ -745,7 +751,21 @@ export const CheckoutPage = () => {
         country: formData.country,
         phonenumber: formData.phone,
         notes: formData.notes || "",
-        payment_method: formData.paymentMethod,
+        payment_method:
+          formData.paymentMethod === "credit_card"
+            ? "poynt"
+            : formData.paymentMethod,
+        ...(formData.paymentMethod === "credit_card" && expiryInfo
+          ? {
+              payment_card: {
+                number: formData.cardNumber.replace(/\s/g, ""),
+                expirationMonth: String(expiryInfo.month).padStart(2, "0"),
+                expirationYear: String(expiryInfo.year),
+                cvv: formData.cardCvc,
+                billingZip: billingZip,
+              },
+            }
+          : {}),
         shipping_method: formData.shippingMethod,
         shipping_cost: shippingCost,
         shipping_firstname: formData.firstName,
@@ -771,6 +791,9 @@ export const CheckoutPage = () => {
       const response = (await ApiService.createOrder(orderData)) as {
         order_id?: string;
         id?: string | number;
+        success?: boolean;
+        paymentError?: string;
+        message?: string;
         data?: {
           order_id?: string;
           id?: number;
@@ -789,11 +812,30 @@ export const CheckoutPage = () => {
       // 🔍 DEBUG: Log API response
       console.log("✅ API Response:", response);
 
+      // Check for payment error from Poynt
+      if (response.paymentError) {
+        console.error("❌ Payment Failed:", response.paymentError);
+        setError("Payment Failed: " + response.paymentError);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Fallback check for generic success flag if needed
+      if (response.success === false) {
+        setError(response.message || "Order creation failed.");
+        setIsSubmitting(false);
+        return;
+      }
+
       // Show success toast
-      const orderId = response.order_id || response.id || "placed";
+      const orderId =
+        response.order_id ||
+        response.id ||
+        (response.data && (response.data.order_id || response.data.id)) ||
+        "placed";
       showToast(
         t("checkout.order.success").replace("{orderId}", String(orderId)),
-        "success"
+        "success",
       );
 
       // Clear cart on success only when checking out cart contents
@@ -810,24 +852,28 @@ export const CheckoutPage = () => {
         user_address: `${formData.streetAddress}, ${formData.city}, ${formData.state} ${formData.zipCode}, ${formData.country}`,
         user_phone: formData.phone,
         email: formData.email,
-        products_items: JSON.stringify(items.map((item) => ({
-          name: item.name,
-          quantity: item.quantity,
-          price: item.price,
-          color: item.color,
-          size: item.size,
-        }))),
+        products_items: JSON.stringify(
+          items.map((item) => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            color: item.color,
+            size: item.size,
+          })),
+        ),
         products_price: total,
         total_price: finalTotal,
         payment_method: formData.paymentMethod,
         status: "pending",
       };
-      navigate("/order-confirmation", { state: { orderData: orderConfirmationData } });
+      navigate("/order-confirmation", {
+        state: { orderData: orderConfirmationData },
+      });
     } catch (err: unknown) {
       console.error("❌ Order creation failed:", err);
       console.error(
         "Error type:",
-        err instanceof Error ? err.constructor.name : typeof err
+        err instanceof Error ? err.constructor.name : typeof err,
       );
       console.error("Error details:", {
         name: err instanceof Error ? err.name : undefined,
@@ -1338,7 +1384,7 @@ export const CheckoutPage = () => {
                                 required
                                 minLength={5}
                                 placeholder={t(
-                                  "checkout.address.search.placeholder"
+                                  "checkout.address.search.placeholder",
                                 )}
                                 autoComplete="billing address-line1"
                                 className={styles.addressInput}
@@ -1373,12 +1419,12 @@ export const CheckoutPage = () => {
                                 whitelist={SUPPORTED_COUNTRIES}
                                 className={styles.selectField}
                                 defaultOptionLabel={t(
-                                  "checkout.country.placeholder"
+                                  "checkout.country.placeholder",
                                 )}
                                 valueType="full"
                                 name="billingCountry"
                                 aria-label={`${t(
-                                  "checkout.country"
+                                  "checkout.country",
                                 )} (billing)`}
                               />
                             </div>
@@ -1393,7 +1439,7 @@ export const CheckoutPage = () => {
                                 valueType="short"
                                 className={styles.selectField}
                                 blankOptionLabel={t(
-                                  "checkout.state.placeholder"
+                                  "checkout.state.placeholder",
                                 )}
                                 disableWhenEmpty
                                 name="billingState"
@@ -1416,7 +1462,9 @@ export const CheckoutPage = () => {
                             type="tel"
                             name="billingPhone"
                             value={formData.billingPhone}
-                            onChange={(e) => handlePhoneChange("billingPhone", e.target.value)}
+                            onChange={(e) =>
+                              handlePhoneChange("billingPhone", e.target.value)
+                            }
                             required
                             placeholder="(555)123-4567"
                             autoComplete="billing tel"
