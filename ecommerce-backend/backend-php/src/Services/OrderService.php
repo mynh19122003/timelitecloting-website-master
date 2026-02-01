@@ -110,7 +110,47 @@ class OrderService
             $userPhone = $orderDetails['phonenumber'] ?? null;
             $userEmail = isset($orderDetails['email']) ? strtolower(trim((string)$orderDetails['email'])) : null;
             $paymentMethod = $orderDetails['payment_method'] ?? 'cod';
-            $paymentStatus = $paymentMethod === 'bank_transfer' ? 'paid' : 'unpaid';
+            
+            // Process Poynt payment if payment_method is 'poynt' and card data provided
+            $paymentStatus = 'unpaid'; // default
+            if ($paymentMethod === 'poynt' && isset($orderDetails['payment_card'])) {
+                error_log('[OrderService] Processing Poynt payment for order');
+                
+                try {
+                    $poyntService = new \App\Services\PoyntService();
+                    
+                    // Generate temporary order ID for reference
+                    $tempOrderId = 'TEMP-' . uniqid();
+                    
+                    error_log('[OrderService] Calling PoyntService->chargeCard - tempOrderId: ' . $tempOrderId . ', amount: ' . $finalTotal);
+                    
+                    $paymentResult = $poyntService->chargeCard(
+                        $orderDetails['payment_card'],
+                        floatval($finalTotal),
+                        $tempOrderId
+                    );
+                    
+                    // Payment successful
+                    $paymentStatus = 'paid';
+                    error_log('[OrderService] Poynt payment successful: ' . json_encode($paymentResult));
+                    
+                } catch (\Exception $e) {
+                    // Rollback transaction if started
+                    if ($this->db->inTransaction()) {
+                        $this->db->rollBack();
+                    }
+                    
+                    error_log('[OrderService] Poynt payment failed: ' . $e->getMessage());
+                    
+                    // Return error to frontend
+                    throw new \Exception('Payment failed: ' . $e->getMessage());
+                }
+            } else if ($paymentMethod === 'bank_transfer') {
+                $paymentStatus = 'paid';
+            } else {
+                $paymentStatus = 'unpaid';
+            }
+            
             $totalPrice = $finalTotal; // có thể thêm phí vận chuyển sau
             $productsName = implode(', ', $nameParts);
             $productsItems = json_encode($processedItems, JSON_UNESCAPED_UNICODE);

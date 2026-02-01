@@ -31,16 +31,17 @@ class ProductService {
       const [countResult] = await pool.execute(countQuery, searchParams);
       const total = countResult[0].total;
 
-      // Get products
+      // Get products - IMPORTANT: MySQL doesn't support binding LIMIT/OFFSET as parameters
+      // Must use string interpolation for limit and offset
       const productsQuery = `
         SELECT id, products_id, slug, name, description, price, stock, image_url, created_at 
         FROM products 
         ${searchCondition}
         ORDER BY ${sortBy} ${sortOrder}
-        LIMIT ? OFFSET ?
+        LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}
       `;
       
-      const [products] = await pool.execute(productsQuery, [...searchParams, limit, offset]);
+      const [products] = await pool.execute(productsQuery, searchParams);
 
       return {
         products,
@@ -52,6 +53,8 @@ class ProductService {
         }
       };
     } catch (error) {
+      console.error('[ProductService] getProducts failed:', error.message);
+      console.error('[ProductService] Error details:', error);
       throw new Error('ERR_GET_PRODUCTS_FAILED');
     }
   }

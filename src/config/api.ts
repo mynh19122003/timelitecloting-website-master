@@ -5,15 +5,15 @@ const PROD_ADMIN_ORIGIN = 'https://api.timeliteclothing.com';
 
 // Local URLs
 const LOCAL_API_ORIGIN = 'http://localhost:3002';
-const LOCAL_ADMIN_ORIGIN = 'http://localhost:3002';
+const LOCAL_ADMIN_ORIGIN = 'http://localhost:3001';
 
-// LOCAL: Dùng local API
+// PRODUCTION: Use environment variable or fallback to production URL
 const resolveAdminBaseUrl = (): string => {
-  return PROD_ADMIN_ORIGIN;
+  return process.env.NEXT_PUBLIC_ADMIN_URL || PROD_ADMIN_ORIGIN;
 };
 
 const resolveApiBaseUrl = (): string => {
-  return PROD_API_ORIGIN;
+  return process.env.NEXT_PUBLIC_API_URL || PROD_API_ORIGIN;
 };
 
 const RESOLVED_ADMIN_BASE = resolveAdminBaseUrl();

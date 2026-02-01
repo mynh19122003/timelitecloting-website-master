@@ -39,22 +39,67 @@ export default function OrderLookupPage() {
     setLoading(true);
 
     try {
-      const response = await ApiService.lookupOrder(orderNumber.trim(), email.trim()) as ApiResponse;
-      
+      const response = (await ApiService.lookupOrder(
+        orderNumber.trim(),
+        email.trim(),
+      )) as ApiResponse;
+
       if (response.success && response.data) {
-        // Navigate to confirmation page with order data
-        const orderDataParam = encodeURIComponent(JSON.stringify(response.data));
-        navigate(`/order-confirmation?data=${orderDataParam}`);
+        // Store order data in sessionStorage (secure - not in URL)
+        sessionStorage.setItem(
+          "order_lookup_data",
+          JSON.stringify(response.data),
+        );
+
+        // Navigate with only order_id (safe to expose)
+        const orderId =
+          response.data.order_id ||
+          `ORD${String(response.data.id || "").padStart(5, "0")}`;
+        navigate(`/order-confirmation?id=${orderId}`);
       } else {
-        setError(response.message || "Order not found. Please check your order number and email.");
+        setError(
+          response.message ||
+            "Order not found. Please check your order number and email.",
+        );
       }
     } catch (err) {
       console.error("Lookup error:", err);
+
+      // Detailed error handling
+      let errorMessage =
+        "Order not found. Please check your order number and email.";
+
       if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Order not found. Please check your order number and email.");
+        // Show the actual error message for debugging
+        errorMessage = err.message;
+
+        // Add more context if it's an API error
+        if (err.message.includes("Token") || err.message.includes("401")) {
+          errorMessage =
+            "Authentication error: " +
+            err.message +
+            " (Try refreshing the page)";
+        } else if (
+          err.message.includes("Network") ||
+          err.message.includes("timeout")
+        ) {
+          errorMessage =
+            "Network error: " + err.message + " (Check your connection)";
+        } else if (err.message.includes("404")) {
+          errorMessage =
+            "Order not found. Please check your order number and email.";
+        }
+      } else if (typeof err === "object" && err !== null) {
+        // Handle error objects
+        const errObj = err as {
+          message?: string;
+          error?: string;
+          status?: number;
+        };
+        errorMessage = errObj.message || errObj.error || JSON.stringify(err);
       }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -65,21 +110,21 @@ export default function OrderLookupPage() {
       <section className={styles.section}>
         <div className={styles.lookupForm}>
           <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-            <div className={styles.successIcon} style={{ background: "#f5f0eb" }}>
+            <div
+              className={styles.successIcon}
+              style={{ background: "#f5f0eb" }}
+            >
               <Package size={32} style={{ color: "#c79b61" }} />
             </div>
           </div>
-          
+
           <h1 className={styles.formTitle}>Track Your Order</h1>
           <p className={styles.formDescription}>
-            Enter your order number and email address to view your order details.
+            Enter your order number and email address to view your order
+            details.
           </p>
 
-          {error && (
-            <div className={styles.errorMessage}>
-              {error}
-            </div>
-          )}
+          {error && <div className={styles.errorMessage}>{error}</div>}
 
           <form onSubmit={handleSubmit} style={{ marginTop: "2rem" }}>
             <div style={{ marginBottom: "1.5rem" }}>
@@ -114,14 +159,23 @@ export default function OrderLookupPage() {
               type="submit"
               disabled={loading}
               className={styles.submitButton}
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.5rem",
+              }}
             >
               <Search size={18} />
               {loading ? "Looking up..." : "Find My Order"}
             </button>
           </form>
 
-          <Link to="/" className={styles.backLink} style={{ display: "block", marginTop: "2rem", textAlign: "center" }}>
+          <Link
+            to="/"
+            className={styles.backLink}
+            style={{ display: "block", marginTop: "2rem", textAlign: "center" }}
+          >
             ← Back to Shopping
           </Link>
         </div>

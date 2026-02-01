@@ -81,7 +81,8 @@ class OrderController
                 'shipping_address' => $input['shipping_address'] ?? null,
                 'notes' => $input['notes'] ?? null,
                 'total_amount' => $input['total_amount'] ?? null,
-                'payment_method' => $input['payment_method'] ?? null
+                'payment_method' => $input['payment_method'] ?? null,
+                'payment_card' => $input['payment_card'] ?? null // Extract card data for Poynt
             ];
 
             error_log('[OrderController] Calling orderService->createOrder with userId: ' . ($userId ?? 'guest'));

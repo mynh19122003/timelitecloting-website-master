@@ -30,6 +30,7 @@ export const STOREFRONT_ROUTES = [
   { slug: ['reset-password'] },
   { slug: ['verify-email'] },
   { slug: ['usps-test'] }, // USPS API testing page
+  { slug: ['test-payment'] }, // GoDaddy Poynt testing page
 ] as const;
 
 // Error pages - required for static export

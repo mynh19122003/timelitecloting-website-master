@@ -134,6 +134,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/shipping', shippingRoutes);
+app.use('/api/poynt', require('./routes/poyntRoutes')); // Poynt payment endpoint
 
 // Order confirmation email endpoint (called by PHP backend)
 const orderEmailService = require('./services/orderEmailService');

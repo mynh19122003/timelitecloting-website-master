@@ -36,10 +36,24 @@ export default function OrderConfirmationPage() {
   const [orderData, setOrderData] = useState<OrderData | null>(null);
 
   useEffect(() => {
-    // Get order data from location state (passed via navigate)
+    // Method 1: Get order data from location state (checkout flow)
     const state = location.state as LocationState | null;
     if (state?.orderData) {
       setOrderData(state.orderData);
+      return;
+    }
+
+    // Method 2: Get from sessionStorage (order lookup - SECURE)
+    const storedData = sessionStorage.getItem("order_lookup_data");
+    if (storedData) {
+      try {
+        const parsed = JSON.parse(storedData);
+        setOrderData(parsed);
+        // Clear after reading for security
+        sessionStorage.removeItem("order_lookup_data");
+      } catch (error) {
+        console.error("Failed to parse order data from sessionStorage:", error);
+      }
     }
   }, [location.state]);
 
@@ -56,7 +70,8 @@ export default function OrderConfirmationPage() {
   };
 
   const items = parseItems();
-  const orderNumber = orderData?.order_id || `ORD${String(orderData?.id || "").padStart(5, "0")}`;
+  const orderNumber =
+    orderData?.order_id || `ORD${String(orderData?.id || "").padStart(5, "0")}`;
 
   if (!orderData) {
     return (
@@ -65,12 +80,21 @@ export default function OrderConfirmationPage() {
           <div className={styles.lookupForm}>
             <h1 className={styles.formTitle}>Order Not Found</h1>
             <p className={styles.formDescription}>
-              We couldn&apos;t find your order details. You can look up your order using the form below.
+              We couldn&apos;t find your order details. You can look up your
+              order using the form below.
             </p>
-            <Link to="/order-lookup" className={styles.primaryButton} style={{ display: "block", textAlign: "center" }}>
+            <Link
+              to="/order-lookup"
+              className={styles.primaryButton}
+              style={{ display: "block", textAlign: "center" }}
+            >
               Look Up Order
             </Link>
-            <Link to="/" className={styles.backLink} style={{ display: "block", marginTop: "1rem" }}>
+            <Link
+              to="/"
+              className={styles.backLink}
+              style={{ display: "block", marginTop: "1rem" }}
+            >
               Continue Shopping
             </Link>
           </div>
@@ -89,10 +113,12 @@ export default function OrderConfirmationPage() {
           </div>
           <h1 className={styles.successTitle}>Thank You for Your Order!</h1>
           <p className={styles.successMessage}>
-            Your order <span className={styles.orderNumber}>{orderNumber}</span> has been placed successfully.
+            Your order <span className={styles.orderNumber}>{orderNumber}</span>{" "}
+            has been placed successfully.
           </p>
           <p className={styles.successMessage}>
-            We&apos;ve sent a confirmation email to <strong>{orderData.email || "your email"}</strong>.
+            We&apos;ve sent a confirmation email to{" "}
+            <strong>{orderData.email || "your email"}</strong>.
           </p>
         </div>
 
@@ -106,16 +132,22 @@ export default function OrderConfirmationPage() {
             </div>
             <div className={styles.infoItem}>
               <span className={styles.infoLabel}>Status</span>
-              <span className={styles.infoValue}>{orderData.status || "Pending"}</span>
+              <span className={styles.infoValue}>
+                {orderData.status || "Pending"}
+              </span>
             </div>
             <div className={styles.infoItem}>
               <span className={styles.infoLabel}>Payment Method</span>
-              <span className={styles.infoValue}>{orderData.payment_method || "N/A"}</span>
+              <span className={styles.infoValue}>
+                {orderData.payment_method || "N/A"}
+              </span>
             </div>
             <div className={styles.infoItem}>
               <span className={styles.infoLabel}>Date</span>
               <span className={styles.infoValue}>
-                {orderData.create_date ? new Date(orderData.create_date).toLocaleDateString() : new Date().toLocaleDateString()}
+                {orderData.create_date
+                  ? new Date(orderData.create_date).toLocaleDateString()
+                  : new Date().toLocaleDateString()}
               </span>
             </div>
           </div>
@@ -127,15 +159,21 @@ export default function OrderConfirmationPage() {
           <div className={styles.infoGrid}>
             <div className={styles.infoItem}>
               <span className={styles.infoLabel}>Name</span>
-              <span className={styles.infoValue}>{orderData.user_name || "N/A"}</span>
+              <span className={styles.infoValue}>
+                {orderData.user_name || "N/A"}
+              </span>
             </div>
             <div className={styles.infoItem}>
               <span className={styles.infoLabel}>Phone</span>
-              <span className={styles.infoValue}>{orderData.user_phone || "N/A"}</span>
+              <span className={styles.infoValue}>
+                {orderData.user_phone || "N/A"}
+              </span>
             </div>
             <div className={styles.infoItem + " sm:col-span-2"}>
               <span className={styles.infoLabel}>Address</span>
-              <span className={styles.infoValue}>{orderData.user_address || "N/A"}</span>
+              <span className={styles.infoValue}>
+                {orderData.user_address || "N/A"}
+              </span>
             </div>
           </div>
         </div>
@@ -147,7 +185,9 @@ export default function OrderConfirmationPage() {
             {items.map((item, index) => (
               <div key={index} className={styles.productItem}>
                 <div>
-                  <div className={styles.productName}>{item.name || "Product"}</div>
+                  <div className={styles.productName}>
+                    {item.name || "Product"}
+                  </div>
                   <div className={styles.productMeta}>
                     {item.color && `Color: ${item.color}`}
                     {item.color && item.size && " | "}
@@ -157,7 +197,10 @@ export default function OrderConfirmationPage() {
                   </div>
                 </div>
                 <div className={styles.productPrice}>
-                  ${(Number(item.price || 0) * Number(item.quantity || 1)).toFixed(2)}
+                  $
+                  {(
+                    Number(item.price || 0) * Number(item.quantity || 1)
+                  ).toFixed(2)}
                 </div>
               </div>
             ))}
@@ -170,17 +213,28 @@ export default function OrderConfirmationPage() {
             </div>
             <div className={styles.grandTotal}>
               <span>Total</span>
-              <span>${Number(orderData.total_price || orderData.products_price || 0).toFixed(2)}</span>
+              <span>
+                $
+                {Number(
+                  orderData.total_price || orderData.products_price || 0,
+                ).toFixed(2)}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Actions */}
         <div className={styles.actions}>
-          <button onClick={() => navigate("/")} className={styles.primaryButton}>
+          <button
+            onClick={() => navigate("/")}
+            className={styles.primaryButton}
+          >
             Continue Shopping
           </button>
-          <button onClick={() => window.print()} className={styles.secondaryButton}>
+          <button
+            onClick={() => window.print()}
+            className={styles.secondaryButton}
+          >
             Print Order
           </button>
         </div>

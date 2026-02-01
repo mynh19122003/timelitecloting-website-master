@@ -76,7 +76,8 @@ class HttpClient {
   private async request<T>(
     endpoint: string,
     options: RequestInit = {},
-    silent: boolean = false
+    silent: boolean = false,
+    skipAuth: boolean = false
   ): Promise<T> {
     try {
       const apiDisabledByEnv = process.env.NEXT_PUBLIC_API_DISABLED === '1';
@@ -98,7 +99,7 @@ class HttpClient {
     };
 
     const token = this.getToken();
-    if (token) {
+    if (token && !skipAuth) {
       config.headers = {
         ...config.headers,
         'Authorization': `Bearer ${token}`,
@@ -287,11 +288,11 @@ class HttpClient {
     return this.request<T>(endpoint, { method: 'GET' }, silent);
   }
 
-  async post<T>(endpoint: string, data?: unknown, silent: boolean = false): Promise<T> {
+  async post<T>(endpoint: string, data?: unknown, silent: boolean = false, skipAuth: boolean = false): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
-    }, silent);
+    }, silent, skipAuth);
   }
 
   async put<T>(endpoint: string, data?: unknown, silent: boolean = false): Promise<T> {
@@ -741,7 +742,7 @@ export class ApiService {
       console.log('[ApiService] createPoyntOrder (Node Force) called');
       // Direct fetch to bypass HttpClient BASE_URL confusion
       // Target: Public Node.js backend
-      const url = 'https://api.timeliteclothing.com/api/orders';
+      const url = `${API_CONFIG.BASE_URL}/api/orders`;
       
       const token = typeof window !== 'undefined' ? localStorage.getItem('timelite:jwt-token') : null;
       
@@ -940,7 +941,9 @@ export class ApiService {
     try {
       const response = await httpClient.post<unknown>(
         `${API_CONFIG.ENDPOINTS.ORDERS}/lookup`,
-        { order_number: orderNumber, email }
+        { order_number: orderNumber, email },
+        false, // silent
+        true   // skipAuth - allow guest lookup without token
       );
       return response;
     } catch (error) {
@@ -948,7 +951,9 @@ export class ApiService {
       try {
         const response = await httpClient.post<unknown>(
           `${API_CONFIG.ENDPOINTS.PHP.ORDERS}/lookup`,
-          { order_number: orderNumber, email }
+          { order_number: orderNumber, email },
+          false, // silent
+          true   // skipAuth - allow guest lookup without token
         );
         return response;
       } catch {
