@@ -1,141 +1,110 @@
-# TimeLite Clothing E-Commerce Platform
+# TimeLite Clothing - Modern E-Commerce Platform
 
-> Modern e-commerce platform with user management and order processing
-
----
-
-## Features
-
-| Feature                 | Description                                           |
-| ----------------------- | ----------------------------------------------------- |
-| **User Authentication** | JWT-based login/register with secure password hashing |
-| **Product Catalog**     | Browse products with categories and filtering         |
-| **Shopping Cart**       | Add/remove items, update quantities                   |
-| **Order Management**    | Create orders, view order history                     |
-| **User Profile**        | View and update personal information                  |
-| **Admin Dashboard**     | Manage products, orders, and users                    |
+A robust, full-featured e-commerce solution built with **Next.js 15 (App Router)** and **Node.js Express**. Designed for high performance, scalability, and a seamless user experience.
 
 ---
 
-## Tech Stack
+## ⚡ Key Features
 
-| Layer          | Technology                 |
-| -------------- | -------------------------- |
-| Frontend       | React, TypeScript          |
-| Backend        | Node.js 18, Express.js     |
-| Database       | MySQL 8.0                  |
-| Auth           | JWT (jsonwebtoken), bcrypt |
-| Validation     | Joi                        |
-| Infrastructure | Docker, Docker Compose     |
+### 🛍️ Customer Experience
+
+- **Smart Product Catalog**: Advanced filtering by category, color, size, and price.
+- **Dynamic Search**: Real-time product search with instant results.
+- **Shopping Cart**: Persistent cart state with easy quantity management.
+- **Secure Checkout**: Integrated **Poynt Payment Gateway** (Direct Card Charge) for secure credit/debit card processing.
+- **User Accounts**: Profile management, order history, and address book.
+- **Guest Checkout**: Seamless purchasing without mandatory registration.
+- **Responsive Design**: Fully optimized for Mobile, Tablet, and Desktop.
+
+### 🛡️ Admin Dashboard
+
+- **Dashboard Overview**: Real-time sales analytics and key performance indicators.
+- **Order Management**: Track status, view details, and manage shipping.
+- **Product Management**: Create, update, and manage inventory with image uploads.
+- **User Management**: View and manage customer accounts.
+- **Security**: Role-based access control (RBAC).
+
+### 🔧 Technical Highlights
+
+- **Server-Side Rendering (SSR)**: Optimized SEO and fast initial load times.
+- **Authentication**: Secure JWT-based auth with `bcrypt` password hashing.
+- **Database**: efficient MySQL relational database schema.
+- **Containerization**: Full Docker support for ensuring consistent environments.
+- **Email Notifications**: Automated transactional emails via `nodemailer`.
+- **Internationalization**: Support for global address and phone formats.
 
 ---
 
-## Setup
+## 🛠️ Technology Stack
 
-### Prerequisites
+### Frontend
+
+![Next.js](https://img.shields.io/badge/Next.js_15-black?style=flat-square&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)
+![Lucide Icons](https://img.shields.io/badge/Lucide_Icons-F05032?style=flat-square&logo=lucide&logoColor=white)
+
+### Backend
+
+![Node.js](https://img.shields.io/badge/Node.js-18-43853D?style=flat-square&logo=node.js&logoColor=white)
+![Express.js](https://img.shields.io/badge/Express.js-4.x-000000?style=flat-square&logo=express&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat-square&logo=mysql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white)
+
+---
+
+## 🚀 Getting Started
+
+### 1. Requirements
 
 - Node.js 18+
-- Docker & Docker Compose
+- Docker Desktop
 - Git
 
-### 1. Clone Repository
+### 2. Installation
 
-```powershell
+**Clone the repository:**
+
+```bash
 git clone https://github.com/mynh19122003/timelitecloting-website-master.git
 cd timelitecloting-website-master
 ```
 
-### 2. Start Backend Services
+**Setup Backend (Docker):**
 
-```powershell
+```bash
 cd ecommerce-backend
-docker-compose up -d
+docker-compose up -d --build
 ```
 
-### 3. Verify Services
+**Setup Frontend:**
 
-```powershell
-# Check backend health
-curl http://localhost:3001/health
-
-# Check containers
-docker ps
-```
-
-### 4. Start Frontend
-
-```powershell
-cd admin-web
-npm install
+```bash
+# Return to root directory
+cd ..
+npm install --legacy-peer-deps
 npm run dev
 ```
 
----
+### 3. Verification
 
-## API Endpoints
-
-**Base URL**: `http://localhost:3001/api`
-
-### User APIs
-
-| Method | Endpoint                 | Auth     | Description             |
-| ------ | ------------------------ | -------- | ----------------------- |
-| POST   | `/users/register`        | -        | Register new user       |
-| POST   | `/users/login`           | -        | Login and get JWT token |
-| GET    | `/users/profile`         | Required | Get user profile        |
-| PUT    | `/users/profile`         | Required | Update profile          |
-| PUT    | `/users/change-password` | Required | Change password         |
-
-### Order APIs
-
-| Method | Endpoint          | Auth     | Description       |
-| ------ | ----------------- | -------- | ----------------- |
-| POST   | `/orders`         | Required | Create new order  |
-| GET    | `/orders/history` | Required | Get order history |
-| GET    | `/orders/:id`     | Required | Get order details |
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:3002
+- **Admin API**: http://localhost:3001
 
 ---
 
-## Common Commands
+## 💳 Payment Integration (Poynt)
 
-```powershell
-# View logs
-docker logs ecommerce-backend-node
+This project uses a custom **Direct Card Charge** implementation for Poynt:
 
-# Restart backend
-cd ecommerce-backend
-docker-compose restart backend-node
-
-# Stop all services
-cd ecommerce-backend
-docker-compose down
-```
+- **Strategy**: Server-to-Server HTTPS transaction.
+- **Security**: Card data is transmitted securely via backend proxy, bypassing client-side tokenization issues.
+- **Validation**: Strict validation for Card Number (Luhn algorithm) and Expiry.
 
 ---
 
-## Project Structure
+## 📄 License
 
-```
-timelitecloting-website-master/
-|-- ecommerce-backend/          # Backend services
-|   |-- backend-node/           # Node.js API server
-|   |-- database/               # Database schema
-|   |-- docker-compose.yml      # Container orchestration
-|-- docs/                       # Documentation
-|-- admin-web/                  # Admin dashboard
-|-- src/                        # Frontend source code
-|-- README.md                   # This file
-```
-
----
-
-## Documentation
-
-See [`docs/`](docs/) folder for detailed documentation.
-
-- [Frontend Routes Guide](docs/frontend/ROUTES_GUIDE.md)
-- [Backend Setup](docs/backend/SETUP_GUIDE.md)
-- [Deployment Guide](docs/deployment/DEPLOY_GUIDE.md)
-- [Order API Documentation](docs/ORDER_API_DOCUMENTATION.md)
-
----
+This project is licensed under the MIT License.
