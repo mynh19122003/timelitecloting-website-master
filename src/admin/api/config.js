@@ -1,6 +1,6 @@
 // Resolve API base URL with sensible defaults for Docker/local dev
 // Supports both Next.js (process.env.NEXT_PUBLIC_*) and Vite (import.meta.env.VITE_*)
-const PROD_API_ORIGIN = 'http://localhost:3002'
+const PROD_API_ORIGIN = 'https://api.timeliteclothing.com'
 const PROD_ADMIN_BASE = `${PROD_API_ORIGIN}/admin`
 const PROD_PUBLIC_BASE = `${PROD_API_ORIGIN}/api`
 
