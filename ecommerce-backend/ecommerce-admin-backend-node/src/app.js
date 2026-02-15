@@ -25,7 +25,7 @@ const server = http.createServer(app);
 const PORT = process.env.ADMIN_NODE_PORT || 3001;
 
 const isProduction = process.env.NODE_ENV === 'production'
-const prodAllowList = ['https://api.timeliteclothing.com', 'https://timeliteclothing.com', 'https://www.timeliteclothing.com']
+const prodAllowList = ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002']
 
 const corsOptions = {
   origin: (origin, callback) => {

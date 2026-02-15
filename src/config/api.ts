@@ -1,7 +1,7 @@
 // API hosts for different environments
 // Production URLs
-const PROD_API_ORIGIN = 'https://api.timeliteclothing.com';
-const PROD_ADMIN_ORIGIN = 'https://api.timeliteclothing.com';
+const PROD_API_ORIGIN = 'http://localhost:3002';
+const PROD_ADMIN_ORIGIN = 'http://localhost:3001';
 
 // Local URLs
 const LOCAL_API_ORIGIN = 'http://localhost:3002';
@@ -78,7 +78,7 @@ export const getPhpApiUrl = (endpoint: string): string => {
   return `${API_CONFIG.BASE_URL}${endpoint}`;
 };
 
-// Helper to build admin media URL, e.g. https://api.timeliteclothing.com/admin/media/PID00001/main.webp
+// Helper to build admin media URL, e.g. http://localhost:3001/admin/media/PID00001/main.webp
 export const getAdminMediaUrl = (productsId: string, fileName: string = 'main.webp'): string => {
   const pid = encodeURIComponent(productsId);
   const file = encodeURIComponent(fileName);

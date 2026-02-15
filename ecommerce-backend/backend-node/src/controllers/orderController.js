@@ -10,27 +10,30 @@ const MAX_ORDERS_PER_MINUTE = 5;
 class OrderController {
   async createOrder(req, res) {
     try {
-      const userId = req.user.userId;
+      // Support both authenticated users and guest checkout
+      const userId = req.user ? req.user.userId : null;
       
-      // Rate limiting check
-      const now = Date.now();
-      const userLimits = orderRateLimits.get(userId) || { count: 0, resetAt: now + RATE_LIMIT_WINDOW };
-      
-      if (now > userLimits.resetAt) {
-        // Reset window
-        userLimits.count = 0;
-        userLimits.resetAt = now + RATE_LIMIT_WINDOW;
+      // Rate limiting check (only for authenticated users)
+      if (userId) {
+        const now = Date.now();
+        const userLimits = orderRateLimits.get(userId) || { count: 0, resetAt: now + RATE_LIMIT_WINDOW };
+        
+        if (now > userLimits.resetAt) {
+          // Reset window
+          userLimits.count = 0;
+          userLimits.resetAt = now + RATE_LIMIT_WINDOW;
+        }
+        
+        if (userLimits.count >= MAX_ORDERS_PER_MINUTE) {
+          return res.status(429).json({
+            error: 'ERR_TOO_MANY_REQUESTS',
+            message: 'Too many orders. Please wait a moment before placing another order.'
+          });
+        }
+        
+        userLimits.count++;
+        orderRateLimits.set(userId, userLimits);
       }
-      
-      if (userLimits.count >= MAX_ORDERS_PER_MINUTE) {
-        return res.status(429).json({
-          error: 'ERR_TOO_MANY_REQUESTS',
-          message: 'Too many orders. Please wait a moment before placing another order.'
-        });
-      }
-      
-      userLimits.count++;
-      orderRateLimits.set(userId, userLimits);
       
       const { 
         items, 

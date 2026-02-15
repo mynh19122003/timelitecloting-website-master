@@ -185,7 +185,13 @@ class OrderService
             // Get created order with items
             return $this->orderModel->findById($orderId, $userId);
         } catch (\Exception $e) {
-            $this->db->rollBack();
+            // CRITICAL FIX: Check if transaction is active before rollback
+            // Prevents "There is no active transaction" PDOException
+            // This can occur if payment fails and transaction was auto-committed
+            // or if an error occurred before transaction was started
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
             error_log('Order creation error: ' . $e->getMessage());
             throw $e;
         }
